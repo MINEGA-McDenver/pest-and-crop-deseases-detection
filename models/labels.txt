@@ -1,0 +1,14 @@
+banana_cordana
+banana_healthy
+banana_pestalotiopsis
+banana_sigatoka
+beans_angular_leaf_spot
+beans_healthy
+beans_rust
+maize_common_rust
+maize_gray_leaf_spot
+maize_healthy
+maize_northern_leaf_blight
+potato_early_blight
+potato_healthy
+potato_late_blight

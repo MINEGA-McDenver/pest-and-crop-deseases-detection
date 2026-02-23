@@ -1,0 +1,583 @@
+{
+  "generated_on": "2026-02-13 10:49:49",
+  "configuration": {
+    "image_size": "224x224",
+    "interpolation": "LANCZOS",
+    "output_format": "JPEG RGB (quality=95)",
+    "split_ratios": {
+      "train": 0.7,
+      "val": 0.15,
+      "test": 0.15
+    },
+    "augmentation": {
+      "strategy": "adaptive",
+      "threshold": 1000,
+      "max_target": 3000,
+      "adaptive_rule": "min(30% of largest class, MAX_AUGMENT_TARGET)",
+      "max_aug_per_image": 8,
+      "transforms": [
+        "rotation (\u00b130\u00b0)",
+        "horizontal flip (50%)",
+        "vertical flip (10% \u2014 biologically conservative)",
+        "brightness (0.7\u20131.3)",
+        "contrast (0.7\u20131.3)",
+        "saturation (0.8\u20131.2)",
+        "random crop/zoom (85\u2013100%)",
+        "Gaussian blur (20%, radius=0.5)"
+      ]
+    },
+    "normalization": "Pixel values saved as uint8 (0-255). Runtime normalization to [0,1] applied during model training.",
+    "random_seed": 42
+  },
+  "deduplication": {
+    "total_scanned": 30701,
+    "duplicates_removed": 47,
+    "storage_saved_mb": 1.32,
+    "duplicate_details": [
+      {
+        "removed": "bana_aug_145_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_136_aug.jpg"
+      },
+      {
+        "removed": "bana_aug_150_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_130_aug.jpg"
+      },
+      {
+        "removed": "bana_aug_151_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_130_aug.jpg"
+      },
+      {
+        "removed": "bana_aug_258_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_257_aug.jpg"
+      },
+      {
+        "removed": "bana_aug_269_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_181_aug.jpg"
+      },
+      {
+        "removed": "bana_aug_281_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_280_aug.jpg"
+      },
+      {
+        "removed": "bana_aug_31_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_190_aug.jpg"
+      },
+      {
+        "removed": "bana_aug_90_aug.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_aug_86_aug.jpg"
+      },
+      {
+        "removed": "bana_orig_104.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_0.jpg"
+      },
+      {
+        "removed": "bana_orig_106.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_10.jpg"
+      },
+      {
+        "removed": "bana_orig_109.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_1.jpg"
+      },
+      {
+        "removed": "bana_orig_11.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_105.jpg"
+      },
+      {
+        "removed": "bana_orig_110.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_103.jpg"
+      },
+      {
+        "removed": "bana_orig_122.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_78.jpg"
+      },
+      {
+        "removed": "bana_orig_14.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_107.jpg"
+      },
+      {
+        "removed": "bana_orig_16.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_108.jpg"
+      },
+      {
+        "removed": "bana_orig_18.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_111.jpg"
+      },
+      {
+        "removed": "bana_orig_21.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_128.jpg"
+      },
+      {
+        "removed": "bana_orig_22.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_127.jpg"
+      },
+      {
+        "removed": "bana_orig_24.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_126.jpg"
+      },
+      {
+        "removed": "bana_orig_30.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_124.jpg"
+      },
+      {
+        "removed": "bana_orig_31.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_125.jpg"
+      },
+      {
+        "removed": "bana_orig_34.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_2.jpg"
+      },
+      {
+        "removed": "bana_orig_36.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_33.jpg"
+      },
+      {
+        "removed": "bana_orig_38.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_32.jpg"
+      },
+      {
+        "removed": "bana_orig_39.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_102.jpg"
+      },
+      {
+        "removed": "bana_orig_4.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_123.jpg"
+      },
+      {
+        "removed": "bana_orig_43.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_13.jpg"
+      },
+      {
+        "removed": "bana_orig_44.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_15.jpg"
+      },
+      {
+        "removed": "bana_orig_45.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_12.jpg"
+      },
+      {
+        "removed": "bana_orig_46.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_101.jpg"
+      },
+      {
+        "removed": "bana_orig_5.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_49.jpg"
+      },
+      {
+        "removed": "bana_orig_51.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_29.jpg"
+      },
+      {
+        "removed": "bana_orig_54.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_23.jpg"
+      },
+      {
+        "removed": "bana_orig_55.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_25.jpg"
+      },
+      {
+        "removed": "bana_orig_56.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_26.jpg"
+      },
+      {
+        "removed": "bana_orig_57.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_27.jpg"
+      },
+      {
+        "removed": "bana_orig_58.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_19.jpg"
+      },
+      {
+        "removed": "bana_orig_59.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_20.jpg"
+      },
+      {
+        "removed": "bana_orig_6.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_42.jpg"
+      },
+      {
+        "removed": "bana_orig_62.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_112.jpg"
+      },
+      {
+        "removed": "bana_orig_63.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_17.jpg"
+      },
+      {
+        "removed": "bana_orig_7.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_40.jpg"
+      },
+      {
+        "removed": "bana_orig_8.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_41.jpg"
+      },
+      {
+        "removed": "bana_orig_89.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_48.jpg"
+      },
+      {
+        "removed": "bana_orig_9.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_47.jpg"
+      },
+      {
+        "removed": "bana_orig_92.jpg",
+        "class": "banana_healthy",
+        "duplicate_of": "bana_orig_3.jpg"
+      }
+    ]
+  },
+  "split_statistics": {
+    "cassava_bacterial_blight": {
+      "total": 1087,
+      "train": 760,
+      "val": 163,
+      "test": 164
+    },
+    "cassava_brown_streak_disease": {
+      "total": 2189,
+      "train": 1532,
+      "val": 328,
+      "test": 329
+    },
+    "cassava_green_mottle": {
+      "total": 2386,
+      "train": 1670,
+      "val": 357,
+      "test": 359
+    },
+    "cassava_mosaic_disease": {
+      "total": 13158,
+      "train": 9210,
+      "val": 1973,
+      "test": 1975
+    },
+    "cassava_healthy": {
+      "total": 2577,
+      "train": 1803,
+      "val": 386,
+      "test": 388
+    },
+    "maize_gray_leaf_spot": {
+      "total": 513,
+      "train": 359,
+      "val": 76,
+      "test": 78
+    },
+    "maize_common_rust": {
+      "total": 1192,
+      "train": 834,
+      "val": 178,
+      "test": 180
+    },
+    "maize_northern_leaf_blight": {
+      "total": 985,
+      "train": 689,
+      "val": 147,
+      "test": 149
+    },
+    "maize_healthy": {
+      "total": 1162,
+      "train": 813,
+      "val": 174,
+      "test": 175
+    },
+    "potato_early_blight": {
+      "total": 1000,
+      "train": 700,
+      "val": 150,
+      "test": 150
+    },
+    "potato_late_blight": {
+      "total": 1000,
+      "train": 700,
+      "val": 150,
+      "test": 150
+    },
+    "potato_healthy": {
+      "total": 152,
+      "train": 106,
+      "val": 22,
+      "test": 24
+    },
+    "beans_angular_leaf_spot": {
+      "total": 389,
+      "train": 272,
+      "val": 58,
+      "test": 59
+    },
+    "beans_rust": {
+      "total": 393,
+      "train": 275,
+      "val": 58,
+      "test": 60
+    },
+    "beans_healthy": {
+      "total": 385,
+      "train": 269,
+      "val": 57,
+      "test": 59
+    },
+    "banana_cordana": {
+      "total": 558,
+      "train": 390,
+      "val": 83,
+      "test": 85
+    },
+    "banana_pestalotiopsis": {
+      "total": 573,
+      "train": 401,
+      "val": 85,
+      "test": 87
+    },
+    "banana_sigatoka": {
+      "total": 473,
+      "train": 331,
+      "val": 70,
+      "test": 72
+    },
+    "banana_healthy": {
+      "total": 482,
+      "train": 337,
+      "val": 72,
+      "test": 73
+    }
+  },
+  "resize": {
+    "target_size": "224x224",
+    "images_resized": 30654,
+    "errors": 0,
+    "error_files": []
+  },
+  "augmentation": {
+    "banana_cordana": {
+      "original": 390,
+      "augmented": 2373,
+      "final": 2763,
+      "action": "augmented +2373"
+    },
+    "banana_healthy": {
+      "original": 337,
+      "augmented": 2426,
+      "final": 2763,
+      "action": "augmented +2426"
+    },
+    "banana_pestalotiopsis": {
+      "original": 401,
+      "augmented": 2362,
+      "final": 2763,
+      "action": "augmented +2362"
+    },
+    "banana_sigatoka": {
+      "original": 331,
+      "augmented": 2432,
+      "final": 2763,
+      "action": "augmented +2432"
+    },
+    "beans_angular_leaf_spot": {
+      "original": 272,
+      "augmented": 2176,
+      "final": 2448,
+      "action": "augmented +2176"
+    },
+    "beans_healthy": {
+      "original": 269,
+      "augmented": 2152,
+      "final": 2421,
+      "action": "augmented +2152"
+    },
+    "beans_rust": {
+      "original": 275,
+      "augmented": 2200,
+      "final": 2475,
+      "action": "augmented +2200"
+    },
+    "cassava_bacterial_blight": {
+      "original": 760,
+      "augmented": 2003,
+      "final": 2763,
+      "action": "augmented +2003"
+    },
+    "cassava_brown_streak_disease": {
+      "original": 1532,
+      "augmented": 0,
+      "final": 1532,
+      "action": "no augmentation needed"
+    },
+    "cassava_green_mottle": {
+      "original": 1670,
+      "augmented": 0,
+      "final": 1670,
+      "action": "no augmentation needed"
+    },
+    "cassava_healthy": {
+      "original": 1803,
+      "augmented": 0,
+      "final": 1803,
+      "action": "no augmentation needed"
+    },
+    "cassava_mosaic_disease": {
+      "original": 9210,
+      "augmented": 0,
+      "final": 9210,
+      "action": "no augmentation needed"
+    },
+    "maize_common_rust": {
+      "original": 834,
+      "augmented": 1929,
+      "final": 2763,
+      "action": "augmented +1929"
+    },
+    "maize_gray_leaf_spot": {
+      "original": 359,
+      "augmented": 2404,
+      "final": 2763,
+      "action": "augmented +2404"
+    },
+    "maize_healthy": {
+      "original": 813,
+      "augmented": 1950,
+      "final": 2763,
+      "action": "augmented +1950"
+    },
+    "maize_northern_leaf_blight": {
+      "original": 689,
+      "augmented": 2074,
+      "final": 2763,
+      "action": "augmented +2074"
+    },
+    "potato_early_blight": {
+      "original": 700,
+      "augmented": 2063,
+      "final": 2763,
+      "action": "augmented +2063"
+    },
+    "potato_healthy": {
+      "original": 106,
+      "augmented": 848,
+      "final": 954,
+      "action": "augmented +848"
+    },
+    "potato_late_blight": {
+      "original": 700,
+      "augmented": 2063,
+      "final": 2763,
+      "action": "augmented +2063"
+    }
+  },
+  "final_counts": {
+    "train": {
+      "banana_cordana": 2763,
+      "banana_healthy": 2763,
+      "banana_pestalotiopsis": 2763,
+      "banana_sigatoka": 2763,
+      "beans_angular_leaf_spot": 2448,
+      "beans_healthy": 2421,
+      "beans_rust": 2475,
+      "cassava_bacterial_blight": 2763,
+      "cassava_brown_streak_disease": 1532,
+      "cassava_green_mottle": 1670,
+      "cassava_healthy": 1803,
+      "cassava_mosaic_disease": 9210,
+      "maize_common_rust": 2763,
+      "maize_gray_leaf_spot": 2763,
+      "maize_healthy": 2763,
+      "maize_northern_leaf_blight": 2763,
+      "potato_early_blight": 2763,
+      "potato_healthy": 954,
+      "potato_late_blight": 2763
+    },
+    "val": {
+      "banana_cordana": 83,
+      "banana_healthy": 72,
+      "banana_pestalotiopsis": 85,
+      "banana_sigatoka": 70,
+      "beans_angular_leaf_spot": 58,
+      "beans_healthy": 57,
+      "beans_rust": 58,
+      "cassava_bacterial_blight": 163,
+      "cassava_brown_streak_disease": 328,
+      "cassava_green_mottle": 357,
+      "cassava_healthy": 386,
+      "cassava_mosaic_disease": 1973,
+      "maize_common_rust": 178,
+      "maize_gray_leaf_spot": 76,
+      "maize_healthy": 174,
+      "maize_northern_leaf_blight": 147,
+      "potato_early_blight": 150,
+      "potato_healthy": 22,
+      "potato_late_blight": 150
+    },
+    "test": {
+      "banana_cordana": 85,
+      "banana_healthy": 73,
+      "banana_pestalotiopsis": 87,
+      "banana_sigatoka": 72,
+      "beans_angular_leaf_spot": 59,
+      "beans_healthy": 59,
+      "beans_rust": 60,
+      "cassava_bacterial_blight": 164,
+      "cassava_brown_streak_disease": 329,
+      "cassava_green_mottle": 359,
+      "cassava_healthy": 388,
+      "cassava_mosaic_disease": 1975,
+      "maize_common_rust": 180,
+      "maize_gray_leaf_spot": 78,
+      "maize_healthy": 175,
+      "maize_northern_leaf_blight": 149,
+      "potato_early_blight": 150,
+      "potato_healthy": 24,
+      "potato_late_blight": 150
+    }
+  },
+  "totals": {
+    "train": 52906,
+    "val": 4587,
+    "test": 4616
+  },
+  "grand_total": 62109
+}

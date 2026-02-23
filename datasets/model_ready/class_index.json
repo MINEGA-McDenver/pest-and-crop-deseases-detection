@@ -1,0 +1,21 @@
+{
+  "cassava_bacterial_blight": 0,
+  "cassava_brown_streak_disease": 1,
+  "cassava_green_mottle": 2,
+  "cassava_mosaic_disease": 3,
+  "cassava_healthy": 4,
+  "maize_gray_leaf_spot": 5,
+  "maize_common_rust": 6,
+  "maize_northern_leaf_blight": 7,
+  "maize_healthy": 8,
+  "potato_early_blight": 9,
+  "potato_late_blight": 10,
+  "potato_healthy": 11,
+  "beans_angular_leaf_spot": 12,
+  "beans_rust": 13,
+  "beans_healthy": 14,
+  "banana_cordana": 15,
+  "banana_pestalotiopsis": 16,
+  "banana_sigatoka": 17,
+  "banana_healthy": 18
+}

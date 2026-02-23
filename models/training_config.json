@@ -1,0 +1,43 @@
+{
+  "model": "MobileNetV2",
+  "num_classes": 14,
+  "class_names": [
+    "banana_cordana",
+    "banana_healthy",
+    "banana_pestalotiopsis",
+    "banana_sigatoka",
+    "beans_angular_leaf_spot",
+    "beans_healthy",
+    "beans_rust",
+    "maize_common_rust",
+    "maize_gray_leaf_spot",
+    "maize_healthy",
+    "maize_northern_leaf_blight",
+    "potato_early_blight",
+    "potato_healthy",
+    "potato_late_blight"
+  ],
+  "crops": [
+    "banana",
+    "potato",
+    "maize",
+    "beans"
+  ],
+  "image_size": [
+    224,
+    224
+  ],
+  "batch_size": 8,
+  "seed": 42,
+  "phase1_epochs": 15,
+  "phase2_epochs": 20,
+  "total_epochs": 35,
+  "phase1_time_min": 307.7,
+  "phase2_time_min": 682.5,
+  "total_time_min": 990.2,
+  "best_val_accuracy": 0.9341,
+  "phase1_best_val": 0.8319,
+  "phase2_best_val": 0.9341,
+  "best_model_path": "best_model.keras",
+  "final_model_path": "final_model.keras"
+}
