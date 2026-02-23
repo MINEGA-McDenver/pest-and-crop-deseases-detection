@@ -1,0 +1,120 @@
+{
+  "model": "MobileNetV2 (4-crop)",
+  "model_path": "best_model.keras",
+  "test_accuracy": 0.9243,
+  "top3_accuracy": 0.9979,
+  "top5_accuracy": 1.0,
+  "num_classes": 14,
+  "crops": [
+    "banana",
+    "beans",
+    "maize",
+    "potato"
+  ],
+  "total_test_images": 1401,
+  "average_confidence": 0.9521,
+  "recommended_threshold": 0.7,
+  "confidence_thresholds": {
+    "0.5": {
+      "accuracy": 0.9254,
+      "coverage": 0.9957,
+      "count": 1395
+    },
+    "0.6": {
+      "accuracy": 0.9348,
+      "coverage": 0.9743,
+      "count": 1365
+    },
+    "0.7": {
+      "accuracy": 0.9445,
+      "coverage": 0.9393,
+      "count": 1316
+    },
+    "0.8": {
+      "accuracy": 0.9542,
+      "coverage": 0.9029,
+      "count": 1265
+    },
+    "0.9": {
+      "accuracy": 0.9714,
+      "coverage": 0.8473,
+      "count": 1187
+    }
+  },
+  "per_class": {
+    "banana_cordana": {
+      "accuracy": 0.9765,
+      "count": 85
+    },
+    "banana_healthy": {
+      "accuracy": 0.9589,
+      "count": 73
+    },
+    "banana_pestalotiopsis": {
+      "accuracy": 0.8391,
+      "count": 87
+    },
+    "banana_sigatoka": {
+      "accuracy": 1.0,
+      "count": 72
+    },
+    "beans_angular_leaf_spot": {
+      "accuracy": 0.7627,
+      "count": 59
+    },
+    "beans_healthy": {
+      "accuracy": 1.0,
+      "count": 59
+    },
+    "beans_rust": {
+      "accuracy": 0.9167,
+      "count": 60
+    },
+    "maize_common_rust": {
+      "accuracy": 0.9944,
+      "count": 180
+    },
+    "maize_gray_leaf_spot": {
+      "accuracy": 0.8974,
+      "count": 78
+    },
+    "maize_healthy": {
+      "accuracy": 0.9943,
+      "count": 175
+    },
+    "maize_northern_leaf_blight": {
+      "accuracy": 0.7718,
+      "count": 149
+    },
+    "potato_early_blight": {
+      "accuracy": 1.0,
+      "count": 150
+    },
+    "potato_healthy": {
+      "accuracy": 1.0,
+      "count": 24
+    },
+    "potato_late_blight": {
+      "accuracy": 0.84,
+      "count": 150
+    }
+  },
+  "per_crop": {
+    "Banana": {
+      "accuracy": 0.9401,
+      "count": 317
+    },
+    "Beans": {
+      "accuracy": 0.8933,
+      "count": 178
+    },
+    "Maize": {
+      "accuracy": 0.9244,
+      "count": 582
+    },
+    "Potato": {
+      "accuracy": 0.9259,
+      "count": 324
+    }
+  }
+}

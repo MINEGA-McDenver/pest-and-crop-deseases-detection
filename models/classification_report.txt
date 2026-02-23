@@ -1,0 +1,27 @@
+4-Crop Model Test Evaluation
+Model: D:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\pest-and-crop-deseases-detection\models\best_model.keras
+Test Accuracy: 92.43%
+Top-3 Accuracy: 99.79%
+Top-5 Accuracy: 100.00%
+Recommended Confidence Threshold: 70%
+
+                            precision    recall  f1-score   support
+
+            banana_cordana       0.95      0.98      0.97        85
+            banana_healthy       1.00      0.96      0.98        73
+     banana_pestalotiopsis       0.99      0.84      0.91        87
+           banana_sigatoka       0.84      1.00      0.91        72
+   beans_angular_leaf_spot       0.98      0.76      0.86        59
+             beans_healthy       0.91      1.00      0.95        59
+                beans_rust       0.86      0.92      0.89        60
+         maize_common_rust       0.95      0.99      0.97       180
+      maize_gray_leaf_spot       0.74      0.90      0.81        78
+             maize_healthy       0.99      0.99      0.99       175
+maize_northern_leaf_blight       0.93      0.77      0.84       149
+       potato_early_blight       0.90      1.00      0.95       150
+            potato_healthy       0.75      1.00      0.86        24
+        potato_late_blight       0.99      0.84      0.91       150
+
+                  accuracy                           0.92      1401
+                 macro avg       0.91      0.93      0.91      1401
+              weighted avg       0.93      0.92      0.92      1401

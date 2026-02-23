@@ -1,0 +1,16 @@
+{
+  "banana_cordana": 0,
+  "banana_healthy": 1,
+  "banana_pestalotiopsis": 2,
+  "banana_sigatoka": 3,
+  "beans_angular_leaf_spot": 4,
+  "beans_healthy": 5,
+  "beans_rust": 6,
+  "maize_common_rust": 7,
+  "maize_gray_leaf_spot": 8,
+  "maize_healthy": 9,
+  "maize_northern_leaf_blight": 10,
+  "potato_early_blight": 11,
+  "potato_healthy": 12,
+  "potato_late_blight": 13
+}
