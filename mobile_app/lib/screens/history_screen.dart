@@ -111,8 +111,9 @@ class _HistoryScreenState extends State<HistoryScreen>
   }
 
   Widget _buildScanCard(ScanResult scan, {required bool isRecent}) {
-    final dateStr = DateFormat('MMM d, yyyy • h:mm a').format(scan.scannedAt);
-    final daysOld = DateTime.now().difference(scan.scannedAt).inDays;
+    final scannedAt = DateTime.tryParse(scan.dateTime) ?? DateTime.now();
+    final dateStr = DateFormat('MMM d, yyyy - h:mm a').format(scannedAt);
+    final daysOld = DateTime.now().difference(scannedAt).inDays;
 
     Color statusColor;
     IconData statusIcon;
@@ -146,7 +147,6 @@ class _HistoryScreenState extends State<HistoryScreen>
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              // Image thumbnail
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.file(
@@ -163,7 +163,6 @@ class _HistoryScreenState extends State<HistoryScreen>
                 ),
               ),
               const SizedBox(width: 12),
-              // Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,8 +174,8 @@ class _HistoryScreenState extends State<HistoryScreen>
                         Expanded(
                           child: Text(
                             scan.resultType == 'healthy'
-                                ? '${scan.cropName} — Healthy'
-                                : '${scan.cropName} — ${scan.diseaseName}',
+                                ? '${scan.cropName} - Healthy'
+                                : '${scan.cropName} - ${scan.diseaseName}',
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
@@ -229,7 +228,6 @@ class _HistoryScreenState extends State<HistoryScreen>
                   ],
                 ),
               ),
-              // Actions
               Column(
                 children: [
                   if (isRecent)
