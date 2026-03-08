@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
 
-/// A visual confidence bar showing prediction confidence level.
 class ConfidenceBar extends StatelessWidget {
   final double confidence;
-  final double height;
+  final String label;
 
-  const ConfidenceBar({super.key, required this.confidence, this.height = 12});
+  const ConfidenceBar({
+    super.key,
+    required this.confidence,
+    this.label = 'Confidence',
+  });
 
   Color get _color {
-    if (confidence >= 0.9) return Colors.green.shade700;
     if (confidence >= 0.8) return Colors.green;
-    if (confidence >= 0.7) return Colors.orange;
-    if (confidence >= 0.5) return Colors.orange.shade700;
+    if (confidence >= 0.5) return Colors.orange;
     return Colors.red;
-  }
-
-  String get _label {
-    if (confidence >= 0.9) return 'Very High';
-    if (confidence >= 0.8) return 'High';
-    if (confidence >= 0.7) return 'Moderate';
-    if (confidence >= 0.5) return 'Low';
-    return 'Very Low';
   }
 
   @override
@@ -31,35 +24,29 @@ class ConfidenceBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Confidence: ${(confidence * 100).toStringAsFixed(1)}%',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: _color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
+            Expanded(
               child: Text(
-                _label,
-                style: TextStyle(
-                  color: _color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
+                label,
+                style: Theme.of(context).textTheme.bodySmall,
+                overflow: TextOverflow.ellipsis,
               ),
+            ),
+            Text(
+              '${(confidence * 100).toStringAsFixed(1)}%',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         ClipRRect(
-          borderRadius: BorderRadius.circular(height / 2),
+          borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: confidence,
-            minHeight: height,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: _color.withValues(alpha: 0.15),
             valueColor: AlwaysStoppedAnimation<Color>(_color),
+            minHeight: 8,
           ),
         ),
       ],

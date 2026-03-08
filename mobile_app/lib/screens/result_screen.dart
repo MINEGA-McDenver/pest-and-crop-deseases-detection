@@ -1,20 +1,22 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/scan_result.dart';
-import '../services/classifier_service.dart';
-import '../services/storage_service.dart';
 import '../data/disease_info.dart';
 import '../widgets/confidence_bar.dart';
+import '../services/storage_service.dart';
 
-class ResultScreen extends StatelessWidget {
-  final ScanResult scanResult;
-  final ClassificationResult classificationResult;
+class ResultScreen extends StatefulWidget {
+  final ScanResult result;
 
-  const ResultScreen({
-    super.key,
-    required this.scanResult,
-    required this.classificationResult,
-  });
+  const ResultScreen({super.key, required this.result});
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> {
+  final StorageService _storage = StorageService();
+  bool _saved = false;
 
   @override
   Widget build(BuildContext context) {
@@ -23,630 +25,507 @@ class ResultScreen extends StatelessWidget {
         title: const Text('Scan Result'),
         backgroundColor: _getAppBarColor(),
         foregroundColor: Colors.white,
-        elevation: 0,
+        actions: [
+          if (widget.result.resultType != 'poor_quality')
+            IconButton(
+              icon: Icon(_saved ? Icons.bookmark : Icons.bookmark_border),
+              onPressed: _saveResult,
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
-          children: [
-            _buildResultHeader(context),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: _buildResultBody(context),
-            ),
-          ],
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [_buildImageSection(), _buildResultContent()],
         ),
       ),
-      bottomNavigationBar: _buildBottomActions(context),
     );
   }
 
   Color _getAppBarColor() {
-    switch (scanResult.resultType) {
-      case 'disease':
-        return Colors.orange.shade700;
+    switch (widget.result.resultType) {
       case 'healthy':
-        return Colors.green.shade700;
+        return Colors.green;
+      case 'disease':
+        return Colors.orange.shade800;
       case 'uncertain':
         return Colors.amber.shade700;
+      case 'unknown_disease':
+        return Colors.deepOrange;
       case 'unsupported':
-        return Colors.blueGrey.shade600;
-      case 'unclear_image':
-        return Colors.grey.shade600;
+        return Colors.blueGrey;
+      case 'poor_quality':
+        return Colors.red.shade700;
       default:
-        return Colors.green.shade700;
+        return const Color(0xFF2E7D32);
     }
   }
 
-  Widget _buildResultHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: _getAppBarColor(),
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+  Widget _buildImageSection() {
+    return Stack(
+      children: [
+        SizedBox(
+          height: 250,
+          width: double.infinity,
+          child: Image.file(
+            File(widget.result.imagePath),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.broken_image, size: 64),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.7),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              _getHeaderText(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getHeaderText() {
+    switch (widget.result.resultType) {
+      case 'poor_quality':
+        return '⚠️ Image Quality Issue';
+      case 'unsupported':
+        return '❓ Crop Not Recognized';
+      case 'uncertain':
+        return '🤔 Uncertain Result';
+      case 'unknown_disease':
+        return '🔬 ${widget.result.cropName} - Unknown Condition';
+      case 'healthy':
+        return '✅ ${widget.result.cropName} - Healthy';
+      case 'disease':
+        return '⚠️ ${widget.result.cropName} - ${widget.result.diseaseName}';
+      default:
+        return widget.result.cropName;
+    }
+  }
+
+  Widget _buildResultContent() {
+    switch (widget.result.resultType) {
+      case 'poor_quality':
+        return _buildPoorQualityCard();
+      case 'unsupported':
+        return _buildUnsupportedCard();
+      case 'uncertain':
+        return _buildUncertainCard();
+      case 'unknown_disease':
+        return _buildUnknownDiseaseCard();
+      default:
+        return _buildConfidentResult();
+    }
+  }
+
+  // ─── POOR QUALITY ──────────────────────────────────────────
+  Widget _buildPoorQualityCard() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Image preview
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.file(
-              File(scanResult.imagePath),
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: 200,
-                color: Colors.grey.shade300,
-                child: const Icon(Icons.broken_image, size: 64),
+          Card(
+            color: Colors.red.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.photo_camera,
+                    size: 64,
+                    color: Colors.red.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Image Quality Too Low',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'The image could not be analyzed reliably. '
+                    'Please take a new photo following the tips below.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 16),
+                  if (widget.result.qualityIssues != null)
+                    ...widget.result.qualityIssues!.map(
+                      (issue) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 18,
+                              color: Colors.red.shade600,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                issue,
+                                style: TextStyle(color: Colors.red.shade800),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          // Status icon and text
-          _buildStatusBadge(),
+          _buildPhotoTipsCard(),
+          const SizedBox(height: 16),
+          _buildRetakeButton(),
         ],
       ),
     );
   }
 
-  Widget _buildStatusBadge() {
-    IconData icon;
-    String title;
-
-    switch (scanResult.resultType) {
-      case 'disease':
-        icon = Icons.warning_amber_rounded;
-        title = 'Disease Detected';
-        break;
-      case 'healthy':
-        icon = Icons.check_circle;
-        title = 'Healthy Crop';
-        break;
-      case 'uncertain':
-        icon = Icons.help_outline;
-        title = 'Possible Health Issue';
-        break;
-      case 'unsupported':
-        icon = Icons.block;
-        title = 'Crop Not Supported';
-        break;
-      case 'unclear_image':
-        icon = Icons.photo_camera;
-        title = 'Image Not Clear';
-        break;
-      default:
-        icon = Icons.info;
-        title = 'Result';
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: Colors.white, size: 28),
-        const SizedBox(width: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+  // ─── UNSUPPORTED CROP ──────────────────────────────────────
+  Widget _buildUnsupportedCard() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Card(
+            color: Colors.blueGrey.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.help_outline,
+                    size: 64,
+                    color: Colors.blueGrey.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Crop Not Recognized',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'This image does not appear to match any of the crops '
+                    'supported by this app. Currently we support:',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildCropChip('🍌', 'Banana'),
+                      _buildCropChip('🫘', 'Beans'),
+                      _buildCropChip('🌽', 'Maize'),
+                      _buildCropChip('🥔', 'Potato'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'If this IS one of these crops, try taking a clearer photo '
+                    'of a single leaf in good lighting.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          _buildPhotoTipsCard(),
+          const SizedBox(height: 16),
+          _buildRetakeButton(),
+        ],
+      ),
     );
   }
 
-  Widget _buildResultBody(BuildContext context) {
-    switch (scanResult.resultType) {
-      case 'disease':
-        return _buildDiseaseResult();
-      case 'healthy':
-        return _buildHealthyResult();
-      case 'uncertain':
-        return _buildUncertainResult();
-      case 'unsupported':
-        return _buildUnsupportedResult();
-      case 'unclear_image':
-        return _buildUnclearImageResult();
-      default:
-        return const Text('Unknown result type');
-    }
-  }
-
-  // ── DISEASE DETECTED ─────────────────────────────────────
-  Widget _buildDiseaseResult() {
-    final info = DiseaseInfo.all[scanResult.className];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Crop and disease info
-        _buildInfoCard(
-          children: [
-            _buildInfoRow('Crop', scanResult.cropName),
-            const SizedBox(height: 8),
-            _buildInfoRow(
-              'Condition',
-              info?.displayName ?? scanResult.diseaseName,
+  // ─── UNKNOWN DISEASE (crop identified, disease not supported) ──
+  Widget _buildUnknownDiseaseCard() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Main alert card
+          Card(
+            color: Colors.deepOrange.shade50,
+            elevation: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.warning_rounded,
+                    size: 64,
+                    color: Colors.deepOrange.shade400,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '${widget.result.cropName} Detected',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ConfidenceBar(
+                    confidence: widget.result.confidence,
+                    label: 'Crop Detection Confidence',
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.deepOrange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.deepOrange.shade300),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.medical_services,
+                          size: 32,
+                          color: Colors.deepOrange,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Your ${widget.result.cropName.toLowerCase()} appears to be unhealthy',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Sadly, the disease or pest affecting your '
+                          '${widget.result.cropName.toLowerCase()} is not currently '
+                          'supported by this app. Our app can only detect the following '
+                          'diseases:',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.deepOrange.shade900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            ConfidenceBar(confidence: scanResult.confidence),
-            if (info != null && info.severity == 'critical') ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade300),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.error, color: Colors.red.shade700),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'CRITICAL — Act immediately!',
+          ),
+
+          const SizedBox(height: 12),
+
+          // Supported diseases for this crop
+          _buildSupportedDiseasesCard(),
+
+          const SizedBox(height: 12),
+
+          // Urgent action card
+          Card(
+            color: Colors.red.shade50,
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.emergency, color: Colors.red.shade700),
+                      const SizedBox(width: 8),
+                      Text(
+                        'What You Should Do',
                         style: TextStyle(
-                          color: Colors.red.shade800,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Colors.red.shade800,
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildActionItem(
+                    Icons.person_search,
+                    'Contact an agricultural professional immediately',
+                    'Visit your local agricultural extension office or '
+                        'RAB center for expert diagnosis.',
+                  ),
+                  _buildActionItem(
+                    Icons.timer,
+                    'Act quickly to prevent spread',
+                    'Isolate affected plants if possible. Do not wait — '
+                        'diseases can spread rapidly.',
+                  ),
+                  _buildActionItem(
+                    Icons.camera_alt,
+                    'Take multiple photos',
+                    'Photograph affected leaves from different angles to '
+                        'show the professional.',
+                  ),
+                  _buildActionItem(
+                    Icons.note_alt,
+                    'Note the symptoms',
+                    'Record when you first noticed the problem, which '
+                        'plants are affected, and how fast it spreads.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Contact info
+          Card(
+            color: Colors.blue.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Icon(Icons.contact_phone, color: Colors.blue.shade700),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Contact Agriculture Professionals',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '• Visit your nearest RAB (Rwanda Agriculture Board) center\n'
+                    '• Contact your sector agronomist\n'
+                    '• Call the agriculture helpline for guidance\n'
+                    '• Visit a local agro-dealer for recommended treatments',
+                    style: TextStyle(fontSize: 13, height: 1.6),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+          _buildRetakeButton(),
+          const SizedBox(height: 8),
+          Text(
+            DiseaseInfo.professionalAdvice,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+              fontStyle: FontStyle.italic,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSupportedDiseasesCard() {
+    final cropName = widget.result.cropName.toLowerCase();
+    final diseases = DiseaseInfo.all.values
+        .where((d) => d.cropName.toLowerCase() == cropName && !d.isHealthy)
+        .toList();
+
+    if (diseases.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Diseases we CAN detect for ${widget.result.cropName}:',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...diseases.map(
+              (d) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: Colors.green.shade600,
                     ),
+                    const SizedBox(width: 8),
+                    Text(d.displayName, style: const TextStyle(fontSize: 13)),
                   ],
                 ),
               ),
-            ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'The condition on your crop does not match any of the above.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 16),
-
-        // What is this?
-        if (info != null) ...[
-          _buildSectionCard(
-            icon: Icons.info_outline,
-            title: 'What is this?',
-            color: Colors.blue,
-            child: Text(
-              info.description,
-              style: const TextStyle(fontSize: 14, height: 1.5),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // What to do
-          _buildSectionCard(
-            icon: Icons.medical_services,
-            title: 'What to do',
-            color: Colors.orange,
-            child: Column(
-              children: info.whatToDo
-                  .map((tip) => _buildBulletItem(tip))
-                  .toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Prevention
-          _buildSectionCard(
-            icon: Icons.shield,
-            title: 'Prevention',
-            color: Colors.green,
-            child: Column(
-              children: info.prevention
-                  .map((tip) => _buildBulletItem(tip))
-                  .toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
-
-        // Professional advice
-        _buildProfessionalAdvice(),
-      ],
-    );
-  }
-
-  // ── HEALTHY CROP ─────────────────────────────────────────
-  Widget _buildHealthyResult() {
-    final info = DiseaseInfo.all[scanResult.className];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildInfoCard(
-          children: [
-            _buildInfoRow('Crop', scanResult.cropName),
-            _buildInfoRow('Condition', 'Healthy'),
-            const SizedBox(height: 12),
-            ConfidenceBar(confidence: scanResult.confidence),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Healthy message
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.green.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.green.shade200),
-          ),
-          child: Column(
-            children: [
-              Icon(Icons.eco, color: Colors.green.shade600, size: 40),
-              const SizedBox(height: 8),
-              Text(
-                'Your ${scanResult.cropName.toLowerCase()} plant looks healthy!',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.green.shade800,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Keep it healthy tips
-        if (info != null)
-          _buildSectionCard(
-            icon: Icons.tips_and_updates,
-            title: 'Keep it Healthy',
-            color: Colors.green,
-            child: Column(
-              children: info.whatToDo
-                  .map((tip) => _buildBulletItem(tip))
-                  .toList(),
-            ),
-          ),
-        const SizedBox(height: 12),
-
-        // Regular check-up advice
-        _buildSectionCard(
-          icon: Icons.calendar_month,
-          title: 'Regular Check-ups',
-          color: Colors.blue,
-          child: Text(
-            DiseaseInfo.healthyCheckup,
-            style: const TextStyle(fontSize: 14, height: 1.5),
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        _buildProfessionalAdvice(),
-      ],
-    );
-  }
-
-  // ── UNCERTAIN (Possible Health Issue) ────────────────────
-  Widget _buildUncertainResult() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.amber.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.amber.shade300),
-          ),
-          child: Column(
-            children: [
-              Icon(Icons.warning_amber, color: Colors.amber.shade700, size: 40),
-              const SizedBox(height: 12),
-              Text(
-                'The system detected that your crop may not be healthy, '
-                'but could not identify the specific disease with enough confidence.',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.amber.shade900,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'This could mean the disease or pest affecting your crop '
-                'is not yet in our database.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.amber.shade800,
-                  height: 1.4,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        _buildSectionCard(
-          icon: Icons.medical_services,
-          title: 'What To Do',
-          color: Colors.red,
-          child: Column(
-            children: [
-              _buildBulletItem(
-                'Do NOT ignore this — your crop may need urgent care',
-              ),
-              _buildBulletItem(
-                'Contact your nearest agricultural extension officer as soon as possible',
-              ),
-              _buildBulletItem(
-                'Take the affected leaf or plant sample to a local agricultural center',
-              ),
-              _buildBulletItem(
-                'Take clear photos of the symptoms from different angles to show the expert',
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        _buildFindHelpCard(),
-      ],
-    );
-  }
-
-  // ── UNSUPPORTED CROP ─────────────────────────────────────
-  Widget _buildUnsupportedResult() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.blueGrey.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blueGrey.shade200),
-          ),
-          child: Column(
-            children: [
-              Icon(Icons.block, color: Colors.blueGrey.shade600, size: 40),
-              const SizedBox(height: 12),
-              Text(
-                'This crop is not currently supported by the system.',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blueGrey.shade800,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Supported crops list
-        _buildSectionCard(
-          icon: Icons.eco,
-          title: 'Supported Crops',
-          color: Colors.green,
-          child: Column(
-            children: [
-              _buildCropItem(
-                '🍌',
-                'Banana',
-                'Cordana, Pestalotiopsis, Sigatoka',
-              ),
-              _buildCropItem('🫘', 'Beans', 'Angular Leaf Spot, Rust'),
-              _buildCropItem(
-                '🌽',
-                'Maize',
-                'Common Rust, Gray Leaf Spot, Northern Leaf Blight',
-              ),
-              _buildCropItem('🥔', 'Potato', 'Early Blight, Late Blight'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            'If you are scanning one of these crops and got this message, '
-            'please try again with a clearer photo of a single leaf.',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade700,
-              height: 1.4,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        _buildFindHelpCard(),
-      ],
-    );
-  }
-
-  // ── UNCLEAR IMAGE ────────────────────────────────────────
-  Widget _buildUnclearImageResult() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Column(
-            children: [
-              Icon(Icons.photo_camera, color: Colors.grey.shade600, size: 40),
-              const SizedBox(height: 12),
-              Text(
-                'The image quality is too low for accurate analysis.',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        _buildSectionCard(
-          icon: Icons.tips_and_updates,
-          title: 'Tips for a Better Photo',
-          color: Colors.blue,
-          child: Column(
-            children: [
-              _buildBulletItem('Hold the phone steady to avoid blur'),
-              _buildBulletItem('Use natural daylight (not direct sunlight)'),
-              _buildBulletItem('Focus on a single leaf'),
-              _buildBulletItem('Make sure the leaf fills most of the frame'),
-              _buildBulletItem('Avoid shadows on the leaf'),
-              _buildBulletItem('Clean the camera lens'),
-              _buildBulletItem('Keep 15-20 cm distance from the leaf'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── SHARED WIDGETS ───────────────────────────────────────
-
-  Widget _buildInfoCard({required List<Widget> children}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      children: [
-        Text(
-          '$label: ',
-          style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
-        ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionCard({
-    required IconData icon,
-    required String title,
-    required Color color,
-    required Widget child,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 22),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBulletItem(String text) {
+  Widget _buildActionItem(IconData icon, String title, String subtitle) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 6),
-            child: Icon(Icons.circle, size: 6, color: Colors.grey),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 14, height: 1.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCropItem(String emoji, String name, String diseases) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
+          Icon(icon, size: 22, color: Colors.red.shade600),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  title,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
                     fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
-                  diseases,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  subtitle,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                 ),
               ],
             ),
@@ -656,143 +535,303 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfessionalAdvice() {
-    return Container(
-      width: double.infinity,
+  // ─── UNCERTAIN ─────────────────────────────────────────────
+  Widget _buildUncertainCard() {
+    return Padding(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
-      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.person, color: Colors.blue.shade700, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Consult a Professional',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade800,
-                  fontSize: 14,
-                ),
+          Card(
+            color: Colors.amber.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    size: 48,
+                    color: Colors.amber.shade700,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Uncertain Result',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The app thinks this might be '
+                    '${widget.result.cropName} (${widget.result.diseaseName}), '
+                    'but confidence is low at '
+                    '${(widget.result.confidence * 100).toStringAsFixed(1)}%.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  ConfidenceBar(
+                    confidence: widget.result.confidence,
+                    label: 'Confidence',
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
+          const SizedBox(height: 12),
+          _buildPhotoTipsCard(),
+          const SizedBox(height: 16),
+          _buildRetakeButton(),
           const SizedBox(height: 8),
           Text(
             DiseaseInfo.professionalAdvice,
             style: TextStyle(
-              fontSize: 13,
-              color: Colors.blue.shade900,
-              height: 1.4,
+              fontSize: 11,
+              color: Colors.grey.shade500,
+              fontStyle: FontStyle.italic,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFindHelpCard() {
-    return Container(
-      width: double.infinity,
+  // ─── CONFIDENT RESULT (healthy or known disease) ───────────
+  Widget _buildConfidentResult() {
+    final key =
+        '${widget.result.cropName.toLowerCase()}_${widget.result.diseaseName.toLowerCase().replaceAll(' ', '_')}';
+    final diseaseInfo = DiseaseInfo.all[key];
+
+    return Padding(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.shade200),
-      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.local_hospital, color: Colors.red.shade700, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Find Help',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red.shade800,
-                  fontSize: 14,
+          // Main result card
+          Card(
+            color: widget.result.resultType == 'healthy'
+                ? Colors.green.shade50
+                : Colors.orange.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(
+                    widget.result.resultType == 'healthy' ? '✅' : '⚠️',
+                    style: const TextStyle(fontSize: 40),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.result.resultType == 'healthy'
+                        ? '${widget.result.cropName} - Healthy'
+                        : '${widget.result.cropName} - ${widget.result.diseaseName}',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  ConfidenceBar(
+                    confidence: widget.result.confidence,
+                    label: 'Detection Confidence',
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          if (diseaseInfo != null) ...[
+            const SizedBox(height: 12),
+            _buildDiseaseInfoCard(diseaseInfo),
+          ],
+
+          const SizedBox(height: 12),
+          _buildTopPredictions(),
+
+          const SizedBox(height: 16),
+          Text(
+            DiseaseInfo.professionalAdvice,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+              fontStyle: FontStyle.italic,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiseaseInfoCard(DiseaseInfo info) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              info.description,
+              style: const TextStyle(fontSize: 14, height: 1.5),
+            ),
+            const Divider(height: 24),
+            const Text(
+              '🛠️ What To Do',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...info.whatToDo.map(
+              (tip) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(fontSize: 14)),
+                    Expanded(
+                      child: Text(tip, style: const TextStyle(fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (!info.isHealthy) ...[
+              const Divider(height: 24),
+              const Text(
+                '🛡️ Prevention',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...info.prevention.map(
+                (tip) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('• ', style: TextStyle(fontSize: 14)),
+                      Expanded(
+                        child: Text(tip, style: const TextStyle(fontSize: 13)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 10),
-          _buildBulletItem(
-            'Contact your nearest agricultural extension officer',
-          ),
-          _buildBulletItem(
-            'Visit your local RAB (Rwanda Agriculture Board) center',
-          ),
-          _buildBulletItem(
-            'Bring a sample of the affected plant for examination',
-          ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopPredictions() {
+    final sorted = widget.result.allProbabilities.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top5 = sorted.take(5).toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Top Predictions',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ...top5.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: ConfidenceBar(
+                  confidence: entry.value,
+                  label: entry.key.replaceAll('_', ' '),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── SHARED WIDGETS ────────────────────────────────────────
+  Widget _buildPhotoTipsCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.lightbulb_outline, color: Colors.amber.shade700),
+                const SizedBox(width: 8),
+                const Text(
+                  'Tips for Better Photos',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTip(
+              Icons.wb_sunny_outlined,
+              'Take photos in natural daylight',
+            ),
+            _buildTip(
+              Icons.center_focus_strong,
+              'Focus on a single leaf, fill the frame',
+            ),
+            _buildTip(Icons.straighten, 'Hold phone 15-30cm from the leaf'),
+            _buildTip(Icons.blur_off, 'Hold steady to avoid blur'),
+            _buildTip(Icons.contrast, 'Use a plain background if possible'),
+            _buildTip(Icons.crop_original, 'Show the affected area clearly'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTip(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF2E7D32)),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
         ],
       ),
     );
   }
 
-  Widget _buildBottomActions(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          if (scanResult.resultType != 'unclear_image')
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  if (scanResult.id != null) {
-                    final storage = StorageService();
-                    await storage.savePermanently(scanResult.id!);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Saved to history permanently'),
-                        ),
-                      );
-                    }
-                  }
-                },
-                icon: const Icon(Icons.bookmark_add),
-                label: const Text('Save'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2E7D32),
-                  side: const BorderSide(color: Color(0xFF2E7D32)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-          if (scanResult.resultType != 'unclear_image')
-            const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Scan Again'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-        ],
+  Widget _buildCropChip(String emoji, String name) {
+    return Chip(
+      avatar: Text(emoji, style: const TextStyle(fontSize: 18)),
+      label: Text(name),
+      backgroundColor: Colors.green.shade50,
+    );
+  }
+
+  Widget _buildRetakeButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.camera_alt),
+        label: const Text('Take New Photo'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2E7D32),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
       ),
     );
+  }
+
+  Future<void> _saveResult() async {
+    await _storage.saveScan(widget.result);
+    setState(() => _saved = true);
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Result saved!')));
+    }
   }
 }

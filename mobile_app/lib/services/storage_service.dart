@@ -1,14 +1,9 @@
-import 'dart:io';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 import '../models/scan_result.dart';
 
 class StorageService {
   static Database? _database;
-  static const String _tableName = 'scan_history';
-  static const int _autoDeleteDays = 30;
-  static const int _reminderDays = 25;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -22,137 +17,101 @@ class StorageService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE $_tableName (
+          CREATE TABLE scan_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            imagePath TEXT NOT NULL,
-            className TEXT NOT NULL,
             cropName TEXT NOT NULL,
             diseaseName TEXT NOT NULL,
             confidence REAL NOT NULL,
             resultType TEXT NOT NULL,
-            scannedAt TEXT NOT NULL,
+            allProbabilities TEXT NOT NULL DEFAULT '',
+            imagePath TEXT NOT NULL,
+            dateTime TEXT NOT NULL,
             isSaved INTEGER NOT NULL DEFAULT 0
           )
         ''');
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE scan_history ADD COLUMN isSaved INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+        if (oldVersion < 3) {
+          await db.execute(
+            'ALTER TABLE scan_history ADD COLUMN allProbabilities TEXT NOT NULL DEFAULT \'\'',
+          );
+          // className column remains but is no longer used
+        }
+      },
     );
   }
 
-  Future<int> saveScan(ScanResult result) async {
+  /// Save a ScanResult to the database
+  Future<ScanResult> saveScan(ScanResult result) async {
     final db = await database;
-    return await db.insert(_tableName, result.toMap());
+    final map = result.toMap();
+    final id = await db.insert('scan_history', map);
+
+    return ScanResult(
+      id: id,
+      imagePath: result.imagePath,
+      cropName: result.cropName,
+      diseaseName: result.diseaseName,
+      confidence: result.confidence,
+      resultType: result.resultType,
+      allProbabilities: result.allProbabilities,
+      dateTime: result.dateTime,
+      isSaved: false,
+    );
   }
 
-  Future<List<ScanResult>> getAllScans() async {
-    final db = await database;
-    final maps = await db.query(_tableName, orderBy: 'scannedAt DESC');
-    return maps.map((m) => ScanResult.fromMap(m)).toList();
-  }
-
+  /// Get recent scans (all scans, ordered by most recent)
   Future<List<ScanResult>> getRecentScans() async {
     final db = await database;
-    final maps = await db.query(
-      _tableName,
-      where: 'isSaved = 0',
-      orderBy: 'scannedAt DESC',
-    );
+    final maps = await db.query('scan_history', orderBy: 'id DESC', limit: 50);
     return maps.map((m) => ScanResult.fromMap(m)).toList();
   }
 
+  /// Get only permanently saved scans
   Future<List<ScanResult>> getSavedScans() async {
     final db = await database;
     final maps = await db.query(
-      _tableName,
-      where: 'isSaved = 1',
-      orderBy: 'scannedAt DESC',
+      'scan_history',
+      where: 'isSaved = ?',
+      whereArgs: [1],
+      orderBy: 'id DESC',
     );
     return maps.map((m) => ScanResult.fromMap(m)).toList();
   }
 
+  /// Mark a scan as permanently saved
   Future<void> savePermanently(int id) async {
     final db = await database;
     await db.update(
-      _tableName,
+      'scan_history',
       {'isSaved': 1},
       where: 'id = ?',
       whereArgs: [id],
     );
   }
 
+  /// Delete a single scan by id
   Future<void> deleteScan(int id) async {
     final db = await database;
-    final maps = await db.query(_tableName, where: 'id = ?', whereArgs: [id]);
-    if (maps.isNotEmpty) {
-      final imagePath = maps[0]['imagePath'] as String;
-      final file = File(imagePath);
-      if (await file.exists()) {
-        await file.delete();
-      }
-    }
-    await db.delete(_tableName, where: 'id = ?', whereArgs: [id]);
+    await db.delete('scan_history', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<int> autoDeleteOldScans() async {
+  /// Get all history
+  Future<List<ScanResult>> getHistory() async {
+    return getRecentScans();
+  }
+
+  /// Clear all history
+  Future<void> clearHistory() async {
     final db = await database;
-    final cutoff = DateTime.now().subtract(
-      const Duration(days: _autoDeleteDays),
-    );
-
-    final maps = await db.query(
-      _tableName,
-      where: 'isSaved = 0 AND scannedAt < ?',
-      whereArgs: [cutoff.toIso8601String()],
-    );
-
-    for (final map in maps) {
-      final imagePath = map['imagePath'] as String;
-      final file = File(imagePath);
-      if (await file.exists()) {
-        await file.delete();
-      }
-    }
-
-    return await db.delete(
-      _tableName,
-      where: 'isSaved = 0 AND scannedAt < ?',
-      whereArgs: [cutoff.toIso8601String()],
-    );
-  }
-
-  Future<List<ScanResult>> getExpiringScans() async {
-    final db = await database;
-    final reminderCutoff = DateTime.now().subtract(
-      const Duration(days: _reminderDays),
-    );
-    final deleteCutoff = DateTime.now().subtract(
-      const Duration(days: _autoDeleteDays),
-    );
-
-    final maps = await db.query(
-      _tableName,
-      where: 'isSaved = 0 AND scannedAt < ? AND scannedAt >= ?',
-      whereArgs: [
-        reminderCutoff.toIso8601String(),
-        deleteCutoff.toIso8601String(),
-      ],
-      orderBy: 'scannedAt ASC',
-    );
-    return maps.map((m) => ScanResult.fromMap(m)).toList();
-  }
-
-  Future<String> saveImage(File imageFile) async {
-    final appDir = await getApplicationDocumentsDirectory();
-    final imagesDir = Directory(join(appDir.path, 'scan_images'));
-    if (!await imagesDir.exists()) {
-      await imagesDir.create(recursive: true);
-    }
-
-    final fileName =
-        'scan_${DateTime.now().millisecondsSinceEpoch}${extension(imageFile.path)}';
-    final savedFile = await imageFile.copy(join(imagesDir.path, fileName));
-    return savedFile.path;
+    await db.delete('scan_history');
   }
 }

@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.pestdetection.crop_doctor"
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -31,6 +31,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    aaptOptions {
+        noCompress += "tflite"
+    }
 }
 
 flutter {
@@ -39,5 +43,4 @@ flutter {
 
 dependencies {
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.14.0")
 }
