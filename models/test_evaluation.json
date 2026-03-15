@@ -1,0 +1,34 @@
+{
+  "test_loss": 0.1146,
+  "test_accuracy": 0.9737,
+  "test_top3_accuracy": 0.9982,
+  "macro_precision": 0.9667,
+  "macro_recall": 0.9713,
+  "macro_f1": 0.9685,
+  "weighted_precision": 0.9747,
+  "weighted_recall": 0.9737,
+  "weighted_f1": 0.9738,
+  "confidence_thresholds": {
+    "0.5": {
+      "accuracy": 0.9737,
+      "coverage": 1.0,
+      "count": 2171
+    },
+    "0.6": {
+      "accuracy": 0.9755,
+      "coverage": 0.9954,
+      "count": 2161
+    },
+    "0.7": {
+      "accuracy": 0.9781,
+      "coverage": 0.9889,
+      "count": 2147
+    },
+    "0.8": {
+      "accuracy": 0.9822,
+      "coverage": 0.9811,
+      "count": 2130
+    }
+  },
+  "recommended_app_threshold": 0.6
+}

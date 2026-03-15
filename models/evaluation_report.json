@@ -1,9 +1,13 @@
 {
   "model": "MobileNetV2 (4-crop)",
   "model_path": "best_model.keras",
-  "test_accuracy": 0.9243,
-  "top3_accuracy": 0.9979,
-  "top5_accuracy": 1.0,
+  "test_accuracy": 0.9737,
+  "test_accuracy_tta": 0.9784,
+  "tta_augments": 5,
+  "top3_accuracy": 0.9982,
+  "top5_accuracy": 0.9991,
+  "top3_accuracy_tta": 0.9977,
+  "top5_accuracy_tta": 1.0,
   "num_classes": 14,
   "crops": [
     "banana",
@@ -11,110 +15,186 @@
     "maize",
     "potato"
   ],
-  "total_test_images": 1401,
-  "average_confidence": 0.9521,
+  "total_test_images": 2171,
+  "average_confidence": 0.983,
   "recommended_threshold": 0.7,
   "confidence_thresholds": {
     "0.5": {
-      "accuracy": 0.9254,
-      "coverage": 0.9957,
-      "count": 1395
+      "accuracy": 0.9815,
+      "coverage": 0.9945,
+      "count": 2159
     },
     "0.6": {
-      "accuracy": 0.9348,
-      "coverage": 0.9743,
-      "count": 1365
+      "accuracy": 0.9837,
+      "coverage": 0.9862,
+      "count": 2141
     },
     "0.7": {
-      "accuracy": 0.9445,
-      "coverage": 0.9393,
-      "count": 1316
+      "accuracy": 0.9877,
+      "coverage": 0.9774,
+      "count": 2122
     },
     "0.8": {
-      "accuracy": 0.9542,
-      "coverage": 0.9029,
-      "count": 1265
+      "accuracy": 0.9905,
+      "coverage": 0.9687,
+      "count": 2103
     },
     "0.9": {
-      "accuracy": 0.9714,
-      "coverage": 0.8473,
-      "count": 1187
+      "accuracy": 0.9932,
+      "coverage": 0.9503,
+      "count": 2063
     }
   },
   "per_class": {
     "banana_cordana": {
-      "accuracy": 0.9765,
-      "count": 85
+      "accuracy": 0.8976,
+      "count": 127
     },
     "banana_healthy": {
-      "accuracy": 0.9589,
-      "count": 73
+      "accuracy": 0.9912,
+      "count": 114
     },
     "banana_pestalotiopsis": {
-      "accuracy": 0.8391,
-      "count": 87
+      "accuracy": 0.9924,
+      "count": 132
     },
     "banana_sigatoka": {
-      "accuracy": 1.0,
-      "count": 72
+      "accuracy": 0.9379,
+      "count": 161
     },
     "beans_angular_leaf_spot": {
-      "accuracy": 0.7627,
-      "count": 59
+      "accuracy": 1.0,
+      "count": 122
     },
     "beans_healthy": {
-      "accuracy": 1.0,
-      "count": 59
+      "accuracy": 0.9854,
+      "count": 137
     },
     "beans_rust": {
-      "accuracy": 0.9167,
-      "count": 60
+      "accuracy": 0.9747,
+      "count": 198
     },
     "maize_common_rust": {
-      "accuracy": 0.9944,
-      "count": 180
+      "accuracy": 0.989,
+      "count": 182
     },
     "maize_gray_leaf_spot": {
-      "accuracy": 0.8974,
-      "count": 78
+      "accuracy": 0.9136,
+      "count": 81
     },
     "maize_healthy": {
-      "accuracy": 0.9943,
-      "count": 175
+      "accuracy": 0.9948,
+      "count": 191
     },
     "maize_northern_leaf_blight": {
-      "accuracy": 0.7718,
-      "count": 149
+      "accuracy": 0.9474,
+      "count": 152
     },
     "potato_early_blight": {
-      "accuracy": 1.0,
-      "count": 150
+      "accuracy": 0.9868,
+      "count": 228
     },
     "potato_healthy": {
       "accuracy": 1.0,
-      "count": 24
+      "count": 43
     },
     "potato_late_blight": {
-      "accuracy": 0.84,
-      "count": 150
+      "accuracy": 0.9868,
+      "count": 303
+    }
+  },
+  "per_class_tta": {
+    "banana_cordana": {
+      "accuracy": 0.9055,
+      "count": 127
+    },
+    "banana_healthy": {
+      "accuracy": 0.9912,
+      "count": 114
+    },
+    "banana_pestalotiopsis": {
+      "accuracy": 0.9924,
+      "count": 132
+    },
+    "banana_sigatoka": {
+      "accuracy": 0.9503,
+      "count": 161
+    },
+    "beans_angular_leaf_spot": {
+      "accuracy": 1.0,
+      "count": 122
+    },
+    "beans_healthy": {
+      "accuracy": 0.9854,
+      "count": 137
+    },
+    "beans_rust": {
+      "accuracy": 0.9899,
+      "count": 198
+    },
+    "maize_common_rust": {
+      "accuracy": 0.9835,
+      "count": 182
+    },
+    "maize_gray_leaf_spot": {
+      "accuracy": 0.9259,
+      "count": 81
+    },
+    "maize_healthy": {
+      "accuracy": 0.9895,
+      "count": 191
+    },
+    "maize_northern_leaf_blight": {
+      "accuracy": 0.9671,
+      "count": 152
+    },
+    "potato_early_blight": {
+      "accuracy": 0.9868,
+      "count": 228
+    },
+    "potato_healthy": {
+      "accuracy": 1.0,
+      "count": 43
+    },
+    "potato_late_blight": {
+      "accuracy": 0.9934,
+      "count": 303
     }
   },
   "per_crop": {
     "Banana": {
-      "accuracy": 0.9401,
-      "count": 317
+      "accuracy": 0.9532,
+      "count": 534
     },
     "Beans": {
-      "accuracy": 0.8933,
-      "count": 178
+      "accuracy": 0.9847,
+      "count": 457
     },
     "Maize": {
-      "accuracy": 0.9244,
-      "count": 582
+      "accuracy": 0.9703,
+      "count": 606
     },
     "Potato": {
-      "accuracy": 0.9259,
-      "count": 324
+      "accuracy": 0.9878,
+      "count": 574
+    }
+  },
+  "per_crop_tta": {
+    "Banana": {
+      "accuracy": 0.9588,
+      "count": 534
+    },
+    "Beans": {
+      "accuracy": 0.9912,
+      "count": 457
+    },
+    "Maize": {
+      "accuracy": 0.9736,
+      "count": 606
+    },
+    "Potato": {
+      "accuracy": 0.9913,
+      "count": 574
     }
   }
 }

@@ -87,7 +87,9 @@ def get_representative_images(num_samples=100):
                 os.path.join(cls_dir, fname),
                 target_size=(IMG_SIZE, IMG_SIZE),
             )
-            img_array = tf.keras.utils.img_to_array(img) / 255.0
+            # MobileNetV2 expects inputs normalized to [-1, 1].
+            img_array = tf.keras.utils.img_to_array(img)
+            img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
             images.append(img_array)
     return np.array(images, dtype=np.float32)
 
@@ -163,6 +165,7 @@ del tflite_f16
 gc.collect()
 
 # Free the Keras model from memory
+model_params = model.count_params()
 del model
 gc.collect()
 
@@ -184,7 +187,9 @@ for cls_name in CLASS_NAMES:
             os.path.join(cls_dir, fname),
             target_size=(IMG_SIZE, IMG_SIZE),
         )
-        img_array = tf.keras.utils.img_to_array(img) / 255.0
+        # MobileNetV2 expects inputs normalized to [-1, 1].
+        img_array = tf.keras.utils.img_to_array(img)
+        img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
         test_images.append(img_array)
         test_labels.append(cls_idx)
 
@@ -264,7 +269,7 @@ gc.collect()
 print("\n[6/6] Generating comparison report ...", flush=True)
 
 # FIX 2: Read evaluation report with correct key name
-eval_report_path = os.path.join(MODEL_DIR, "evaluation_report.json")
+eval_report_path = os.path.join(MODEL_DIR, "test_evaluation.json")
 keras_acc = None
 if os.path.exists(eval_report_path):
     with open(eval_report_path) as f:
@@ -347,7 +352,7 @@ comparison = {
         "file": "best_model.keras",
         "size_mb": round(float(keras_size), 2),
         "accuracy": float(keras_acc) if keras_acc else None,
-        "params": model.count_params() if 'model' in dir() else 2589518,
+        "params": model_params,
     },
     "tflite_models": results,
     "recommended": best_name,

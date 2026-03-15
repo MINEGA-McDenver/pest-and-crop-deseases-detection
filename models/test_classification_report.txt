@@ -1,0 +1,31 @@
+Independent Test Set Report
+Model: D:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\pest-and-crop-deseases-detection\models\best_model.keras
+Test accuracy: 0.9737
+Test top-3 accuracy: 0.9982
+Macro precision: 0.9667
+Macro recall: 0.9713
+Macro F1: 0.9685
+Weighted precision: 0.9747
+Weighted recall: 0.9737
+Weighted F1: 0.9738
+
+                            precision    recall  f1-score   support
+
+            banana_cordana     0.9828    0.8976    0.9383       127
+            banana_healthy     0.9912    0.9912    0.9912       114
+     banana_pestalotiopsis     0.8792    0.9924    0.9324       132
+           banana_sigatoka     0.9618    0.9379    0.9497       161
+   beans_angular_leaf_spot     0.9839    1.0000    0.9919       122
+             beans_healthy     0.9926    0.9854    0.9890       137
+                beans_rust     0.9897    0.9747    0.9822       198
+         maize_common_rust     0.9890    0.9890    0.9890       182
+      maize_gray_leaf_spot     0.8916    0.9136    0.9024        81
+             maize_healthy     0.9948    0.9948    0.9948       191
+maize_northern_leaf_blight     0.9536    0.9474    0.9505       152
+       potato_early_blight     0.9956    0.9868    0.9912       228
+            potato_healthy     0.9348    1.0000    0.9663        43
+        potato_late_blight     0.9934    0.9868    0.9901       303
+
+                  accuracy                         0.9737      2171
+                 macro avg     0.9667    0.9713    0.9685      2171
+              weighted avg     0.9747    0.9737    0.9738      2171

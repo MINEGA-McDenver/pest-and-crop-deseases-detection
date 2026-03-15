@@ -1,27 +1,52 @@
 4-Crop Model Test Evaluation
 Model: D:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\pest-and-crop-deseases-detection\models\best_model.keras
-Test Accuracy: 92.43%
-Top-3 Accuracy: 99.79%
-Top-5 Accuracy: 100.00%
+Test Accuracy: 97.37%
+Test Accuracy (TTA): 97.84%
+Top-3 Accuracy: 99.82%
+Top-5 Accuracy: 99.91%
 Recommended Confidence Threshold: 70%
 
+=== Standard (no TTA) ===
                             precision    recall  f1-score   support
 
-            banana_cordana       0.95      0.98      0.97        85
-            banana_healthy       1.00      0.96      0.98        73
-     banana_pestalotiopsis       0.99      0.84      0.91        87
-           banana_sigatoka       0.84      1.00      0.91        72
-   beans_angular_leaf_spot       0.98      0.76      0.86        59
-             beans_healthy       0.91      1.00      0.95        59
-                beans_rust       0.86      0.92      0.89        60
-         maize_common_rust       0.95      0.99      0.97       180
-      maize_gray_leaf_spot       0.74      0.90      0.81        78
-             maize_healthy       0.99      0.99      0.99       175
-maize_northern_leaf_blight       0.93      0.77      0.84       149
-       potato_early_blight       0.90      1.00      0.95       150
-            potato_healthy       0.75      1.00      0.86        24
-        potato_late_blight       0.99      0.84      0.91       150
+            banana_cordana       0.98      0.90      0.94       127
+            banana_healthy       0.99      0.99      0.99       114
+     banana_pestalotiopsis       0.88      0.99      0.93       132
+           banana_sigatoka       0.96      0.94      0.95       161
+   beans_angular_leaf_spot       0.98      1.00      0.99       122
+             beans_healthy       0.99      0.99      0.99       137
+                beans_rust       0.99      0.97      0.98       198
+         maize_common_rust       0.99      0.99      0.99       182
+      maize_gray_leaf_spot       0.89      0.91      0.90        81
+             maize_healthy       0.99      0.99      0.99       191
+maize_northern_leaf_blight       0.95      0.95      0.95       152
+       potato_early_blight       1.00      0.99      0.99       228
+            potato_healthy       0.93      1.00      0.97        43
+        potato_late_blight       0.99      0.99      0.99       303
 
-                  accuracy                           0.92      1401
-                 macro avg       0.91      0.93      0.91      1401
-              weighted avg       0.93      0.92      0.92      1401
+                  accuracy                           0.97      2171
+                 macro avg       0.97      0.97      0.97      2171
+              weighted avg       0.97      0.97      0.97      2171
+
+=== With TTA (5 augmentations) ===
+                            precision    recall  f1-score   support
+
+            banana_cordana       0.99      0.91      0.95       127
+            banana_healthy       0.99      0.99      0.99       114
+     banana_pestalotiopsis       0.89      0.99      0.94       132
+           banana_sigatoka       0.96      0.95      0.96       161
+   beans_angular_leaf_spot       0.98      1.00      0.99       122
+             beans_healthy       1.00      0.99      0.99       137
+                beans_rust       0.99      0.99      0.99       198
+         maize_common_rust       1.00      0.98      0.99       182
+      maize_gray_leaf_spot       0.89      0.93      0.91        81
+             maize_healthy       1.00      0.99      0.99       191
+maize_northern_leaf_blight       0.96      0.97      0.96       152
+       potato_early_blight       1.00      0.99      0.99       228
+            potato_healthy       0.98      1.00      0.99        43
+        potato_late_blight       0.99      0.99      0.99       303
+
+                  accuracy                           0.98      2171
+                 macro avg       0.97      0.98      0.97      2171
+              weighted avg       0.98      0.98      0.98      2171
+

@@ -16,10 +16,15 @@ class ClassifierService {
   static const double temperatureScaling = 1.8;
 
   // Thresholds
-  static const double confidentClassThreshold = 0.45;
+  static const double confidentClassThreshold = 0.70;
   static const double cropTotalThreshold = 0.55;
   static const double uncertainGapThreshold = 0.10;
   static const double imageQualityMinStdDev = 15.0;
+  // SAFETY: "Healthy" predictions need higher confidence than disease predictions.
+  // If the model says healthy with only 55% confidence and the farmer trusts it,
+  // they won't treat a diseased crop — and will lose their harvest.
+  // Below this threshold, we say "Likely Healthy — verify manually" instead.
+  static const double healthyMinConfidence = 0.80;
 
   // Crop grouping: maps each label to its crop
   static const Map<String, String> cropGrouping = {
@@ -52,7 +57,7 @@ class ClassifierService {
 
     try {
       _interpreter = await Interpreter.fromAsset(
-        'models/crop_disease_model.tflite',
+        'assets/models/crop_disease_model.tflite',
       );
 
       final labelData = await rootBundle.loadString('assets/models/labels.txt');
@@ -149,6 +154,7 @@ class ClassifierService {
     for (int y = 0; y < inputSize; y++) {
       for (int x = 0; x < inputSize; x++) {
         final pixel = resized.getPixel(x, y);
+        // MobileNetV2 expects normalized input in [-1, 1].
         input[pixelIndex++] = (pixel.r / 127.5) - 1.0;
         input[pixelIndex++] = (pixel.g / 127.5) - 1.0;
         input[pixelIndex++] = (pixel.b / 127.5) - 1.0;
@@ -158,13 +164,19 @@ class ClassifierService {
   }
 
   // ─── Softmax with Temperature ───────────────────────────────
+  // The TFLite model outputs softmax probabilities, not raw logits.
+  // To apply temperature scaling correctly, convert to log-space first:
+  //   scaled[i] = log(p[i]) / T   →  then softmax
+  // This is equivalent to p[i]^(1/T) normalised.
+  // With T=1.8 (>1) it reduces overconfidence — e.g. 98% → ~74% — without
+  // collapsing the distribution as dividing raw probabilities would (98% → 12%).
   List<double> _applySoftmaxWithTemperature(
-    List<double> logits,
+    List<double> probs,
     double temperature,
   ) {
-    final scaled = logits.map((l) => l / temperature).toList();
-    final maxVal = scaled.reduce(max);
-    final exps = scaled.map((s) => exp(s - maxVal)).toList();
+    final logProbs = probs.map((p) => log(max(p, 1e-10)) / temperature).toList();
+    final maxVal = logProbs.reduce(max);
+    final exps = logProbs.map((l) => exp(l - maxVal)).toList();
     final sumExps = exps.reduce((a, b) => a + b);
     return exps.map((e) => e / sumExps).toList();
   }
@@ -324,21 +336,36 @@ class ClassifierService {
         );
       }
 
-      // The crop has some condition but confidence is too low to determine what
-      // This could be an unsupported disease/pest
+      // The crop is likely supported, but the class confidence is too low to
+      // name a specific condition safely.
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
         diseaseName: 'Unidentified Condition',
         confidence: bestClassProb,
-        resultType: 'unknown_disease',
+        resultType: 'uncertain',
         allProbabilities: allProbs,
         dateTime: DateTime.now().toIso8601String(),
       );
     }
 
-    // 6e: Confident prediction — check if it's in our disease database
+    // 6e: SAFETY GATE — healthy predictions need 80% confidence minimum.
+    // A confident disease alert sends the farmer to take action (safe direction).
+    // A wrong "Healthy" alert means the farmer ignores the disease and loses the crop.
     final isHealthy = bestClass.contains('healthy');
+    if (isHealthy && bestClassProb < healthyMinConfidence) {
+      return ScanResult(
+        imagePath: imagePath,
+        cropName: cropDisplayName,
+        diseaseName: 'Likely Healthy — verify manually',
+        confidence: bestClassProb,
+        resultType: 'uncertain',
+        allProbabilities: allProbs,
+        dateTime: DateTime.now().toIso8601String(),
+      );
+    }
+
+    // 6f: Confident prediction — check if it's in our disease database
     final diseaseName = isHealthy ? 'Healthy' : _formatDiseaseName(bestClass);
 
     // Verify the disease exists in our database
