@@ -93,9 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => ResultScreen(result: result),
-          ),
+          MaterialPageRoute(builder: (_) => ResultScreen(result: result)),
         );
       }
     } catch (e) {

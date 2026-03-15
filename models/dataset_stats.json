@@ -1,0 +1,141 @@
+{
+  "train_counts": {
+    "banana_cordana": 2952,
+    "banana_healthy": 2949,
+    "banana_pestalotiopsis": 2966,
+    "banana_sigatoka": 3171,
+    "beans_angular_leaf_spot": 2728,
+    "beans_healthy": 2769,
+    "beans_rust": 3108,
+    "maize_common_rust": 2770,
+    "maize_gray_leaf_spot": 2771,
+    "maize_healthy": 2834,
+    "maize_northern_leaf_blight": 2772,
+    "potato_early_blight": 3122,
+    "potato_healthy": 1036,
+    "potato_late_blight": 3469
+  },
+  "val_counts": {
+    "banana_cordana": 123,
+    "banana_healthy": 112,
+    "banana_pestalotiopsis": 128,
+    "banana_sigatoka": 157,
+    "beans_angular_leaf_spot": 117,
+    "beans_healthy": 131,
+    "beans_rust": 193,
+    "maize_common_rust": 179,
+    "maize_gray_leaf_spot": 77,
+    "maize_healthy": 189,
+    "maize_northern_leaf_blight": 149,
+    "potato_early_blight": 227,
+    "potato_healthy": 39,
+    "potato_late_blight": 300
+  },
+  "test_counts": {
+    "banana_cordana": 127,
+    "banana_healthy": 114,
+    "banana_pestalotiopsis": 132,
+    "banana_sigatoka": 161,
+    "beans_angular_leaf_spot": 122,
+    "beans_healthy": 137,
+    "beans_rust": 198,
+    "maize_common_rust": 182,
+    "maize_gray_leaf_spot": 81,
+    "maize_healthy": 191,
+    "maize_northern_leaf_blight": 152,
+    "potato_early_blight": 228,
+    "potato_healthy": 43,
+    "potato_late_blight": 303
+  },
+  "totals": {
+    "train": 39417,
+    "val": 2121,
+    "test": 2171
+  },
+  "leakage_check": {
+    "by_class": {
+      "banana_cordana": {
+        "train_val_overlap": 1,
+        "train_test_overlap": 4,
+        "val_test_overlap": 2
+      },
+      "banana_healthy": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "banana_pestalotiopsis": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "banana_sigatoka": {
+        "train_val_overlap": 5,
+        "train_test_overlap": 2,
+        "val_test_overlap": 0
+      },
+      "beans_angular_leaf_spot": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "beans_healthy": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "beans_rust": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "maize_common_rust": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "maize_gray_leaf_spot": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "maize_healthy": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "maize_northern_leaf_blight": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "potato_early_blight": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "potato_healthy": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "potato_late_blight": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      }
+    },
+    "totals": {
+      "train_val_overlap": 6,
+      "train_test_overlap": 6,
+      "val_test_overlap": 2
+    }
+  },
+  "augmentation_profile": {
+    "random_flip": true,
+    "random_rotation": 0.05,
+    "random_zoom": 0.1,
+    "random_contrast": 0.2,
+    "random_brightness": 0.2
+  }
+}
