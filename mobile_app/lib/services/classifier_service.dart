@@ -16,9 +16,10 @@ class ClassifierService {
   static const double temperatureScaling = 1.8;
 
   // Thresholds
-  static const double confidentClassThreshold = 0.70;
-  static const double cropTotalThreshold = 0.55;
-  static const double uncertainGapThreshold = 0.10;
+  static const double confidentClassThreshold = 0.80;
+  static const double cropTotalThreshold = 0.65;
+  static const double uncertainGapThreshold = 0.30;
+  static const double maxEntropyThreshold = 1.5;
   static const double imageQualityMinStdDev = 15.0;
   // SAFETY: "Healthy" predictions need higher confidence than disease predictions.
   // If the model says healthy with only 55% confidence and the farmer trusts it,
@@ -208,6 +209,21 @@ class ClassifierService {
     return classes;
   }
 
+  // ─── Shannon Entropy (Uncertainty Measure) ──────────────────
+  // High entropy = spread probabilities = uncertain/noisy image
+  // Low entropy = focused probabilities = confident/clear image
+  // Real crop leaf: entropy ~0.8-1.2
+  // Grass/non-target: entropy ~2.0+
+  double _calculateEntropy(List<double> probabilities) {
+    double entropy = 0.0;
+    for (double p in probabilities) {
+      if (p > 1e-10) {
+        entropy -= p * log(p) / log(2.0); // log2
+      }
+    }
+    return entropy;
+  }
+
   // ─── Main Classification ───────────────────────────────────
   Future<ScanResult> classifyImage(String imagePath) async {
     if (!_isInitialized) await initialize();
@@ -305,6 +321,54 @@ class ClassifierService {
 
     // 6c: Is the crop identification itself uncertain? (two crops too close)
     if (cropGap < uncertainGapThreshold) {
+      return ScanResult(
+        imagePath: imagePath,
+        cropName: cropDisplayName,
+        diseaseName: 'Uncertain',
+        confidence: bestClassProb,
+        resultType: 'uncertain',
+        allProbabilities: allProbs,
+        dateTime: DateTime.now().toIso8601String(),
+      );
+    }
+
+    // 6c-v2: Is the second crop also strong? (multi-crop ambiguity)
+    // If the runner-up crop >10%, the image might not fit either crop well.
+    // Real targeted crops dominate: top crop ~85%, second crop ~3%.
+    // Non-target/grass images often spread probability: top ~80%, second ~16%.
+    if (secondCropTotal > 0.10) {
+      return ScanResult(
+        imagePath: imagePath,
+        cropName: cropDisplayName,
+        diseaseName: 'Uncertain',
+        confidence: bestClassProb,
+        resultType: 'uncertain',
+        allProbabilities: allProbs,
+        dateTime: DateTime.now().toIso8601String(),
+      );
+    }
+
+    // 6c-v3: Is the model internally uncertain? (entropy check)
+    // Entropy measures probability spread. High entropy = confused model.
+    // Real crops: entropy ~0.6-1.2. Grass/non-target: entropy ~2.0+
+    final entropy = _calculateEntropy(probabilities);
+    if (entropy > maxEntropyThreshold) {
+      return ScanResult(
+        imagePath: imagePath,
+        cropName: cropDisplayName,
+        diseaseName: 'Uncertain',
+        confidence: bestClassProb,
+        resultType: 'uncertain',
+        allProbabilities: allProbs,
+        dateTime: DateTime.now().toIso8601String(),
+      );
+    }
+
+    // 6c-plus: Does the best class strongly dominate within the crop?
+    // If class probabilities are spread out, the model is unsure (look-alike leaf).
+    // Real predictions have one dominant class; spread distribution = hedging.
+    final classTotalRatio = bestClassProb / bestCropTotal;
+    if (classTotalRatio < 0.60) {
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,

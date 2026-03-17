@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/scan_result.dart';
 import '../services/storage_service.dart';
+import 'result_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -30,7 +31,9 @@ class _HistoryScreenState extends State<HistoryScreen>
     setState(() => _isLoading = true);
     _recentScans = await _storage.getRecentScans();
     _savedScans = await _storage.getSavedScans();
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -141,7 +144,13 @@ class _HistoryScreenState extends State<HistoryScreen>
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          // Could navigate to detail view
+          // Navigate to result detail view
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ResultScreen(result: scan),
+            ),
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(12),
