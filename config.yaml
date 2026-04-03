@@ -1,0 +1,124 @@
+# ──────────────────────────────────────────────────────────────────
+#  Crop Disease Detection — Training Configuration
+#  4 crops: Banana, Beans, Maize, Potato  |  15 classes
+# ──────────────────────────────────────────────────────────────────
+
+paths:
+  datasets: "datasets/model_ready"
+  models: "models"
+  scripts: "scripts"
+
+dataset:
+  train: "train"
+  val: "val"
+  test: "test"
+  image_size: [224, 224]
+  seed: 42
+
+training:
+  # CPU-only / 8 GB RAM: batch_cpu=8 keeps memory safe.
+  batch_size_gpu: 32        # IMP1: was 16
+  batch_size_cpu: 8
+
+  phase1_epochs: 20         # slightly increased — dual early stopping cuts short anyway
+  phase2_epochs: 35
+
+  init_lr: 5.0e-4           # IMP: was 1e-3 — val_acc was oscillating at epochs 2-4
+  fine_lr: 1.0e-5
+
+  # IMP6: Dual-metric early stopping replaces the single `patience` value.
+  # patience_acc  — stops when val_accuracy stalls for N epochs
+  # patience_loss — ALSO stops when val_loss   stalls for N epochs
+  # Whichever fires first wins. Weights are restored to best val_accuracy epoch.
+  patience_acc:  5          # replaces old patience: 7
+  patience_loss: 7
+
+  max_class_weight: 2.0     # IMP: was null — uncapped sqrt weights (3.5-6.1) add noise
+                             # on your balanced dataset; cap of 2.0 is enough
+
+  # IMP3: Label smoothing.
+  # Replaces hard 0/1 targets with soft values — prevents overconfident softmax,
+  # improves ECE calibration, regularises on noisy real-field photos.
+  label_smoothing: 0.1
+
+model:
+  architecture: "MobileNetV2"
+  fine_tune_from: 100       # IMP: was 80 — keeps more early layers frozen,
+                             # reduces overfitting risk during fine-tuning
+  dropout_rate: 0.2
+  dense_units: 256
+
+# ── Augmentation ────────────────────────────────────────────────────
+# IMP2: Split into phase1 (light) and phase2 (full) instead of one global profile.
+#
+# Phase 1 (frozen backbone): light augmentation.
+#   The randomly-initialised head needs a reasonably clean loss signal
+#   to converge. Heavy noise/translation slow convergence at this stage.
+#
+# Phase 2 (fine-tuning): full field-robust augmentation.
+#   Once the head is stable, stronger augmentation teaches the backbone
+#   to handle real-field conditions (blur, shadows, angle variation).
+
+augmentation:
+
+  phase1:
+    rotation: 0.05          # your original value — fine for Phase 1
+    zoom: 0.10
+    contrast: 0.15          # slightly reduced from 0.20 for cleaner head signal
+    brightness: 0.15        # slightly reduced from 0.20
+    noise: 0.00             # DISABLED in Phase 1 — head can't learn through noise yet
+    translation: 0.00       # DISABLED in Phase 1
+
+  phase2:
+    rotation: 0.10          # increased vs Phase 1 for field robustness
+    zoom: 0.15
+    contrast: 0.20          # your original value
+    brightness: 0.20        # your original value
+    noise: 0.02             # reduced from 0.05 — still adds sensor noise, less harsh
+    translation: 0.05       # reduced from 0.10
+
+  # IMP4: MixUp.
+  # Blends pairs of training images+labels: x_mix = λ·xᵢ + (1-λ)·xⱼ
+  # Very effective for plant disease — forces smooth decision boundaries
+  # between visually similar disease classes (e.g. common_rust vs gray_leaf_spot).
+  #
+  # IMPORTANT: when mixup_enabled=true, class_weight is automatically disabled.
+  # Keras cannot apply per-class weights to soft mixed labels.
+  # This is acceptable — max_class_weight=2.0 already shows the dataset is balanced.
+  mixup_enabled: true
+  mixup_alpha: 0.2
+
+  # IMP5: TTA zoom must stay <= phase2 zoom for distribution consistency.
+  # Old TTA used CenterCrop which mis-matched training's RandomZoom distribution.
+  tta_zoom: 0.10            # <= phase2.zoom (0.15)
+
+evaluation:
+  tta_passes: 5
+  confidence_thresholds: [0.50, 0.60, 0.70, 0.80, 0.90]
+  default_app_threshold: 0.70
+  # FIX 7: Extended lower bound from 0.5 → 0.2.
+  # Previous run returned temperature=0.50 (the search boundary), meaning
+  # the true optimum was below 0.50 and was being clipped.  With
+  # label_smoothing=0.1 the model is trained to be slightly underconfident,
+  # so temperatures below 1.0 (which sharpen predictions) are expected.
+  temp_calibration_range: [0.2, 3.1]
+  temp_calibration_step: 0.1
+
+performance:
+  # IMP1: CPU / 8 GB RAM — explicit limits replace AUTOTUNE.
+  # AUTOTUNE on a RAM-only machine can prefetch 3-5 batches simultaneously
+  # (~10 MB each at batch=8, 224×224) and OOM before the first epoch ends.
+  data_autotune: false      # was true
+  prefetch: 2               # was "AUTO"
+  parallel_calls: 2         # was "AUTO"
+
+  # TF thread settings for a typical 4-core / 8-thread CPU.
+  # inter_op: independent TF graph ops running in parallel.
+  # intra_op: threads used inside a single op (conv, matmul, etc.).
+  inter_op_threads: 2
+  intra_op_threads: 4
+
+explainability:
+  gradcam_enabled: true
+  gradcam_script: "scripts/explain_predictions_gradcam.py"
+  samples_per_class: 1

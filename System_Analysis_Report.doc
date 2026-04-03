@@ -1,0 +1,72 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs44\b Pest and Crop Disease Detection\par
+\fs36 System Analysis Report\b0\par
+\fs24\par
+\fs24 Project workspace: pest-and-crop-deseases-detection\par
+\fs24 Date: 2026-04-03\par
+\fs24\par
+\pard\sa200
+\fs28\b 1. Problem Definition\b0\par
+\fs24 Smallholder farmers in Rwanda cannot afford agronomists or lab testing. They lose harvests because they misidentify diseases or detect them too late. They need fast, accessible, offline-capable diagnosis directly at the farm level.\par
+\fs24\par
+\fs28\b 2. Stakeholder Analysis\b0\par
+\fs24 \bullet \b Smallholder farmer (Primary user):\b0 Needs a simple UI, local language support, offline capability, and actionable advice.\par
+\fs24 \bullet \b Agricultural extension officer (Secondary user):\b0 Needs reliable results to trust and build upon during farm visits.\par
+\fs24 \bullet \b RAB (Rwanda Agriculture Board) (Authority):\b0 Requires accurate recommendations aligned with national agricultural guidance.\par
+\fs24 \bullet \b App developer (Builder):\b0 Needs clear functional requirements and a testable, optimizable model.\par
+\fs24 \bullet \b Researcher (Designer):\b0 Requires measurable outcomes, rigorous evaluation, and a scientifically validated model.\par
+\fs24\par
+\fs28\b 3. Functional Requirements\b0\par
+\fs24 The system must:\par
+\fs24 - Capture a new photo from the camera or upload a leaf image from the gallery.\par
+\fs24 - Preprocess the image (resize to 224x224, normalize pixels to [-1, 1]).\par
+\fs24 - Run inference using the embedded MobileNetV2 TFLite model entirely on-device.\par
+\fs24 - Apply the 8-gate rejection logic (quality checks, other_leaf detection, crop mismatch, etc.).\par
+\fs24 - Display a clear result containing the crop name, disease name, confidence score, and specific treatment/prevention advice.\par
+\fs24 - Save scan history locally using SQLite for future reference.\par
+\fs24 - Work fully offline without requiring an internet connection.\par
+\fs24\par
+\fs28\b 4. Non-Functional Requirements\b0\par
+\fs24 - \b Performance:\b0 Inference time must be under 3 seconds on a mid-range Android smartphone.\par
+\fs24 - \b Footprint:\b0 Model size must be small enough to ship realistically within the APK (achieved via float16 TFLite quantization, ~8MB).\par
+\fs24 - \b Robustness:\b0 Must handle varying field conditions, including low-light or blurry images (handled via the image quality brightness/variance gate).\par
+\fs24 - \b Usability:\b0 Must be usable by farmers with low digital literacy, featuring a simple UI with minimal text and reliance on visual cues (emojis, color-coded confidence bars).\par
+\fs24 - \b Localization:\b0 Available in Kinyarwanda or local language to ensure ultimate accessibility.\par
+\fs24\par
+\fs28\b 5. System Boundaries\b0\par
+\fs24\b Inside the system:\b0\par
+\fs24 - The Flutter mobile application (UI and state management).\par
+\fs24 - The TFLite MobileNetV2 classification model (15 classes, 4 crops).\par
+\fs24 - The on-device disease information database (hardcoded in Dart).\par
+\fs24 - The SQLite scan history storage (sqflite).\par
+\fs24 - The 8-gate classifier logic (ClassifierService).\par
+\fs24\par
+\fs24\b Outside the system (interacting entities):\b0\par
+\fs24 - The farmer's smartphone camera hardware and gallery file system.\par
+\fs24 - RAB's external extension advice (referenced in the app but not digitally integrated).\par
+\fs24 - Internet connectivity (not required for core operation, used only for potential future app updates).\par
+\fs24\par
+\fs28\b 6. Data Flow Analysis\b0\par
+\fs24 1. Camera/Gallery \u8594? Image file (File/Bytes)\par
+\fs24 2. \u8594? Image quality check (Gate 1: brightness, standard deviation, green pixel ratio)\par
+\fs24 3. \u8594? Preprocessing (resize to 224x224, normalize to [-1, 1])\par
+\fs24 4. \u8594? TFLite model inference (Interpreter.run)\par
+\fs24 5. \u8594? Temperature scaling (applied to logits/softmax output)\par
+\fs24 6. \u8594? 7 remaining rejection gates (other_leaf threshold, crop totality, class dominance, entropy)\par
+\fs24 7. \u8594? ScanResult object creation\par
+\fs24 8. \u8594? ResultScreen UI display\par
+\fs24 9. \u8594? StorageService (local SQLite save if user bookmarks/history persists)\par
+\fs24\par
+\fs28\b 7. Constraints and Limitations\b0\par
+\fs24 - \b Scope:\b0 Only supports 4 specific crops (Banana, Beans, Maize, Potato).\par
+\fs24 - \b Knowledge Base:\b0 Cannot diagnose diseases that are not present in the training set; it will either flag them as "Unidentified Condition", "Unsupported Crop", or misclassify if they exactly mimic known symptoms.\par
+\fs24 - \b Input Quality:\b0 Requires a clear, close-up photo of a single leaf. Model accuracy degrades significantly if the image is taken from too far away or contains multiple plants.\par
+\fs24 - \b Field Variability:\b0 Model accuracy strongly depends on real-world image quality matching the training distribution.\par
+\fs24 - \b Professional Replacement:\b0 Cannot act as a complete substitute for a professional agronomist for complex, multi-factor crop failures (e.g., severe soil toxicity mimicking disease).\par
+\fs24\par
+\fs28\b 8. Feasibility Analysis\b0\par
+\fs24 - \b Technical:\b0 Highly feasible. MobileNetV2 combined with TensorFlow Lite is a proven, lightweight architecture that easily runs on low-to-mid-range Android devices common in developing agricultural regions.\par
+\fs24 - \b Economic:\b0 Highly viable. The application is completely free for farmers and incurs zero ongoing cloud/server costs since all inference and data storage occur on-device natively.\par
+\fs24 - \b Operational:\b0 Feasible. While some farmers may have low digital literacy, smartphone penetration and basic UI familiarity are rapidly increasing in Rwanda. The inclusion of clear visual indicators, minimal reading requirements, and offline capability mitigates major operational deployment risks.\par
+}

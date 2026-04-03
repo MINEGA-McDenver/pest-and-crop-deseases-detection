@@ -1,0 +1,5 @@
+Corrupted images found: 3
+
+D:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\pest-and-crop-deseases-detection\datasets/model_ready\train\other_leaf\millet_0001_aug_1_1.jpg	# All-black image (likely corrupt)
+D:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\pest-and-crop-deseases-detection\datasets/model_ready\train\other_leaf\rice_0031.jpg	# image file is truncated (19 bytes not processed)
+D:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\pest-and-crop-deseases-detection\datasets/model_ready\val\other_leaf\millet_0027.jpg	# image file is truncated (253 bytes not processed)
