@@ -29,6 +29,18 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
+            val keystoreFile = System.getenv("CD_UPLOAD_STORE_FILE")
+            if (!keystoreFile.isNullOrBlank()) {
+                signingConfig = signingConfigs.create("release") {
+                    storeFile = file(keystoreFile)
+                    storePassword = System.getenv("CD_UPLOAD_STORE_PASSWORD")
+                    keyAlias = System.getenv("CD_UPLOAD_KEY_ALIAS")
+                    keyPassword = System.getenv("CD_UPLOAD_KEY_PASSWORD")
+                }
+            }
+            // Disable R8 for pilot builds to avoid optional TensorFlow GPU class stripping issues.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 

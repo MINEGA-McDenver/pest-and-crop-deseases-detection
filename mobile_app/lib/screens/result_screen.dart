@@ -4,6 +4,7 @@ import '../models/scan_result.dart';
 import '../data/disease_info.dart';
 import '../widgets/confidence_bar.dart';
 import '../services/storage_service.dart';
+import '../l10n/app_strings.dart';
 
 class ResultScreen extends StatefulWidget {
   final ScanResult result;
@@ -19,10 +20,16 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _saved = false;
 
   @override
+  void initState() {
+    super.initState();
+    _saved = widget.result.isSaved;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Result'),
+        title: Text(AppStrings.tr(context, 'scanResult')),
         backgroundColor: _getAppBarColor(),
         foregroundColor: Colors.white,
         actions: [
@@ -763,8 +770,8 @@ class _ResultScreenState extends State<ResultScreen> {
               children: [
                 Icon(Icons.lightbulb_outline, color: Colors.amber.shade700),
                 const SizedBox(width: 8),
-                const Text(
-                  'Tips for Better Photos',
+                Text(
+                  AppStrings.tr(context, 'tipsHeader'),
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -772,16 +779,16 @@ class _ResultScreenState extends State<ResultScreen> {
             const SizedBox(height: 12),
             _buildTip(
               Icons.wb_sunny_outlined,
-              'Take photos in natural daylight',
+              AppStrings.tr(context, 'tipDaylight'),
             ),
             _buildTip(
               Icons.center_focus_strong,
-              'Focus on a single leaf, fill the frame',
+              AppStrings.tr(context, 'tipSingleLeaf'),
             ),
-            _buildTip(Icons.straighten, 'Hold phone 15-30cm from the leaf'),
-            _buildTip(Icons.blur_off, 'Hold steady to avoid blur'),
-            _buildTip(Icons.contrast, 'Use a plain background if possible'),
-            _buildTip(Icons.crop_original, 'Show the affected area clearly'),
+            _buildTip(Icons.straighten, AppStrings.tr(context, 'tipDistance')),
+            _buildTip(Icons.blur_off, AppStrings.tr(context, 'tipSteady')),
+            _buildTip(Icons.contrast, AppStrings.tr(context, 'tipBackground')),
+            _buildTip(Icons.crop_original, AppStrings.tr(context, 'tipAffected')),
           ],
         ),
       ),
@@ -815,7 +822,7 @@ class _ResultScreenState extends State<ResultScreen> {
       child: ElevatedButton.icon(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.camera_alt),
-        label: const Text('Take New Photo'),
+        label: Text(AppStrings.tr(context, 'takeNewPhoto')),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2E7D32),
           foregroundColor: Colors.white,
@@ -826,12 +833,18 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Future<void> _saveResult() async {
-    await _storage.saveScan(widget.result);
+    if (widget.result.id != null) {
+      await _storage.savePermanently(widget.result.id!);
+    } else {
+      await _storage.saveScan(widget.result);
+    }
     setState(() => _saved = true);
     if (mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Result saved!')));
+      ).showSnackBar(
+        SnackBar(content: Text(AppStrings.tr(context, 'resultSaved'))),
+      );
     }
   }
 }

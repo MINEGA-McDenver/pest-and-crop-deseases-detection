@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "model_date": "2026-04-07",
+  "thresholds": {
+    "cropTotalThreshold": 0.84,
+    "otherLeafAbsoluteFloor": 0.12
+  }
+}

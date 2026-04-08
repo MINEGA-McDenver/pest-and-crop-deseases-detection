@@ -1,0 +1,155 @@
+# Deployment Checklist — Crop Disease Model
+
+Run this checklist after **every retrain** before shipping a new model to the app.
+Do not skip steps. A partial deployment (e.g. new `.tflite` but old `labels.txt`)
+silently disables all other_leaf rejection logic and causes false positives in the field.
+
+---
+
+## Go/No-Go Gate (Field Deployment)
+
+Release decision must be made before Step 1.
+
+Current hardening status:
+
+- [x] Release signing config supports env-based keystore values
+- [x] Deprecated broad storage permissions removed
+- [x] Crash logging and error guardrails added
+- [x] Scan delete removes both database row and image file
+- [x] Duplicate result-save flow fixed
+- [x] Kinyarwanda baseline localization added for critical screens
+- [x] Threshold calibration completed for the current model
+- [x] Runtime thresholds updated from calibration output
+- [x] Signed release APK built (`mobile_app/build/app/outputs/flutter-apk/app-release.apk`, 75.3MB)
+- [ ] Release APK installed on a test device
+- [ ] Offline smoke tests passed on target phones
+
+Decision rule:
+
+- NO-GO if any unchecked item remains.
+- GO only after all items are checked and Step 6 deployment record is filled.
+
+---
+
+## Step 1 — Verify the training run produced a 15-class model
+
+Open the terminal training log or `models/training_config.json` and confirm:
+
+- [ ] `"num_classes": 15` in `training_config.json`
+- [ ] Training log line reads: `Classes (15): [...]`
+- [ ] `other_leaf` appears in the class list printed during training
+
+**If num_classes ≠ 15:** the training run used an old dataset split.
+Check that `datasets/model_ready/train/other_leaf/` exists and has images, then rerun.
+
+---
+
+## Step 2 — Verify model output files
+
+Check each file in the `models/` directory:
+
+- [ ] `labels.txt` contains exactly 15 lines
+- [ ] `labels.txt` contains the line `other_leaf`
+- [ ] `class_index.json` contains the key `"other_leaf"`
+- [ ] `test_evaluation.json` contains an `"other_leaf"` block with `precision`, `recall`, `f1`
+- [ ] `other_leaf` recall in `test_evaluation.json` is **≥ 0.80** (adjust target to your requirement)
+- [ ] `best_model.keras` and `final_model.keras` have modification timestamps from this run
+- [ ] `crop_disease_model.tflite` has a modification timestamp from this run
+
+Quick terminal check (run from project root):
+```bash
+echo "=== Label count ===" && wc -l models/labels.txt
+echo "=== other_leaf in labels ===" && grep other_leaf models/labels.txt
+echo "=== other_leaf in class_index ===" && python -c "import json; d=json.load(open('models/class_index.json')); print('other_leaf index:', d.get('other_leaf', 'MISSING'))"
+echo "=== other_leaf metrics ===" && python -c "import json; d=json.load(open('models/test_evaluation.json')); print(json.dumps(d.get('other_leaf', 'MISSING'), indent=2))"
+```
+
+---
+
+## Step 3 — Run threshold calibration
+
+After every retrain, thresholds must be re-derived from the new model's validation
+output. Fixed constants in the app go stale as the model changes.
+
+```bash
+python -u calibrate_thresholds.py
+```
+
+- [ ] Script completes without errors
+- [ ] `models/threshold_calibration.json` is written
+- [ ] `models/threshold_calibration.png` is written — review the trade-off plot
+- [ ] Supported-crop recall ≥ 0.90 (or your product target)
+- [ ] Other-leaf false-positive rate is acceptably low for your field conditions
+
+Update `classifier_service.dart` with the recommended values printed at the end:
+```
+static const double cropTotalThreshold     = <value from script>;
+static const double otherLeafAbsoluteFloor = <value from script>;
+```
+
+- [x] `classifier_service.dart` defaults and runtime config updated to calibrated values
+
+Current calibration result (2026-04-07):
+
+- [x] `cropTotalThreshold = 0.90`
+- [x] `otherLeafAbsoluteFloor = 0.10`
+- [x] Supported-crop recall = 90.58%
+- [x] Other-leaf false-positive rate = 0.50%
+
+---
+
+## Step 4 — Copy model assets into the app
+
+```bash
+cp models/crop_disease_model.tflite  mobile_app/assets/models/crop_disease_model.tflite
+cp models/labels.txt                 mobile_app/assets/models/labels.txt
+```
+
+Adjust the paths above to match your project layout.
+
+- [ ] `mobile_app/assets/models/crop_disease_model.tflite` replaced
+- [ ] `mobile_app/assets/models/labels.txt` replaced
+- [ ] Both files have the current timestamp (confirm with `ls -lh mobile_app/assets/models/`)
+
+**Never replace only one of these two files.** A `.tflite` from a 15-class run
+paired with a 14-class `labels.txt` (or vice versa) causes a silent label mismatch.
+The app's startup sanity check in `initialize()` will throw an exception if
+`other_leaf` is missing from `labels.txt`, surfacing this before any scan is attempted.
+
+---
+
+## Step 5 — Rebuild and smoke-test the app
+
+- [x] Rebuild the app (`flutter build apk` or your CI pipeline)
+- [ ] Install on a test device
+- [ ] App launches without a classifier initialization error
+- [ ] Scan a **supported crop** image → result is a disease or healthy classification (not "Unsupported Crop")
+- [ ] Scan an **other_leaf** image → result is "Unsupported Crop" (not a false disease prediction)
+- [ ] Scan a **clearly unsupported plant** (e.g. grass, tree leaf) → result is "Unsupported Crop"
+
+Latest build evidence:
+
+- [x] `flutter build apk --release` completed on 2026-04-08
+- [x] Output artifact: `mobile_app/build/app/outputs/flutter-apk/app-release.apk` (75.3MB)
+
+---
+
+## Step 6 — Record the deployment
+
+Fill in the table below after each successful deployment.
+
+| Date | Model file | num_classes | other_leaf recall | ol FP rate | cropTotalThreshold | olAbsoluteFloor | Deployed by |
+|------|-----------|-------------|------------------|------------|-------------------|----------------|-------------|
+| 2026-04-08 | best_model.keras + app-release.apk built | 15 | 99.50% | 0.50% | 0.90 | 0.10 | Pending device install + smoke tests |
+|      |           |             |                  |            |                   |                |             |
+
+---
+
+## Quick failure guide
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| App throws "labels.txt is missing other_leaf" at startup | Old 14-class `labels.txt` deployed | Re-copy both `.tflite` + `labels.txt` and rebuild |
+| Lookalike plants classified as real crops | Model trained without `other_leaf`, or thresholds too loose | Retrain with 15 classes; re-run calibration script |
+| Real crop images always return "Unsupported Crop" | `cropTotalThreshold` too high after calibration | Lower it by 0.04 and re-test, or collect more supported-crop val images |
+| other_leaf recall < 0.80 | `other_leaf` training set too small or not diverse enough | Expand other_leaf dataset and retrain |

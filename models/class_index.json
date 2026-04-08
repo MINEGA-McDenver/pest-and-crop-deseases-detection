@@ -10,7 +10,8 @@
   "maize_gray_leaf_spot": 8,
   "maize_healthy": 9,
   "maize_northern_leaf_blight": 10,
-  "potato_early_blight": 11,
-  "potato_healthy": 12,
-  "potato_late_blight": 13
+  "other_leaf": 11,
+  "potato_early_blight": 12,
+  "potato_healthy": 13,
+  "potato_late_blight": 14
 }

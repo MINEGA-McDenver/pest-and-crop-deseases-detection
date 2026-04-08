@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
@@ -15,19 +16,40 @@ class ClassifierService {
   static const int inputSize = 224;
   static const double temperatureScaling = 1.8;
 
-  // Thresholds
+  // ─── Thresholds ─────────────────────────────────────────────
   static const double confidentClassThreshold = 0.80;
-  static const double cropTotalThreshold = 0.65;
+
+  // Field hotfix: relaxed from 0.90 to reduce false unsupported rejections.
+  static const double defaultCropTotalThreshold = 0.84;
+
   static const double uncertainGapThreshold = 0.30;
   static const double maxEntropyThreshold = 1.5;
-  static const double imageQualityMinStdDev = 15.0;
-  // SAFETY: "Healthy" predictions need higher confidence than disease predictions.
-  // If the model says healthy with only 55% confidence and the farmer trusts it,
-  // they won't treat a diseased crop — and will lose their harvest.
-  // Below this threshold, we say "Likely Healthy — verify manually" instead.
+  static const double imageQualityMinStdDev = 12.0;
+
+  // Healthy predictions need higher confidence because a missed disease
+  // costs the farmer their harvest.
   static const double healthyMinConfidence = 0.80;
 
-  // Crop grouping: maps each label to its crop
+  // Ratio guard: if other_leaf probability is this large relative to the
+  // winning crop total the image is suspicious.
+  // Field hotfix: relaxed from 0.18 to reduce false unsupported rejections.
+  static const double otherLeafVsCropRatioThreshold = 0.24;
+
+  // Absolute other_leaf floor: reject if other_leaf exceeds this value
+  // anywhere in the pipeline, even if it did not win the softmax.
+  // Field hotfix: aligned with runtime thresholds config.
+  static const double defaultOtherLeafAbsoluteFloor = 0.12;
+
+  // RELAXED 0.10 → 0.15 (Fix from external analysis):
+  // A second crop at 9% is clear dominance by the first crop and should not
+  // trigger uncertainty. The old 0.10 threshold was rejecting real supported
+  // crop images where a small amount of probability legitimately leaked into
+  // a second crop. 0.15 still catches genuine multi-crop ambiguity while
+  // stopping false uncertainty calls on clean single-crop images.
+  static const double secondCropAmbiguityThreshold = 0.15;
+
+  // Crop grouping: maps each label to its crop.
+  // 'other_leaf' is intentionally excluded — handled separately.
   static const Map<String, String> cropGrouping = {
     'banana_cordana': 'banana',
     'banana_healthy': 'banana',
@@ -45,13 +67,19 @@ class ClassifierService {
     'potato_late_blight': 'potato',
   };
 
-  // Known healthy labels per crop
   static const Map<String, String> healthyLabels = {
     'banana': 'banana_healthy',
     'beans': 'beans_healthy',
     'maize': 'maize_healthy',
     'potato': 'potato_healthy',
   };
+
+  // Lowered 0.50 → 0.30: temperature scaling deflates probabilities so
+  // genuine other_leaf images rarely scored above 0.50 after scaling.
+  static const double otherLeafThreshold = 0.30;
+
+  double _cropTotalThreshold = defaultCropTotalThreshold;
+  double _otherLeafAbsoluteFloor = defaultOtherLeafAbsoluteFloor;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -68,9 +96,58 @@ class ClassifierService {
           .where((s) => s.isNotEmpty)
           .toList();
 
+      // ── DEPLOYMENT SANITY CHECK ──────────────────────────────
+      // If the deployed labels.txt is from an old 14-class run, every
+      // other_leaf guard in classifyImage() silently resolves to 0.0 and
+      // the entire false-positive defence is inactive. Surface this at
+      // startup so the bug is caught immediately rather than discovered
+      // in the field when lookalike plants produce confident wrong results.
+      //
+      // Fix: retrain with the updated train_model.py (which enforces
+      // other_leaf presence), copy the new .tflite + labels.txt into
+      // assets/models/, and rebuild the app.
+      if (!_labels.contains('other_leaf')) {
+        throw Exception(
+          'Model deployment error: labels.txt is missing the other_leaf class.\n'
+          'The deployed model is a ${_labels.length}-class build from a previous '
+          'training run. All unsupported-crop rejection logic is currently inactive.\n'
+          'Action required: deploy the 15-class model (retrain with '
+          'train_model.py, copy new .tflite + labels.txt to assets/models/, '
+          'and rebuild the app) before enabling scanning.',
+        );
+      }
+
+      await _loadThresholdsFromAssets();
+
       _isInitialized = true;
     } catch (e) {
       throw Exception('Failed to initialize classifier: $e');
+    }
+  }
+
+  Future<void> _loadThresholdsFromAssets() async {
+    try {
+      final jsonText = await rootBundle.loadString(
+        'assets/config/thresholds.json',
+      );
+      final decoded = jsonDecode(jsonText) as Map<String, dynamic>;
+      final thresholds = decoded['thresholds'] as Map<String, dynamic>?;
+      if (thresholds == null) return;
+
+      final cropTotal = (thresholds['cropTotalThreshold'] as num?)?.toDouble();
+      final otherLeafFloor =
+          (thresholds['otherLeafAbsoluteFloor'] as num?)?.toDouble();
+
+      if (cropTotal != null && cropTotal > 0 && cropTotal < 1) {
+        _cropTotalThreshold = cropTotal;
+      }
+      if (otherLeafFloor != null && otherLeafFloor >= 0 && otherLeafFloor < 1) {
+        _otherLeafAbsoluteFloor = otherLeafFloor;
+      }
+    } catch (_) {
+      // Use compiled defaults when threshold config is absent or invalid.
+      _cropTotalThreshold = defaultCropTotalThreshold;
+      _otherLeafAbsoluteFloor = defaultOtherLeafAbsoluteFloor;
     }
   }
 
@@ -132,7 +209,7 @@ class ClassifierService {
       isAcceptable = false;
     }
 
-    if (greenRatio < 0.05) {
+    if (greenRatio < 0.03) {
       issues.add('No plant leaf detected. Please photograph a leaf directly.');
       isAcceptable = false;
     }
@@ -165,17 +242,17 @@ class ClassifierService {
   }
 
   // ─── Softmax with Temperature ───────────────────────────────
-  // The TFLite model outputs softmax probabilities, not raw logits.
-  // To apply temperature scaling correctly, convert to log-space first:
-  //   scaled[i] = log(p[i]) / T   →  then softmax
-  // This is equivalent to p[i]^(1/T) normalised.
-  // With T=1.8 (>1) it reduces overconfidence — e.g. 98% → ~74% — without
-  // collapsing the distribution as dividing raw probabilities would (98% → 12%).
+  // Applies temperature scaling in log-space:
+  //   scaled[i] = log(p[i]) / T  →  softmax
+  // This is the mathematically correct way to temperature-scale a model
+  // that already outputs softmax probabilities. T=1.8 (>1) reduces
+  // overconfidence without collapsing the distribution.
   List<double> _applySoftmaxWithTemperature(
     List<double> probs,
     double temperature,
   ) {
-    final logProbs = probs.map((p) => log(max(p, 1e-10)) / temperature).toList();
+    final logProbs =
+        probs.map((p) => log(max(p, 1e-10)) / temperature).toList();
     final maxVal = logProbs.reduce(max);
     final exps = logProbs.map((l) => exp(l - maxVal)).toList();
     final sumExps = exps.reduce((a, b) => a + b);
@@ -183,6 +260,8 @@ class ClassifierService {
   }
 
   // ─── Aggregate by Crop ──────────────────────────────────────
+  // 'other_leaf' is excluded from cropGrouping so it never accumulates
+  // into any crop total.
   Map<String, double> _aggregateByCrop(List<double> probabilities) {
     Map<String, double> cropProbs = {};
     for (int i = 0; i < _labels.length && i < probabilities.length; i++) {
@@ -209,26 +288,28 @@ class ClassifierService {
     return classes;
   }
 
-  // ─── Shannon Entropy (Uncertainty Measure) ──────────────────
-  // High entropy = spread probabilities = uncertain/noisy image
-  // Low entropy = focused probabilities = confident/clear image
-  // Real crop leaf: entropy ~0.8-1.2
-  // Grass/non-target: entropy ~2.0+
+  // ─── Shannon Entropy ────────────────────────────────────────
+  // High entropy = spread probabilities = uncertain/noisy image.
+  // Real crop leaf: ~0.8–1.2. Grass/non-target: ~2.0+.
   double _calculateEntropy(List<double> probabilities) {
     double entropy = 0.0;
     for (double p in probabilities) {
       if (p > 1e-10) {
-        entropy -= p * log(p) / log(2.0); // log2
+        entropy -= p * log(p) / log(2.0);
       }
     }
     return entropy;
   }
 
-  // ─── Main Classification ───────────────────────────────────
+  // ─── Main Classification ────────────────────────────────────
   Future<ScanResult> classifyImage(String imagePath) async {
     if (!_isInitialized) await initialize();
 
     final imageFile = File(imagePath);
+    if (!await imageFile.exists()) {
+      throw Exception('Selected image file is missing. Please retake the photo.');
+    }
+
     final bytes = await imageFile.readAsBytes();
     final image = img.decodeImage(bytes);
     if (image == null) throw Exception('Could not decode image');
@@ -251,10 +332,8 @@ class ClassifierService {
     // ── Step 2: Run model inference ──
     final input = _preprocessImage(image);
     final inputTensor = input.reshape([1, inputSize, inputSize, 3]);
-    final output = List.filled(
-      1 * _labels.length,
-      0.0,
-    ).reshape([1, _labels.length]);
+    final output =
+        List.filled(1 * _labels.length, 0.0).reshape([1, _labels.length]);
 
     _interpreter!.run(inputTensor, output);
     final rawOutputs = List<double>.from(output[0]);
@@ -271,10 +350,41 @@ class ClassifierService {
       allProbs[_labels[i]] = probabilities[i];
     }
 
-    // ── Step 5: Aggregate by crop ──
-    final cropProbs = _aggregateByCrop(probabilities);
+    final otherLeafProb = allProbs['other_leaf'] ?? 0.0;
 
-    // Sort crops by total probability
+    // ── Step 5: Early exit — other_leaf direct softmax winner ──
+    // Threshold lowered 0.50 → 0.30 because temperature scaling deflates
+    // probabilities; genuine other_leaf images rarely scored above 0.50.
+    if (otherLeafProb >= otherLeafThreshold) {
+      return ScanResult(
+        imagePath: imagePath,
+        cropName: 'Unknown Crop',
+        diseaseName: 'Unsupported Crop',
+        confidence: otherLeafProb,
+        resultType: 'other_leaf',
+        allProbabilities: allProbs,
+        dateTime: DateTime.now().toIso8601String(),
+      );
+    }
+
+    // ── Step 5b: Absolute other_leaf floor ──────────────────────
+    // Even when other_leaf did not win the softmax, any probability above
+    // otherLeafAbsoluteFloor is a red flag. A genuine supported-crop image
+    // almost never gives other_leaf more than ~10%.
+    if (otherLeafProb > _otherLeafAbsoluteFloor) {
+      return ScanResult(
+        imagePath: imagePath,
+        cropName: 'Unknown Crop',
+        diseaseName: 'Unsupported Crop',
+        confidence: otherLeafProb,
+        resultType: 'other_leaf',
+        allProbabilities: allProbs,
+        dateTime: DateTime.now().toIso8601String(),
+      );
+    }
+
+    // ── Step 6: Aggregate by crop ──
+    final cropProbs = _aggregateByCrop(probabilities);
     final sortedCrops = cropProbs.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -292,13 +402,15 @@ class ClassifierService {
 
     final bestCrop = sortedCrops[0].key;
     final bestCropTotal = sortedCrops[0].value;
-    final secondCropTotal = sortedCrops.length > 1 ? sortedCrops[1].value : 0.0;
+    final secondCropTotal =
+        sortedCrops.length > 1 ? sortedCrops[1].value : 0.0;
     final cropGap = bestCropTotal - secondCropTotal;
 
-    // ── Step 6: DECISION LOGIC ──
+    // ── Step 7: DECISION LOGIC ──
 
-    // 6a: Is this even a supported crop?
-    if (bestCropTotal < cropTotalThreshold) {
+    // 7a: Is this a supported crop?
+    // Calibrated 0.78 → 0.90 (calibrate_thresholds.py, 2314 val samples).
+    if (bestCropTotal < _cropTotalThreshold) {
       return ScanResult(
         imagePath: imagePath,
         cropName: 'Unknown',
@@ -310,7 +422,24 @@ class ClassifierService {
       );
     }
 
-    // 6b: Crop identified! Now find the best class within this crop
+    // 7a-ii: other_leaf ratio guard ──────────────────────────────
+    // Even a high crop_total is suspicious if other_leaf holds a meaningful
+    // share relative to the winner. Threshold tightened 0.25 → 0.18.
+    final otherLeafVsCropRatio =
+        bestCropTotal > 0 ? otherLeafProb / bestCropTotal : 0.0;
+    if (otherLeafVsCropRatio > otherLeafVsCropRatioThreshold) {
+      return ScanResult(
+        imagePath: imagePath,
+        cropName: 'Unknown',
+        diseaseName: 'Unsupported Crop',
+        confidence: otherLeafProb,
+        resultType: 'other_leaf',
+        allProbabilities: allProbs,
+        dateTime: DateTime.now().toIso8601String(),
+      );
+    }
+
+    // 7b: Crop identified — find best class within the crop.
     final cropClasses = _getClassesForCrop(bestCrop, probabilities);
     final sortedClasses = cropClasses.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -319,7 +448,7 @@ class ClassifierService {
     final bestClassProb = sortedClasses[0].value;
     final cropDisplayName = _formatCropName(bestCrop);
 
-    // 6c: Is the crop identification itself uncertain? (two crops too close)
+    // 7c: Are two crops too close to each other? (gap check)
     if (cropGap < uncertainGapThreshold) {
       return ScanResult(
         imagePath: imagePath,
@@ -332,11 +461,12 @@ class ClassifierService {
       );
     }
 
-    // 6c-v2: Is the second crop also strong? (multi-crop ambiguity)
-    // If the runner-up crop >10%, the image might not fit either crop well.
-    // Real targeted crops dominate: top crop ~85%, second crop ~3%.
-    // Non-target/grass images often spread probability: top ~80%, second ~16%.
-    if (secondCropTotal > 0.10) {
+    // 7c-v2: Is the second crop also strong? (multi-crop ambiguity)
+    // RELAXED 0.10 → 0.15: a second crop at 9% is clear dominance by the
+    // first and should not trigger uncertainty. The old 0.10 threshold was
+    // rejecting real supported-crop images where a small amount of probability
+    // legitimately leaked into a second crop.
+    if (secondCropTotal > secondCropAmbiguityThreshold) {
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
@@ -348,9 +478,7 @@ class ClassifierService {
       );
     }
 
-    // 6c-v3: Is the model internally uncertain? (entropy check)
-    // Entropy measures probability spread. High entropy = confused model.
-    // Real crops: entropy ~0.6-1.2. Grass/non-target: entropy ~2.0+
+    // 7c-v3: Is the model internally uncertain? (entropy check)
     final entropy = _calculateEntropy(probabilities);
     if (entropy > maxEntropyThreshold) {
       return ScanResult(
@@ -364,9 +492,7 @@ class ClassifierService {
       );
     }
 
-    // 6c-plus: Does the best class strongly dominate within the crop?
-    // If class probabilities are spread out, the model is unsure (look-alike leaf).
-    // Real predictions have one dominant class; spread distribution = hedging.
+    // 7c-plus: Does the best class strongly dominate within the crop?
     final classTotalRatio = bestClassProb / bestCropTotal;
     if (classTotalRatio < 0.60) {
       return ScanResult(
@@ -380,15 +506,12 @@ class ClassifierService {
       );
     }
 
-    // 6d: Is the specific class confident enough?
+    // 7d: Is the specific class confident enough?
     if (bestClassProb < confidentClassThreshold) {
-      // Crop is identified but we can't determine the exact condition
-      // Check if the healthy class is the strongest
       final healthyLabel = healthyLabels[bestCrop];
       final healthyProb = cropClasses[healthyLabel] ?? 0.0;
 
       if (healthyProb > 0 && healthyProb == bestClassProb) {
-        // Healthy is the top class but low confidence
         return ScanResult(
           imagePath: imagePath,
           cropName: cropDisplayName,
@@ -400,8 +523,6 @@ class ClassifierService {
         );
       }
 
-      // The crop is likely supported, but the class confidence is too low to
-      // name a specific condition safely.
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
@@ -413,9 +534,7 @@ class ClassifierService {
       );
     }
 
-    // 6e: SAFETY GATE — healthy predictions need 80% confidence minimum.
-    // A confident disease alert sends the farmer to take action (safe direction).
-    // A wrong "Healthy" alert means the farmer ignores the disease and loses the crop.
+    // 7e: SAFETY GATE — healthy predictions need 80% minimum confidence.
     final isHealthy = bestClass.contains('healthy');
     if (isHealthy && bestClassProb < healthyMinConfidence) {
       return ScanResult(
@@ -429,15 +548,12 @@ class ClassifierService {
       );
     }
 
-    // 6f: Confident prediction — check if it's in our disease database
+    // 7f: Confident prediction — check disease database.
     final diseaseName = isHealthy ? 'Healthy' : _formatDiseaseName(bestClass);
-
-    // Verify the disease exists in our database
     final diseaseKey = bestClass;
     final diseaseExists = DiseaseInfo.all.containsKey(diseaseKey);
 
     if (!isHealthy && !diseaseExists) {
-      // Crop identified, disease detected but NOT in our database
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
@@ -449,7 +565,7 @@ class ClassifierService {
       );
     }
 
-    // 6f: Everything checks out — confident result
+    // 7g: Everything checks out — confident result.
     return ScanResult(
       imagePath: imagePath,
       cropName: cropDisplayName,

@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:io';
 import '../models/scan_result.dart';
 
 class StorageService {
@@ -70,6 +71,7 @@ class StorageService {
 
   /// Get recent scans (all scans, ordered by most recent)
   Future<List<ScanResult>> getRecentScans() async {
+    await cleanupExpiredRecentScans();
     final db = await database;
     final maps = await db.query('scan_history', orderBy: 'id DESC', limit: 50);
     return maps.map((m) => ScanResult.fromMap(m)).toList();
@@ -101,7 +103,50 @@ class StorageService {
   /// Delete a single scan by id
   Future<void> deleteScan(int id) async {
     final db = await database;
+    final rows = await db.query(
+      'scan_history',
+      columns: ['imagePath'],
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (rows.isNotEmpty) {
+      final path = (rows.first['imagePath'] as String?) ?? '';
+      if (path.isNotEmpty) {
+        final imageFile = File(path);
+        if (await imageFile.exists()) {
+          try {
+            await imageFile.delete();
+          } catch (_) {
+            // Ignore file delete errors; DB deletion must still complete.
+          }
+        }
+      }
+    }
+
     await db.delete('scan_history', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Delete recent non-bookmarked scans older than [maxAgeDays].
+  Future<void> cleanupExpiredRecentScans({int maxAgeDays = 30}) async {
+    final db = await database;
+    final cutoff = DateTime.now().subtract(Duration(days: maxAgeDays));
+    final cutoffIso = cutoff.toIso8601String();
+
+    final expiredRows = await db.query(
+      'scan_history',
+      columns: ['id'],
+      where: 'isSaved = ? AND dateTime < ?',
+      whereArgs: [0, cutoffIso],
+    );
+
+    for (final row in expiredRows) {
+      final id = row['id'] as int?;
+      if (id != null) {
+        await deleteScan(id);
+      }
+    }
   }
 
   /// Get all history
@@ -112,6 +157,12 @@ class StorageService {
   /// Clear all history
   Future<void> clearHistory() async {
     final db = await database;
-    await db.delete('scan_history');
+    final allRows = await db.query('scan_history', columns: ['id']);
+    for (final row in allRows) {
+      final id = row['id'] as int?;
+      if (id != null) {
+        await deleteScan(id);
+      }
+    }
   }
 }

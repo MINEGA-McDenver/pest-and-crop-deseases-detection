@@ -1,6 +1,6 @@
 {
   "model": "MobileNetV2",
-  "num_classes": 14,
+  "num_classes": 15,
   "class_names": [
     "banana_cordana",
     "banana_healthy",
@@ -13,15 +13,17 @@
     "maize_gray_leaf_spot",
     "maize_healthy",
     "maize_northern_leaf_blight",
+    "other_leaf",
     "potato_early_blight",
     "potato_healthy",
     "potato_late_blight"
   ],
   "crops": [
-    "potato",
     "banana",
     "maize",
-    "beans"
+    "beans",
+    "potato",
+    "other_leaf"
   ],
   "image_size": [
     224,
@@ -29,18 +31,40 @@
   ],
   "batch_size": 8,
   "seed": 42,
+  "loss": "FocalLoss(gamma=2.0, alpha=0.25, ol_smoothing=0.1)",
+  "other_leaf_weight_multiplier": 6.0,
+  "other_leaf_label_smoothing": 0.1,
+  "other_leaf_mixup_alpha": 0.4,
   "max_class_weight": null,
   "fine_tune_from_layer": 80,
   "phase1_epochs": 15,
-  "phase2_epochs": 28,
-  "total_epochs": 43,
-  "phase1_time_min": 353.8,
-  "phase2_time_min": 1232.9,
-  "total_time_min": 1586.8,
-  "best_val_accuracy": 0.9802,
-  "phase1_best_val": 0.9543,
-  "phase2_best_val": 0.9802,
+  "phase2_epochs": 15,
+  "total_epochs": 30,
+  "phase1_time_min": 479.0,
+  "phase2_time_min": 765.1,
+  "total_time_min": 1244.0,
+  "best_val_accuracy": 0.9589,
+  "phase1_best_val": 0.9343,
+  "phase2_best_val": 0.9589,
   "best_model_path": "best_model.keras",
   "final_model_path": "final_model.keras",
-  "phase2_lr_schedule": "cosine_annealing"
+  "phase2_lr_schedule": "cosine_annealing",
+  "augmentation": {
+    "crop_classes": {
+      "flip": "horizontal",
+      "rotation": 0.05,
+      "zoom": 0.1,
+      "contrast": 0.2,
+      "brightness": 0.2
+    },
+    "other_leaf": {
+      "flip": "horizontal_and_vertical",
+      "rotation": 0.25,
+      "zoom": 0.25,
+      "contrast": 0.4,
+      "brightness": 0.3,
+      "mixup_alpha": 0.4,
+      "label_smoothing": 0.1
+    }
+  }
 }

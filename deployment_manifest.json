@@ -1,0 +1,14 @@
+{
+  "release_date": "2026-04-07",
+  "app": {
+    "name": "crop_doctor",
+    "version": "1.0.1+2",
+    "build_channel": "field_pilot_candidate"
+  },
+  "model": {
+    "asset": "models/crop_disease_model.tflite",
+    "labels": "models/labels.txt",
+    "training_config": "models/training_config.json"
+  },
+  "notes": "Threshold calibration completed (2026-04-07): cropTotalThreshold=0.90, otherLeafAbsoluteFloor=0.10. Release APK built successfully on 2026-04-08 (mobile_app/build/app/outputs/flutter-apk/app-release.apk, 75.3MB). Final pilot install still requires device install verification and offline smoke tests."
+}

@@ -63,13 +63,26 @@ python scripts/train_model.py
 ```
 
 ### 2. Mobile Application
-To run the Flutter application:
+To run the Flutter application in debug mode:
 ```bash
 cd mobile_app
 flutter clean
 flutter pub get
 flutter build apk --debug
 
-## Install on an attached device 
-adb install build\app\outputs\flutter-apk\app-debug.apk
+# Install on an attached device
+adb install build/app/outputs/flutter-apk/app-debug.apk
 ```
+
+For farmer field deployment, build a signed release APK:
+```bash
+cd mobile_app
+flutter clean
+flutter pub get
+flutter build apk --release
+
+# Install release build on an attached device
+adb install build/app/outputs/flutter-apk/app-release.apk
+```
+
+Before installing on farmers' phones, complete all release gates in DEPLOY_CHECKLIST.md.

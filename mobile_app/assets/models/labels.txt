@@ -9,6 +9,7 @@ maize_common_rust
 maize_gray_leaf_spot
 maize_healthy
 maize_northern_leaf_blight
+other_leaf
 potato_early_blight
 potato_healthy
 potato_late_blight

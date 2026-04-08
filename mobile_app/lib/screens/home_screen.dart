@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 import '../services/classifier_service.dart';
 import '../services/storage_service.dart';
+import '../l10n/app_strings.dart';
 import 'result_screen.dart';
 import 'history_screen.dart';
 
@@ -38,13 +40,14 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       debugPrint('Model initialization failed: $e');
+      final message = _mapInitializationError(e.toString());
       if (mounted) {
         setState(() {
-          _errorMessage = '$e';
+          _errorMessage = message;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load AI model: $e'),
+            content: Text(message),
             duration: const Duration(seconds: 10),
           ),
         );
@@ -52,10 +55,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String _mapInitializationError(String rawError) {
+    final normalized = rawError.toLowerCase();
+    if (normalized.contains('labels.txt') ||
+        normalized.contains('other_leaf')) {
+      return 'Model files are mismatched. Reinstall the app package from the latest pilot build.';
+    }
+    if (normalized.contains('asset') || normalized.contains('unable to load')) {
+      return 'Model assets are missing in this build. Please reinstall the app.';
+    }
+    if (normalized.contains('memory') || normalized.contains('oom')) {
+      return 'Phone memory is low. Close other apps and retry.';
+    }
+    return 'Failed to load AI model. Please retry or reinstall the latest build.';
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     if (!_isInitialized) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Model is still loading, please wait...')),
+        SnackBar(content: Text(AppStrings.tr(context, 'modelWait'))),
       );
       return;
     }
@@ -65,7 +83,21 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!status.isGranted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Camera permission is required')),
+            SnackBar(
+              content: Text(AppStrings.tr(context, 'cameraPermissionRequired')),
+            ),
+          );
+        }
+        return;
+      }
+    } else {
+      final photoStatus = await Permission.photos.request();
+      if (!photoStatus.isGranted && !photoStatus.isLimited) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppStrings.tr(context, 'galleryPermissionRequired')),
+            ),
           );
         }
         return;
@@ -81,6 +113,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (image == null) return;
 
+    final imageFile = File(image.path);
+    if (!await imageFile.exists()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.tr(context, 'imageUnavailable')),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isProcessing = true);
 
     try {
@@ -88,19 +132,23 @@ class _HomeScreenState extends State<HomeScreen> {
       final result = await _classifier.classifyImage(image.path);
 
       // Save to database
-      await _storage.saveScan(result);
+      final storedResult = await _storage.saveScan(result);
 
       if (mounted) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ResultScreen(result: result)),
+          MaterialPageRoute(builder: (_) => ResultScreen(result: storedResult)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.tr(context, 'scanError')}: $e'),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isProcessing = false);
@@ -117,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('🌿 Crop Doctor'),
+        title: Text('🌿 ${AppStrings.tr(context, 'appTitle')}'),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         actions: [
@@ -142,14 +190,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Crop Disease Detection',
+              AppStrings.tr(context, 'cropDetectionTitle'),
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Take a photo or upload an image of your crop to detect diseases',
+              AppStrings.tr(context, 'cropDetectionSubtitle'),
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -164,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Icon(Icons.error, color: Colors.red, size: 48),
                     const SizedBox(height: 16),
                     Text(
-                      'Failed to load AI model',
+                      AppStrings.tr(context, 'modelInitFail'),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
@@ -183,30 +231,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         _initializeClassifier();
                       },
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      label: Text(AppStrings.tr(context, 'retry')),
                     ),
                   ],
                 ),
               ),
             if (!_isInitialized && _errorMessage == null)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(20),
                 child: Column(
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
-                    Text('Loading AI model...'),
+                    Text(AppStrings.tr(context, 'modelLoading')),
                   ],
                 ),
               ),
             if (_isProcessing)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(20),
                 child: Column(
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
-                    Text('Analyzing image...'),
+                    Text(AppStrings.tr(context, 'analyzing')),
                   ],
                 ),
               ),
@@ -217,8 +265,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () => _pickImage(ImageSource.camera),
                   icon: const Icon(Icons.camera_alt, size: 28),
-                  label: const Text(
-                    'Take Photo',
+                  label: Text(
+                    AppStrings.tr(context, 'takePhoto'),
                     style: TextStyle(fontSize: 18),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -241,8 +289,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () => _pickImage(ImageSource.gallery),
                   icon: const Icon(Icons.photo_library, size: 28),
-                  label: const Text(
-                    'Upload from Gallery',
+                  label: Text(
+                    AppStrings.tr(context, 'uploadGallery'),
                     style: TextStyle(fontSize: 18),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -260,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Supported Crops',
+                      AppStrings.tr(context, 'supportedCrops'),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
