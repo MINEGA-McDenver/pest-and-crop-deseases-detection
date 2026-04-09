@@ -352,10 +352,32 @@ class ClassifierService {
 
     final otherLeafProb = allProbs['other_leaf'] ?? 0.0;
 
+    final cropProbs = _aggregateByCrop(probabilities);
+    final sortedCrops = cropProbs.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final bestCandidateCrop = sortedCrops.isNotEmpty
+        ? sortedCrops[0].key
+        : 'unknown';
+    final bestCandidateCropTotal = sortedCrops.isNotEmpty
+        ? sortedCrops[0].value
+        : 0.0;
+
     // ── Step 5: Early exit — other_leaf direct softmax winner ──
     // Threshold lowered 0.50 → 0.30 because temperature scaling deflates
     // probabilities; genuine other_leaf images rarely scored above 0.50.
     if (otherLeafProb >= otherLeafThreshold) {
+      final rescue = _buildBeansPotatoRescue(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        candidateCrop: bestCandidateCrop,
+        candidateCropTotal: bestCandidateCropTotal,
+        otherLeafProb: otherLeafProb,
+        reason:
+            'Likely ${_formatCropName(bestCandidateCrop)} leaf, but model is uncertain. Retake close photo in good light.',
+      );
+      if (rescue != null) return rescue;
+
       return ScanResult(
         imagePath: imagePath,
         cropName: 'Unknown Crop',
@@ -372,6 +394,17 @@ class ClassifierService {
     // otherLeafAbsoluteFloor is a red flag. A genuine supported-crop image
     // almost never gives other_leaf more than ~10%.
     if (otherLeafProb > _otherLeafAbsoluteFloor) {
+      final rescue = _buildBeansPotatoRescue(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        candidateCrop: bestCandidateCrop,
+        candidateCropTotal: bestCandidateCropTotal,
+        otherLeafProb: otherLeafProb,
+        reason:
+            'Possible ${_formatCropName(bestCandidateCrop)} leaf detected. Retake from 20-30cm and include full affected area.',
+      );
+      if (rescue != null) return rescue;
+
       return ScanResult(
         imagePath: imagePath,
         cropName: 'Unknown Crop',
@@ -384,10 +417,6 @@ class ClassifierService {
     }
 
     // ── Step 6: Aggregate by crop ──
-    final cropProbs = _aggregateByCrop(probabilities);
-    final sortedCrops = cropProbs.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
     if (sortedCrops.isEmpty) {
       return ScanResult(
         imagePath: imagePath,
@@ -411,6 +440,17 @@ class ClassifierService {
     // 7a: Is this a supported crop?
     // Calibrated 0.78 → 0.90 (calibrate_thresholds.py, 2314 val samples).
     if (bestCropTotal < _cropTotalThreshold) {
+      final rescue = _buildBeansPotatoRescue(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        candidateCrop: bestCrop,
+        candidateCropTotal: bestCropTotal,
+        otherLeafProb: otherLeafProb,
+        reason:
+            'Likely ${_formatCropName(bestCrop)} leaf, but confidence is low. Retake with one clear leaf centered.',
+      );
+      if (rescue != null) return rescue;
+
       return ScanResult(
         imagePath: imagePath,
         cropName: 'Unknown',
@@ -572,6 +612,36 @@ class ClassifierService {
       diseaseName: diseaseName,
       confidence: bestClassProb,
       resultType: isHealthy ? 'healthy' : 'disease',
+      allProbabilities: allProbs,
+      dateTime: DateTime.now().toIso8601String(),
+    );
+  }
+
+  bool _isBeansOrPotato(String crop) => crop == 'beans' || crop == 'potato';
+
+  ScanResult? _buildBeansPotatoRescue({
+    required String imagePath,
+    required Map<String, double> allProbs,
+    required String candidateCrop,
+    required double candidateCropTotal,
+    required double otherLeafProb,
+    required String reason,
+  }) {
+    // Only rescue beans/potato; maize/banana behavior remains unchanged.
+    if (!_isBeansOrPotato(candidateCrop)) return null;
+
+    // Require at least a minimal crop signal to avoid turning true unsupported into uncertain.
+    if (candidateCropTotal < 0.04) return null;
+
+    // If other_leaf is overwhelmingly dominant, keep unsupported.
+    if (otherLeafProb > 0.96) return null;
+
+    return ScanResult(
+      imagePath: imagePath,
+      cropName: _formatCropName(candidateCrop),
+      diseaseName: reason,
+      confidence: candidateCropTotal,
+      resultType: 'uncertain',
       allProbabilities: allProbs,
       dateTime: DateTime.now().toIso8601String(),
     );

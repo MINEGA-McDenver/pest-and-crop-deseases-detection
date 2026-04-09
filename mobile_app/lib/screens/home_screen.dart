@@ -155,6 +155,104 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _showCropInfo(String crop) {
+    final details = _cropGuidance[crop];
+    if (details == null) return;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  details['title']!,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'How to keep it healthy',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 6),
+                Text(details['healthy']!),
+                const SizedBox(height: 14),
+                Text(
+                  'How to take a good diagnosis photo',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 6),
+                Text(details['photo']!),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _cropInfoButton(String cropName) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () => _showCropInfo(cropName),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Text(
+          cropName,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+
+  static const Map<String, Map<String, String>> _cropGuidance = {
+    'Banana': {
+      'title': 'Banana crop guidance',
+      'healthy':
+          'Use clean planting material, remove heavily infected leaves early, keep good spacing for airflow, and avoid wetting leaves late in the day.',
+      'photo':
+          'Take one clear leaf, fill most of the frame, stay 20-30 cm away, use daylight if possible, and avoid blur or shadows.',
+    },
+    'Beans': {
+      'title': 'Beans crop guidance',
+      'healthy':
+          'Rotate crops, remove crop residue after harvest, avoid overhead irrigation when possible, and monitor leaves regularly for early spots.',
+      'photo':
+          'Photograph a single affected leaf front-on, include both healthy and diseased parts, keep background simple, and focus before capture.',
+    },
+    'Maize': {
+      'title': 'Maize crop guidance',
+      'healthy':
+          'Plant at recommended spacing, manage weeds early, use balanced fertilizer, and scout often so leaf diseases are treated early.',
+      'photo':
+          'Capture one representative leaf with visible lesions, avoid backlight, keep the leaf centered, and ensure the image is sharp.',
+    },
+    'Potato': {
+      'title': 'Potato crop guidance',
+      'healthy':
+          'Use healthy seed tubers, avoid prolonged leaf wetness, improve airflow, and remove severely infected leaves to reduce spread.',
+      'photo':
+          'Take a close photo of one leaf with clear symptom edges, keep 20-30 cm distance, avoid mixed crops in frame, and use natural light.',
+    },
+  };
+
   @override
   void dispose() {
     _classifier.dispose();
@@ -314,14 +412,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                    Row(
                       children: [
-                        Chip(label: Text('Banana')),
-                        Chip(label: Text('Beans')),
-                        Chip(label: Text('Maize')),
-                        Chip(label: Text('Potato')),
+                        Expanded(child: _cropInfoButton('Banana')),
+                        const SizedBox(width: 8),
+                        Expanded(child: _cropInfoButton('Beans')),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: _cropInfoButton('Maize')),
+                        const SizedBox(width: 8),
+                        Expanded(child: _cropInfoButton('Potato')),
                       ],
                     ),
                   ],
