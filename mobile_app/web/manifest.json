@@ -1,11 +1,11 @@
 {
-    "name": "crop_doctor",
-    "short_name": "crop_doctor",
+    "name": "Crop Doctor",
+    "short_name": "CropDoctor",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Crop disease and pest assistant for smallholder farmers.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

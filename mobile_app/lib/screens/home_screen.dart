@@ -8,6 +8,20 @@ import '../l10n/app_strings.dart';
 import 'result_screen.dart';
 import 'history_screen.dart';
 
+enum _SupportedCrop { banana, beans, maize, potato }
+
+class _CropGuidance {
+  final String title;
+  final String healthy;
+  final String photo;
+
+  const _CropGuidance({
+    required this.title,
+    required this.healthy,
+    required this.photo,
+  });
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -19,14 +33,42 @@ class _HomeScreenState extends State<HomeScreen> {
   final ClassifierService _classifier = ClassifierService();
   final StorageService _storage = StorageService();
   final ImagePicker _picker = ImagePicker();
+  static const bool _enableLocaleDebugLogs = true;
   bool _isInitialized = false;
   bool _isProcessing = false;
   String? _errorMessage;
+  String? _lastLocaleCode;
+
+  static const List<_SupportedCrop> _supportedCrops = [
+    _SupportedCrop.banana,
+    _SupportedCrop.beans,
+    _SupportedCrop.maize,
+    _SupportedCrop.potato,
+  ];
 
   @override
   void initState() {
     super.initState();
     _initializeClassifier();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final normalized = AppStrings.localeCodeOf(context);
+    if (_lastLocaleCode != normalized) {
+      _lastLocaleCode = normalized;
+      AppStrings.setActiveLanguageCode(normalized);
+      _debugLocaleState('didChangeDependencies');
+    }
+  }
+
+  void _debugLocaleState(String stage, {String? cropKey}) {
+    if (!_enableLocaleDebugLogs) return;
+    final localeCode = AppStrings.localeCodeOf(context);
+    debugPrint(
+      '[LocaleDebug][Home][$stage] locale=$localeCode active=${AppStrings.activeLanguageCode} crop=${cropKey ?? '-'}',
+    );
   }
 
   Future<void> _initializeClassifier() async {
@@ -59,15 +101,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final normalized = rawError.toLowerCase();
     if (normalized.contains('labels.txt') ||
         normalized.contains('other_leaf')) {
-      return 'Model files are mismatched. Reinstall the app package from the latest pilot build.';
+      return AppStrings.tr(context, 'modelMismatch');
     }
     if (normalized.contains('asset') || normalized.contains('unable to load')) {
-      return 'Model assets are missing in this build. Please reinstall the app.';
+      return AppStrings.tr(context, 'modelAssetsMissing');
     }
     if (normalized.contains('memory') || normalized.contains('oom')) {
-      return 'Phone memory is low. Close other apps and retry.';
+      return AppStrings.tr(context, 'lowMemory');
     }
-    return 'Failed to load AI model. Please retry or reinstall the latest build.';
+    return AppStrings.tr(context, 'modelRetryInstall');
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -96,7 +138,9 @@ class _HomeScreenState extends State<HomeScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppStrings.tr(context, 'galleryPermissionRequired')),
+              content: Text(
+                AppStrings.tr(context, 'galleryPermissionRequired'),
+              ),
             ),
           );
         }
@@ -117,9 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!await imageFile.exists()) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.tr(context, 'imageUnavailable')),
-          ),
+          SnackBar(content: Text(AppStrings.tr(context, 'imageUnavailable'))),
         );
       }
       return;
@@ -142,12 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text('${AppStrings.tr(context, 'scanError')}: $e'),
-          ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.tr(context, 'scanError')}: $e')),
         );
       }
     } finally {
@@ -155,9 +193,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showCropInfo(String crop) {
-    final details = _cropGuidance[crop];
-    if (details == null) return;
+  void _showCropInfo(_SupportedCrop crop) {
+    _debugLocaleState('cropTap', cropKey: crop.name);
+    final details = _cropGuidanceFor(crop);
 
     showModalBottomSheet<void>(
       context: context,
@@ -167,37 +205,52 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       builder: (context) {
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  details['title']!,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          child: FractionallySizedBox(
+            heightFactor: 0.82,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade400,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      details.title,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppStrings.tr(context, 'keepHealthy'),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(details.healthy),
+                    const SizedBox(height: 14),
+                    Text(
+                      AppStrings.tr(context, 'takeGoodPhoto'),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(details.photo),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'How to keep it healthy',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                Text(details['healthy']!),
-                const SizedBox(height: 14),
-                Text(
-                  'How to take a good diagnosis photo',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                Text(details['photo']!),
-              ],
+              ),
             ),
           ),
         );
@@ -205,53 +258,66 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _cropInfoButton(String cropName) {
+  _CropGuidance _cropGuidanceFor(_SupportedCrop crop) {
+    switch (crop) {
+      case _SupportedCrop.banana:
+        return _CropGuidance(
+          title: AppStrings.tr(context, 'bananaGuidanceTitle'),
+          healthy: AppStrings.tr(context, 'bananaHealthyGuide'),
+          photo: AppStrings.tr(context, 'bananaPhotoGuide'),
+        );
+      case _SupportedCrop.beans:
+        return _CropGuidance(
+          title: AppStrings.tr(context, 'beansGuidanceTitle'),
+          healthy: AppStrings.tr(context, 'beansHealthyGuide'),
+          photo: AppStrings.tr(context, 'beansPhotoGuide'),
+        );
+      case _SupportedCrop.maize:
+        return _CropGuidance(
+          title: AppStrings.tr(context, 'maizeGuidanceTitle'),
+          healthy: AppStrings.tr(context, 'maizeHealthyGuide'),
+          photo: AppStrings.tr(context, 'maizePhotoGuide'),
+        );
+      case _SupportedCrop.potato:
+        return _CropGuidance(
+          title: AppStrings.tr(context, 'potatoGuidanceTitle'),
+          healthy: AppStrings.tr(context, 'potatoHealthyGuide'),
+          photo: AppStrings.tr(context, 'potatoPhotoGuide'),
+        );
+    }
+  }
+
+  String _cropLabel(_SupportedCrop crop) {
+    switch (crop) {
+      case _SupportedCrop.banana:
+        return AppStrings.tr(context, 'banana');
+      case _SupportedCrop.beans:
+        return AppStrings.tr(context, 'beans');
+      case _SupportedCrop.maize:
+        return AppStrings.tr(context, 'maize');
+      case _SupportedCrop.potato:
+        return AppStrings.tr(context, 'potato');
+    }
+  }
+
+  Widget _cropInfoButton({required _SupportedCrop crop}) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
-        onPressed: () => _showCropInfo(cropName),
+        onPressed: () => _showCropInfo(crop),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: Text(
-          cropName,
+          _cropLabel(crop),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
-
-  static const Map<String, Map<String, String>> _cropGuidance = {
-    'Banana': {
-      'title': 'Banana crop guidance',
-      'healthy':
-          'Use clean planting material, remove heavily infected leaves early, keep good spacing for airflow, and avoid wetting leaves late in the day.',
-      'photo':
-          'Take one clear leaf, fill most of the frame, stay 20-30 cm away, use daylight if possible, and avoid blur or shadows.',
-    },
-    'Beans': {
-      'title': 'Beans crop guidance',
-      'healthy':
-          'Rotate crops, remove crop residue after harvest, avoid overhead irrigation when possible, and monitor leaves regularly for early spots.',
-      'photo':
-          'Photograph a single affected leaf front-on, include both healthy and diseased parts, keep background simple, and focus before capture.',
-    },
-    'Maize': {
-      'title': 'Maize crop guidance',
-      'healthy':
-          'Plant at recommended spacing, manage weeds early, use balanced fertilizer, and scout often so leaf diseases are treated early.',
-      'photo':
-          'Capture one representative leaf with visible lesions, avoid backlight, keep the leaf centered, and ensure the image is sharp.',
-    },
-    'Potato': {
-      'title': 'Potato crop guidance',
-      'healthy':
-          'Use healthy seed tubers, avoid prolonged leaf wetness, improve airflow, and remove severely infected leaves to reduce spread.',
-      'photo':
-          'Take a close photo of one leaf with clear symptom edges, keep 20-30 cm distance, avoid mixed crops in frame, and use natural light.',
-    },
-  };
 
   @override
   void dispose() {
@@ -261,6 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _debugLocaleState('build');
     return Scaffold(
       appBar: AppBar(
         title: Text('🌿 ${AppStrings.tr(context, 'appTitle')}'),
@@ -268,10 +335,14 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const HistoryScreen()),
+            ),
+            tooltip: AppStrings.tr(context, 'scanHistory'),
+            icon: Icon(
+              Icons.history,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
           ),
         ],
@@ -414,17 +485,33 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: _cropInfoButton('Banana')),
+                        Expanded(
+                          child: _cropInfoButton(
+                            crop: _supportedCrops[0],
+                          ),
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: _cropInfoButton('Beans')),
+                        Expanded(
+                          child: _cropInfoButton(
+                            crop: _supportedCrops[1],
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Expanded(child: _cropInfoButton('Maize')),
+                        Expanded(
+                          child: _cropInfoButton(
+                            crop: _supportedCrops[2],
+                          ),
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: _cropInfoButton('Potato')),
+                        Expanded(
+                          child: _cropInfoButton(
+                            crop: _supportedCrops[3],
+                          ),
+                        ),
                       ],
                     ),
                   ],

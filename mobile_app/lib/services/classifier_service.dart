@@ -2,11 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:math';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 import '../models/scan_result.dart';
 import '../data/disease_info.dart';
+import '../l10n/app_strings.dart';
 
 class ClassifierService {
   Interpreter? _interpreter;
@@ -29,6 +32,10 @@ class ClassifierService {
   // Healthy predictions need higher confidence because a missed disease
   // costs the farmer their harvest.
   static const double healthyMinConfidence = 0.80;
+  static const double potatoHealthyMinConfidencePilot = 0.72;
+
+  // Field pilot observability: logs every rejection/uncertain decision gate.
+  static const bool enableDecisionLogging = true;
 
   // Ratio guard: if other_leaf probability is this large relative to the
   // winning crop total the image is suspicious.
@@ -81,13 +88,30 @@ class ClassifierService {
   double _cropTotalThreshold = defaultCropTotalThreshold;
   double _otherLeafAbsoluteFloor = defaultOtherLeafAbsoluteFloor;
 
+  Future<Interpreter> _loadInterpreter() async {
+    const modelAssetPath = 'assets/models/crop_disease_model.tflite';
+
+    try {
+      return await Interpreter.fromAsset(modelAssetPath);
+    } catch (_) {
+      // Some Android builds/devices fail to memory-map .tflite assets.
+      // Fallback: copy model bytes to a temp file and open from file path.
+      final modelData = await rootBundle.load(modelAssetPath);
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/crop_disease_model.tflite');
+      await tempFile.writeAsBytes(
+        modelData.buffer.asUint8List(),
+        flush: true,
+      );
+      return Interpreter.fromFile(tempFile);
+    }
+  }
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      _interpreter = await Interpreter.fromAsset(
-        'assets/models/crop_disease_model.tflite',
-      );
+      _interpreter = await _loadInterpreter();
 
       final labelData = await rootBundle.loadString('assets/models/labels.txt');
       _labels = labelData
@@ -135,8 +159,8 @@ class ClassifierService {
       if (thresholds == null) return;
 
       final cropTotal = (thresholds['cropTotalThreshold'] as num?)?.toDouble();
-      final otherLeafFloor =
-          (thresholds['otherLeafAbsoluteFloor'] as num?)?.toDouble();
+      final otherLeafFloor = (thresholds['otherLeafAbsoluteFloor'] as num?)
+          ?.toDouble();
 
       if (cropTotal != null && cropTotal > 0 && cropTotal < 1) {
         _cropTotalThreshold = cropTotal;
@@ -193,24 +217,20 @@ class ClassifierService {
     bool isAcceptable = true;
 
     if (meanBrightness < 30) {
-      issues.add('Image is too dark. Move to a well-lit area or use flash.');
+      issues.add(AppStrings.trCode('qualityTooDark'));
       isAcceptable = false;
     } else if (meanBrightness > 240) {
-      issues.add(
-        'Image is too bright/overexposed. Avoid direct sunlight on the lens.',
-      );
+      issues.add(AppStrings.trCode('qualityTooBright'));
       isAcceptable = false;
     }
 
     if (stdDev < imageQualityMinStdDev) {
-      issues.add(
-        'Image lacks detail. Move closer to the leaf and ensure focus.',
-      );
+      issues.add(AppStrings.trCode('qualityLowDetail'));
       isAcceptable = false;
     }
 
     if (greenRatio < 0.03) {
-      issues.add('No plant leaf detected. Please photograph a leaf directly.');
+      issues.add(AppStrings.trCode('qualityNoLeaf'));
       isAcceptable = false;
     }
 
@@ -251,8 +271,9 @@ class ClassifierService {
     List<double> probs,
     double temperature,
   ) {
-    final logProbs =
-        probs.map((p) => log(max(p, 1e-10)) / temperature).toList();
+    final logProbs = probs
+        .map((p) => log(max(p, 1e-10)) / temperature)
+        .toList();
     final maxVal = logProbs.reduce(max);
     final exps = logProbs.map((l) => exp(l - maxVal)).toList();
     final sumExps = exps.reduce((a, b) => a + b);
@@ -307,20 +328,30 @@ class ClassifierService {
 
     final imageFile = File(imagePath);
     if (!await imageFile.exists()) {
-      throw Exception('Selected image file is missing. Please retake the photo.');
+      throw Exception(AppStrings.trCode('selectedImageMissing'));
     }
 
     final bytes = await imageFile.readAsBytes();
     final image = img.decodeImage(bytes);
-    if (image == null) throw Exception('Could not decode image');
+    if (image == null) {
+      throw Exception(AppStrings.trCode('couldNotDecodeImage'));
+    }
 
     // ── Step 1: Check image quality ──
     final quality = _checkImageQuality(image);
     if (!quality.isAcceptable) {
+      _logDecision(
+        gate: 'G1_quality',
+        resultType: 'poor_quality',
+        allProbs: const {},
+        cropName: 'unknown',
+        confidence: 0.0,
+        note: quality.issues.join(' | '),
+      );
       return ScanResult(
         imagePath: imagePath,
-        cropName: 'Unknown',
-        diseaseName: 'Poor Image Quality',
+        cropName: 'unknown',
+        diseaseName: 'poorImageQuality',
         confidence: 0.0,
         resultType: 'poor_quality',
         allProbabilities: {},
@@ -332,8 +363,10 @@ class ClassifierService {
     // ── Step 2: Run model inference ──
     final input = _preprocessImage(image);
     final inputTensor = input.reshape([1, inputSize, inputSize, 3]);
-    final output =
-        List.filled(1 * _labels.length, 0.0).reshape([1, _labels.length]);
+    final output = List.filled(
+      1 * _labels.length,
+      0.0,
+    ).reshape([1, _labels.length]);
 
     _interpreter!.run(inputTensor, output);
     final rawOutputs = List<double>.from(output[0]);
@@ -373,15 +406,23 @@ class ClassifierService {
         candidateCrop: bestCandidateCrop,
         candidateCropTotal: bestCandidateCropTotal,
         otherLeafProb: otherLeafProb,
-        reason:
-            'Likely ${_formatCropName(bestCandidateCrop)} leaf, but model is uncertain. Retake close photo in good light.',
+        reasonKey: 'rescueLikelyCropLowLight',
       );
       if (rescue != null) return rescue;
 
+      _logDecision(
+        gate: 'G5_other_leaf_winner',
+        resultType: 'other_leaf',
+        allProbs: allProbs,
+        cropName: 'unknown',
+        confidence: otherLeafProb,
+        note: 'other_leaf=${otherLeafProb.toStringAsFixed(3)}',
+      );
+
       return ScanResult(
         imagePath: imagePath,
-        cropName: 'Unknown Crop',
-        diseaseName: 'Unsupported Crop',
+        cropName: 'unknown',
+        diseaseName: 'unsupportedCrop',
         confidence: otherLeafProb,
         resultType: 'other_leaf',
         allProbabilities: allProbs,
@@ -400,15 +441,24 @@ class ClassifierService {
         candidateCrop: bestCandidateCrop,
         candidateCropTotal: bestCandidateCropTotal,
         otherLeafProb: otherLeafProb,
-        reason:
-            'Possible ${_formatCropName(bestCandidateCrop)} leaf detected. Retake from 20-30cm and include full affected area.',
+        reasonKey: 'rescuePossibleCropRetake',
       );
       if (rescue != null) return rescue;
 
+      _logDecision(
+        gate: 'G5b_other_leaf_floor',
+        resultType: 'other_leaf',
+        allProbs: allProbs,
+        cropName: 'unknown',
+        confidence: otherLeafProb,
+        note:
+            'other_leaf=${otherLeafProb.toStringAsFixed(3)} floor=${_otherLeafAbsoluteFloor.toStringAsFixed(3)}',
+      );
+
       return ScanResult(
         imagePath: imagePath,
-        cropName: 'Unknown Crop',
-        diseaseName: 'Unsupported Crop',
+        cropName: 'unknown',
+        diseaseName: 'unsupportedCrop',
         confidence: otherLeafProb,
         resultType: 'other_leaf',
         allProbabilities: allProbs,
@@ -418,10 +468,18 @@ class ClassifierService {
 
     // ── Step 6: Aggregate by crop ──
     if (sortedCrops.isEmpty) {
+      _logDecision(
+        gate: 'G6_no_crop_candidates',
+        resultType: 'unsupported',
+        allProbs: allProbs,
+        cropName: 'unknown',
+        confidence: 0.0,
+        note: 'cropProbs empty',
+      );
       return ScanResult(
         imagePath: imagePath,
-        cropName: 'Unknown',
-        diseaseName: 'Classification Error',
+        cropName: 'unknown',
+        diseaseName: 'classificationError',
         confidence: 0.0,
         resultType: 'unsupported',
         allProbabilities: allProbs,
@@ -431,8 +489,7 @@ class ClassifierService {
 
     final bestCrop = sortedCrops[0].key;
     final bestCropTotal = sortedCrops[0].value;
-    final secondCropTotal =
-        sortedCrops.length > 1 ? sortedCrops[1].value : 0.0;
+    final secondCropTotal = sortedCrops.length > 1 ? sortedCrops[1].value : 0.0;
     final cropGap = bestCropTotal - secondCropTotal;
 
     // ── Step 7: DECISION LOGIC ──
@@ -446,15 +503,24 @@ class ClassifierService {
         candidateCrop: bestCrop,
         candidateCropTotal: bestCropTotal,
         otherLeafProb: otherLeafProb,
-        reason:
-            'Likely ${_formatCropName(bestCrop)} leaf, but confidence is low. Retake with one clear leaf centered.',
+        reasonKey: 'rescueLikelyCropLowConfidence',
       );
       if (rescue != null) return rescue;
 
+      _logDecision(
+        gate: 'G7a_crop_total',
+        resultType: 'unsupported',
+        allProbs: allProbs,
+        cropName: _formatCropName(bestCrop),
+        confidence: bestCropTotal,
+        note:
+            'bestCropTotal=${bestCropTotal.toStringAsFixed(3)} threshold=${_cropTotalThreshold.toStringAsFixed(3)}',
+      );
+
       return ScanResult(
         imagePath: imagePath,
-        cropName: 'Unknown',
-        diseaseName: 'Unsupported Crop',
+        cropName: 'unknown',
+        diseaseName: 'unsupportedCrop',
         confidence: bestCropTotal,
         resultType: 'unsupported',
         allProbabilities: allProbs,
@@ -465,13 +531,34 @@ class ClassifierService {
     // 7a-ii: other_leaf ratio guard ──────────────────────────────
     // Even a high crop_total is suspicious if other_leaf holds a meaningful
     // share relative to the winner. Threshold tightened 0.25 → 0.18.
-    final otherLeafVsCropRatio =
-        bestCropTotal > 0 ? otherLeafProb / bestCropTotal : 0.0;
+    final otherLeafVsCropRatio = bestCropTotal > 0
+        ? otherLeafProb / bestCropTotal
+        : 0.0;
     if (otherLeafVsCropRatio > otherLeafVsCropRatioThreshold) {
+      final rescue = _buildBeansPotatoRescue(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        candidateCrop: bestCrop,
+        candidateCropTotal: bestCropTotal,
+        otherLeafProb: otherLeafProb,
+        reasonKey: 'rescuePossibleCropRetake',
+      );
+      if (rescue != null) return rescue;
+
+      _logDecision(
+        gate: 'G7a_other_leaf_ratio',
+        resultType: 'other_leaf',
+        allProbs: allProbs,
+        cropName: _formatCropName(bestCrop),
+        confidence: otherLeafProb,
+        note:
+            'ratio=${otherLeafVsCropRatio.toStringAsFixed(3)} threshold=${otherLeafVsCropRatioThreshold.toStringAsFixed(3)}',
+      );
+
       return ScanResult(
         imagePath: imagePath,
-        cropName: 'Unknown',
-        diseaseName: 'Unsupported Crop',
+        cropName: 'unknown',
+        diseaseName: 'unsupportedCrop',
         confidence: otherLeafProb,
         resultType: 'other_leaf',
         allProbabilities: allProbs,
@@ -489,11 +576,21 @@ class ClassifierService {
     final cropDisplayName = _formatCropName(bestCrop);
 
     // 7c: Are two crops too close to each other? (gap check)
+    // Policy A (field safety): keep strict uncertain for mixed-scene ambiguity.
     if (cropGap < uncertainGapThreshold) {
+      _logDecision(
+        gate: 'G7c_crop_gap',
+        resultType: 'uncertain',
+        allProbs: allProbs,
+        cropName: cropDisplayName,
+        confidence: bestClassProb,
+        note:
+            'gap=${cropGap.toStringAsFixed(3)} threshold=${uncertainGapThreshold.toStringAsFixed(3)}',
+      );
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
-        diseaseName: 'Uncertain',
+        diseaseName: 'uncertain',
         confidence: bestClassProb,
         resultType: 'uncertain',
         allProbabilities: allProbs,
@@ -502,15 +599,25 @@ class ClassifierService {
     }
 
     // 7c-v2: Is the second crop also strong? (multi-crop ambiguity)
+    // Policy A (field safety): keep strict uncertain for mixed-scene ambiguity.
     // RELAXED 0.10 → 0.15: a second crop at 9% is clear dominance by the
     // first and should not trigger uncertainty. The old 0.10 threshold was
     // rejecting real supported-crop images where a small amount of probability
     // legitimately leaked into a second crop.
     if (secondCropTotal > secondCropAmbiguityThreshold) {
+      _logDecision(
+        gate: 'G7c_second_crop',
+        resultType: 'uncertain',
+        allProbs: allProbs,
+        cropName: cropDisplayName,
+        confidence: bestClassProb,
+        note:
+            'secondCrop=${secondCropTotal.toStringAsFixed(3)} threshold=${secondCropAmbiguityThreshold.toStringAsFixed(3)}',
+      );
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
-        diseaseName: 'Uncertain',
+        diseaseName: 'uncertain',
         confidence: bestClassProb,
         resultType: 'uncertain',
         allProbabilities: allProbs,
@@ -521,10 +628,30 @@ class ClassifierService {
     // 7c-v3: Is the model internally uncertain? (entropy check)
     final entropy = _calculateEntropy(probabilities);
     if (entropy > maxEntropyThreshold) {
+      final rescue = _buildBeansPotatoRescue(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        candidateCrop: bestCrop,
+        candidateCropTotal: bestCropTotal,
+        otherLeafProb: otherLeafProb,
+        reasonKey: 'rescueLikelyCropLowConfidence',
+      );
+      if (rescue != null) return rescue;
+
+      _logDecision(
+        gate: 'G7c_entropy',
+        resultType: 'uncertain',
+        allProbs: allProbs,
+        cropName: cropDisplayName,
+        confidence: bestClassProb,
+        note:
+            'entropy=${entropy.toStringAsFixed(3)} threshold=${maxEntropyThreshold.toStringAsFixed(3)}',
+      );
+
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
-        diseaseName: 'Uncertain',
+        diseaseName: 'uncertain',
         confidence: bestClassProb,
         resultType: 'uncertain',
         allProbabilities: allProbs,
@@ -535,10 +662,30 @@ class ClassifierService {
     // 7c-plus: Does the best class strongly dominate within the crop?
     final classTotalRatio = bestClassProb / bestCropTotal;
     if (classTotalRatio < 0.60) {
+      final rescue = _buildBeansPotatoRescue(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        candidateCrop: bestCrop,
+        candidateCropTotal: bestCropTotal,
+        otherLeafProb: otherLeafProb,
+        reasonKey: 'rescueLikelyCropLowConfidence',
+      );
+      if (rescue != null) return rescue;
+
+      _logDecision(
+        gate: 'G7c_class_ratio',
+        resultType: 'uncertain',
+        allProbs: allProbs,
+        cropName: cropDisplayName,
+        confidence: bestClassProb,
+        note:
+            'classRatio=${classTotalRatio.toStringAsFixed(3)} threshold=0.600',
+      );
+
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
-        diseaseName: 'Uncertain',
+        diseaseName: 'uncertain',
         confidence: bestClassProb,
         resultType: 'uncertain',
         allProbabilities: allProbs,
@@ -552,10 +699,19 @@ class ClassifierService {
       final healthyProb = cropClasses[healthyLabel] ?? 0.0;
 
       if (healthyProb > 0 && healthyProb == bestClassProb) {
+        _logDecision(
+          gate: 'G7d_class_confidence_healthy_candidate',
+          resultType: 'uncertain',
+          allProbs: allProbs,
+          cropName: cropDisplayName,
+          confidence: bestClassProb,
+          note:
+              'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${confidentClassThreshold.toStringAsFixed(3)}',
+        );
         return ScanResult(
           imagePath: imagePath,
           cropName: cropDisplayName,
-          diseaseName: 'Likely Healthy',
+          diseaseName: 'likelyHealthy',
           confidence: bestClassProb,
           resultType: 'uncertain',
           allProbabilities: allProbs,
@@ -563,10 +719,20 @@ class ClassifierService {
         );
       }
 
+      _logDecision(
+        gate: 'G7d_class_confidence',
+        resultType: 'uncertain',
+        allProbs: allProbs,
+        cropName: cropDisplayName,
+        confidence: bestClassProb,
+        note:
+            'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${confidentClassThreshold.toStringAsFixed(3)}',
+      );
+
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
-        diseaseName: 'Unidentified Condition',
+        diseaseName: 'unidentifiedCondition',
         confidence: bestClassProb,
         resultType: 'uncertain',
         allProbabilities: allProbs,
@@ -576,11 +742,24 @@ class ClassifierService {
 
     // 7e: SAFETY GATE — healthy predictions need 80% minimum confidence.
     final isHealthy = bestClass.contains('healthy');
-    if (isHealthy && bestClassProb < healthyMinConfidence) {
+    final healthyConfidenceThreshold = bestCrop == 'potato'
+        ? potatoHealthyMinConfidencePilot
+        : healthyMinConfidence;
+
+    if (isHealthy && bestClassProb < healthyConfidenceThreshold) {
+      _logDecision(
+        gate: 'G7e_healthy_safety',
+        resultType: 'uncertain',
+        allProbs: allProbs,
+        cropName: cropDisplayName,
+        confidence: bestClassProb,
+        note:
+            'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${healthyConfidenceThreshold.toStringAsFixed(3)}',
+      );
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
-        diseaseName: 'Likely Healthy — verify manually',
+        diseaseName: 'likelyHealthyVerify',
         confidence: bestClassProb,
         resultType: 'uncertain',
         allProbabilities: allProbs,
@@ -589,11 +768,19 @@ class ClassifierService {
     }
 
     // 7f: Confident prediction — check disease database.
-    final diseaseName = isHealthy ? 'Healthy' : _formatDiseaseName(bestClass);
     final diseaseKey = bestClass;
     final diseaseExists = DiseaseInfo.all.containsKey(diseaseKey);
+    final diseaseName = diseaseKey;
 
     if (!isHealthy && !diseaseExists) {
+      _logDecision(
+        gate: 'G7f_unknown_disease',
+        resultType: 'unknown_disease',
+        allProbs: allProbs,
+        cropName: cropDisplayName,
+        confidence: bestClassProb,
+        note: 'label=$bestClass',
+      );
       return ScanResult(
         imagePath: imagePath,
         cropName: cropDisplayName,
@@ -606,6 +793,15 @@ class ClassifierService {
     }
 
     // 7g: Everything checks out — confident result.
+    _logDecision(
+      gate: 'G7g_confident',
+      resultType: isHealthy ? 'healthy' : 'disease',
+      allProbs: allProbs,
+      cropName: cropDisplayName,
+      confidence: bestClassProb,
+      note: 'label=$bestClass',
+    );
+
     return ScanResult(
       imagePath: imagePath,
       cropName: cropDisplayName,
@@ -625,7 +821,7 @@ class ClassifierService {
     required String candidateCrop,
     required double candidateCropTotal,
     required double otherLeafProb,
-    required String reason,
+    required String reasonKey,
   }) {
     // Only rescue beans/potato; maize/banana behavior remains unchanged.
     if (!_isBeansOrPotato(candidateCrop)) return null;
@@ -636,10 +832,19 @@ class ClassifierService {
     // If other_leaf is overwhelmingly dominant, keep unsupported.
     if (otherLeafProb > 0.96) return null;
 
+    _logDecision(
+      gate: 'RESCUE_beans_potato',
+      resultType: 'uncertain',
+      allProbs: allProbs,
+      cropName: _formatCropName(candidateCrop),
+      confidence: candidateCropTotal,
+      note: reasonKey,
+    );
+
     return ScanResult(
       imagePath: imagePath,
       cropName: _formatCropName(candidateCrop),
-      diseaseName: reason,
+      diseaseName: reasonKey,
       confidence: candidateCropTotal,
       resultType: 'uncertain',
       allProbabilities: allProbs,
@@ -660,6 +865,28 @@ class ClassifierService {
           .join(' ');
     }
     return label;
+  }
+
+  void _logDecision({
+    required String gate,
+    required String resultType,
+    required Map<String, double> allProbs,
+    required String cropName,
+    required double confidence,
+    String? note,
+  }) {
+    if (!enableDecisionLogging) return;
+
+    final top = allProbs.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top3 = top
+        .take(3)
+        .map((e) => '${e.key}:${e.value.toStringAsFixed(3)}')
+        .join(', ');
+
+    debugPrint(
+      '[Classifier][$gate] result=$resultType crop=$cropName conf=${confidence.toStringAsFixed(3)} top3=[$top3] note=${note ?? '-'}',
+    );
   }
 
   void dispose() {

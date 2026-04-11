@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/scan_result.dart';
 import '../services/storage_service.dart';
+import '../l10n/app_strings.dart';
+import '../data/disease_info.dart';
 import 'result_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -15,10 +17,98 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen>
     with SingleTickerProviderStateMixin {
   final StorageService _storage = StorageService();
+  static const bool _enableLocaleDebugLogs = true;
   late TabController _tabController;
   List<ScanResult> _recentScans = [];
   List<ScanResult> _savedScans = [];
   bool _isLoading = true;
+  String? _loadError;
+  String? _lastLocaleCode;
+
+  static const Set<String> _diagnosisKeys = {
+    'uncertain',
+    'poorImageQuality',
+    'unsupportedCrop',
+    'classificationError',
+    'likelyHealthy',
+    'unidentifiedCondition',
+    'likelyHealthyVerify',
+    'rescueLikelyCropLowLight',
+    'rescuePossibleCropRetake',
+    'rescueLikelyCropLowConfidence',
+  };
+
+  static const Set<String> _diagnosisKeysWithCropArg = {
+    'rescueLikelyCropLowLight',
+    'rescuePossibleCropRetake',
+    'rescueLikelyCropLowConfidence',
+  };
+
+  void _debugLocaleState(String stage, {ScanResult? scan}) {
+    if (!_enableLocaleDebugLogs) return;
+    final localeCode = AppStrings.localeCodeOf(context);
+    debugPrint(
+      '[LocaleDebug][History][$stage] locale=$localeCode active=${AppStrings.activeLanguageCode} crop=${scan?.cropName ?? '-'} disease=${scan?.diseaseName ?? '-'}',
+    );
+  }
+
+  String _displayCropName(String cropName) {
+    final cropKey = DiseaseInfo.canonicalCropKey(cropName);
+    switch (cropKey) {
+      case 'banana':
+        return AppStrings.tr(context, 'banana');
+      case 'beans':
+        return AppStrings.tr(context, 'beans');
+      case 'maize':
+        return AppStrings.tr(context, 'maize');
+      case 'potato':
+        return AppStrings.tr(context, 'potato');
+      case 'unknown':
+        return AppStrings.tr(context, 'unknownCrop');
+      default:
+        return cropName;
+    }
+  }
+
+  String _localizeStoredDiagnosis(ScanResult scan) {
+    final stored = scan.diseaseName.trim();
+    if (stored.isEmpty) return scan.diseaseName;
+
+    if (_diagnosisKeysWithCropArg.contains(stored)) {
+      return AppStrings.tr(
+        context,
+        stored,
+        args: {'crop': _displayCropName(scan.cropName).toLowerCase()},
+      );
+    }
+
+    if (_diagnosisKeys.contains(stored)) {
+      return AppStrings.tr(context, stored);
+    }
+
+    final byClass = DiseaseInfo.all[stored.toLowerCase()];
+    if (byClass != null) {
+      return DiseaseInfo.localizeDiseaseName(
+        byClass.displayName,
+        classKey: byClass.className,
+      );
+    }
+
+    return DiseaseInfo.localizeDiseaseName(scan.diseaseName);
+  }
+
+  String _resolvedDiseaseLabel(ScanResult scan) {
+    try {
+      final info = DiseaseInfo.resolveByCropAndDiseaseName(
+        scan.cropName,
+        scan.diseaseName,
+      );
+      if (info != null) return info.displayName;
+      return _localizeStoredDiagnosis(scan);
+    } catch (_) {
+      return scan.diseaseName;
+    }
+  }
 
   @override
   void initState() {
@@ -27,12 +117,46 @@ class _HistoryScreenState extends State<HistoryScreen>
     _loadScans();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final normalized = AppStrings.localeCodeOf(context);
+    if (_lastLocaleCode != normalized) {
+      _lastLocaleCode = normalized;
+      AppStrings.setActiveLanguageCode(normalized);
+      _debugLocaleState('didChangeDependencies');
+      _loadScans();
+    }
+  }
+
   Future<void> _loadScans() async {
-    setState(() => _isLoading = true);
-    _recentScans = await _storage.getRecentScans();
-    _savedScans = await _storage.getSavedScans();
-    if (mounted) {
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
+
+    try {
+      _recentScans = await _storage.getRecentScans();
+      _savedScans = await _storage.getSavedScans();
+      if (!mounted) return;
       setState(() => _isLoading = false);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _loadError = '${AppStrings.tr(context, 'scanError')}: $e';
+      });
+    }
+  }
+
+  String _formatScanDate(DateTime scannedAt) {
+    final localeCode = AppStrings.localeCodeOf(context);
+    const pattern = 'MMM d, yyyy - h:mm a';
+
+    try {
+      return DateFormat(pattern, localeCode).format(scannedAt);
+    } catch (_) {
+      return DateFormat(pattern, 'en').format(scannedAt);
     }
   }
 
@@ -44,9 +168,10 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    _debugLocaleState('build');
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan History'),
+        title: Text(AppStrings.tr(context, 'scanHistory')),
         backgroundColor: const Color(0xFF2E7D32),
         foregroundColor: Colors.white,
         bottom: TabBar(
@@ -55,13 +180,49 @@ class _HistoryScreenState extends State<HistoryScreen>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           tabs: [
-            Tab(text: 'Recent (${_recentScans.length})'),
-            Tab(text: 'Saved (${_savedScans.length})'),
+            Tab(
+              text: AppStrings.tr(
+                context,
+                'recentTab',
+                args: {'count': '${_recentScans.length}'},
+              ),
+            ),
+            Tab(
+              text: AppStrings.tr(
+                context,
+                'savedTab',
+                args: {'count': '${_savedScans.length}'},
+              ),
+            ),
           ],
         ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
+          : _loadError != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 12),
+                    Text(
+                      _loadError!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: _loadScans,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(AppStrings.tr(context, 'retry')),
+                    ),
+                  ],
+                ),
+              ),
+            )
           : TabBarView(
               controller: _tabController,
               children: [
@@ -85,14 +246,16 @@ class _HistoryScreenState extends State<HistoryScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              isRecent ? 'No recent scans' : 'No saved scans',
+              isRecent
+                  ? AppStrings.tr(context, 'noRecentScans')
+                  : AppStrings.tr(context, 'noSavedScans'),
               style: TextStyle(fontSize: 18, color: Colors.grey.shade500),
             ),
             const SizedBox(height: 8),
             Text(
               isRecent
-                  ? 'Start scanning crops to see results here'
-                  : 'Tap the bookmark icon on scans to save permanently',
+                  ? AppStrings.tr(context, 'startScanningHint')
+                  : AppStrings.tr(context, 'saveScanHint'),
               style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
               textAlign: TextAlign.center,
             ),
@@ -107,15 +270,29 @@ class _HistoryScreenState extends State<HistoryScreen>
         padding: const EdgeInsets.all(12),
         itemCount: scans.length,
         itemBuilder: (context, index) {
-          return _buildScanCard(scans[index], isRecent: isRecent);
+          try {
+            return _buildScanCard(scans[index], isRecent: isRecent);
+          } catch (_) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                title: Text(AppStrings.tr(context, 'classificationError')),
+                subtitle: Text(AppStrings.tr(context, 'imageNotReliable')),
+              ),
+            );
+          }
         },
       ),
     );
   }
 
   Widget _buildScanCard(ScanResult scan, {required bool isRecent}) {
+    _debugLocaleState('buildCard', scan: scan);
     final scannedAt = DateTime.tryParse(scan.dateTime) ?? DateTime.now();
-    final dateStr = DateFormat('MMM d, yyyy - h:mm a').format(scannedAt);
+    final dateStr = _formatScanDate(scannedAt);
+    final localizedDisease = _resolvedDiseaseLabel(scan);
+    final localizedCrop = _displayCropName(scan.cropName);
     final daysOld = DateTime.now().difference(scannedAt).inDays;
 
     Color statusColor;
@@ -147,9 +324,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           // Navigate to result detail view
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => ResultScreen(result: scan),
-            ),
+            MaterialPageRoute(builder: (_) => ResultScreen(result: scan)),
           );
         },
         child: Padding(
@@ -183,8 +358,8 @@ class _HistoryScreenState extends State<HistoryScreen>
                         Expanded(
                           child: Text(
                             scan.resultType == 'healthy'
-                                ? '${scan.cropName} - Healthy'
-                                : '${scan.cropName} - ${scan.diseaseName}',
+                                ? '$localizedCrop - ${AppStrings.tr(context, 'healthy')}'
+                                : '$localizedCrop - $localizedDisease',
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
@@ -196,7 +371,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${(scan.confidence * 100).toStringAsFixed(1)}% confidence',
+                      '${(scan.confidence * 100).toStringAsFixed(1)}% ${AppStrings.tr(context, 'confidence').toLowerCase()}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -224,7 +399,11 @@ class _HistoryScreenState extends State<HistoryScreen>
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              'Expires in ${30 - daysOld}d',
+                              AppStrings.tr(
+                                context,
+                                'expiresInDays',
+                                args: {'days': '${30 - daysOld}'},
+                              ),
                               style: TextStyle(
                                 fontSize: 10,
                                 color: Colors.red.shade700,
@@ -244,15 +423,17 @@ class _HistoryScreenState extends State<HistoryScreen>
                       icon: const Icon(Icons.bookmark_add_outlined),
                       iconSize: 20,
                       color: const Color(0xFF2E7D32),
-                      tooltip: 'Save permanently',
+                      tooltip: AppStrings.tr(context, 'savePermanently'),
                       onPressed: () async {
                         if (scan.id != null) {
                           await _storage.savePermanently(scan.id!);
                           _loadScans();
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Saved permanently'),
+                              SnackBar(
+                                content: Text(
+                                  AppStrings.tr(context, 'savedPermanently'),
+                                ),
                               ),
                             );
                           }
@@ -263,7 +444,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     icon: const Icon(Icons.delete_outline),
                     iconSize: 20,
                     color: Colors.red.shade400,
-                    tooltip: 'Delete',
+                    tooltip: AppStrings.tr(context, 'delete'),
                     onPressed: () => _confirmDelete(scan),
                   ),
                 ],
@@ -279,14 +460,12 @@ class _HistoryScreenState extends State<HistoryScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Scan'),
-        content: const Text(
-          'This will permanently delete this scan and its image. Continue?',
-        ),
+        title: Text(AppStrings.tr(context, 'deleteScan')),
+        content: Text(AppStrings.tr(context, 'deleteScanConfirm')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.tr(context, 'cancel')),
           ),
           TextButton(
             onPressed: () async {
@@ -296,7 +475,10 @@ class _HistoryScreenState extends State<HistoryScreen>
                 _loadScans();
               }
             },
-            child: Text('Delete', style: TextStyle(color: Colors.red.shade600)),
+            child: Text(
+              AppStrings.tr(context, 'delete'),
+              style: TextStyle(color: Colors.red.shade600),
+            ),
           ),
         ],
       ),

@@ -132,18 +132,19 @@ class StorageService {
   Future<void> cleanupExpiredRecentScans({int maxAgeDays = 30}) async {
     final db = await database;
     final cutoff = DateTime.now().subtract(Duration(days: maxAgeDays));
-    final cutoffIso = cutoff.toIso8601String();
-
-    final expiredRows = await db.query(
+    final candidateRows = await db.query(
       'scan_history',
-      columns: ['id'],
-      where: 'isSaved = ? AND dateTime < ?',
-      whereArgs: [0, cutoffIso],
+      columns: ['id', 'dateTime'],
+      where: 'isSaved = ?',
+      whereArgs: [0],
     );
 
-    for (final row in expiredRows) {
+    for (final row in candidateRows) {
       final id = row['id'] as int?;
-      if (id != null) {
+      final storedTime = row['dateTime'] as String?;
+      final parsedTime =
+          storedTime == null ? null : DateTime.tryParse(storedTime)?.toLocal();
+      if (id != null && parsedTime != null && parsedTime.isBefore(cutoff)) {
         await deleteScan(id);
       }
     }

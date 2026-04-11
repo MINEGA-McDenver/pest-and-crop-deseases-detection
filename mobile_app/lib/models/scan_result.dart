@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class ScanResult {
   final int? id;
   final String imagePath;
@@ -37,35 +39,71 @@ class ScanResult {
       'diseaseName': diseaseName,
       'confidence': confidence,
       'resultType': resultType,
-      'allProbabilities': allProbabilities.entries
-          .map((e) => '${e.key}:${e.value}')
-          .join(','),
+      'allProbabilities': jsonEncode(allProbabilities),
       'dateTime': dateTime,
       'isSaved': isSaved ? 1 : 0,
     };
   }
 
   factory ScanResult.fromMap(Map<String, dynamic> map) {
-    Map<String, double> probs = {};
-    if (map['allProbabilities'] != null &&
-        map['allProbabilities'].toString().isNotEmpty) {
-      for (var entry in map['allProbabilities'].toString().split(',')) {
-        final parts = entry.split(':');
-        if (parts.length == 2) {
-          probs[parts[0]] = double.tryParse(parts[1]) ?? 0.0;
-        }
-      }
-    }
+    final probs = _parseProbabilities(map['allProbabilities']);
+    final confidenceRaw = map['confidence'];
+    final confidence = confidenceRaw is num
+        ? confidenceRaw.toDouble()
+        : double.tryParse(confidenceRaw?.toString() ?? '') ?? 0.0;
+
+    final savedRaw = map['isSaved'];
+    final isSaved = savedRaw == 1 || savedRaw == true || savedRaw == '1';
+
     return ScanResult(
       id: map['id'] as int?,
-      imagePath: map['imagePath'] as String,
-      cropName: map['cropName'] as String,
-      diseaseName: map['diseaseName'] as String,
-      confidence: (map['confidence'] as num).toDouble(),
-      resultType: map['resultType'] as String,
+      imagePath: (map['imagePath'] as String?) ?? '',
+      cropName: (map['cropName'] as String?) ?? 'Unknown',
+      diseaseName: (map['diseaseName'] as String?) ?? 'unknownCondition',
+      confidence: confidence,
+      resultType: (map['resultType'] as String?) ?? 'unsupported',
       allProbabilities: probs,
-      dateTime: map['dateTime'] as String,
-      isSaved: map['isSaved'] == 1,
+      dateTime:
+          (map['dateTime'] as String?) ?? DateTime.now().toIso8601String(),
+      isSaved: isSaved,
     );
+  }
+
+  static Map<String, double> _parseProbabilities(dynamic raw) {
+    final probs = <String, double>{};
+    if (raw == null) return probs;
+
+    final text = raw.toString().trim();
+    if (text.isEmpty) return probs;
+
+    // Preferred format: JSON map serialized by jsonEncode.
+    try {
+      final decoded = jsonDecode(text);
+      if (decoded is Map<String, dynamic>) {
+        for (final entry in decoded.entries) {
+          final value = entry.value;
+          if (value is num) {
+            probs[entry.key] = value.toDouble();
+          } else {
+            final parsed = double.tryParse(value.toString());
+            if (parsed != null) probs[entry.key] = parsed;
+          }
+        }
+        return probs;
+      }
+    } catch (_) {
+      // Fall back to legacy comma-separated format below.
+    }
+
+    // Legacy format: class1:0.9,class2:0.1
+    for (final entry in text.split(',')) {
+      final parts = entry.split(':');
+      if (parts.length == 2) {
+        final parsed = double.tryParse(parts[1]);
+        if (parsed != null) probs[parts[0]] = parsed;
+      }
+    }
+
+    return probs;
   }
 }

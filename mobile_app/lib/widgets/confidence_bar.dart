@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 
 class ConfidenceBar extends StatelessWidget {
   final double confidence;
-  final String label;
+  final String? label;
 
-  const ConfidenceBar({
-    super.key,
-    required this.confidence,
-    this.label = 'Confidence',
-  });
+  const ConfidenceBar({super.key, required this.confidence, this.label});
 
   Color get _color {
     if (confidence >= 0.8) return Colors.green;
@@ -26,7 +23,7 @@ class ConfidenceBar extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                label,
+                label ?? AppStrings.tr(context, 'confidence'),
                 style: Theme.of(context).textTheme.bodySmall,
                 overflow: TextOverflow.ellipsis,
               ),

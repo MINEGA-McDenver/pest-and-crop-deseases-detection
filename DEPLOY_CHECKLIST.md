@@ -91,8 +91,9 @@ static const double otherLeafAbsoluteFloor = <value from script>;
 
 Current calibration result (2026-04-07):
 
-- [x] `cropTotalThreshold = 0.90`
-- [x] `otherLeafAbsoluteFloor = 0.10`
+- [x] `cropTotalThreshold = 0.84` (pilot runtime hotfix truth source)
+- [x] `otherLeafAbsoluteFloor = 0.12` (pilot runtime hotfix truth source)
+- [x] Ambiguity policy = **Option A (strict uncertain)** for mixed-scene crop ambiguity gates (`cropGap`, `secondCropTotal`) to avoid false-safe disease/healthy claims
 - [x] Supported-crop recall = 90.58%
 - [x] Other-leaf false-positive rate = 0.50%
 

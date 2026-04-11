@@ -19,6 +19,82 @@ class _ResultScreenState extends State<ResultScreen> {
   final StorageService _storage = StorageService();
   bool _saved = false;
 
+  static const Set<String> _diagnosisKeys = {
+    'uncertain',
+    'poorImageQuality',
+    'unsupportedCrop',
+    'classificationError',
+    'likelyHealthy',
+    'unidentifiedCondition',
+    'likelyHealthyVerify',
+    'rescueLikelyCropLowLight',
+    'rescuePossibleCropRetake',
+    'rescueLikelyCropLowConfidence',
+  };
+
+  static const Set<String> _diagnosisKeysWithCropArg = {
+    'rescueLikelyCropLowLight',
+    'rescuePossibleCropRetake',
+    'rescueLikelyCropLowConfidence',
+  };
+
+  String _localizeStoredDiagnosis(String stored, {String? cropName}) {
+    final normalized = stored.trim();
+    if (normalized.isEmpty) return stored;
+
+    if (_diagnosisKeysWithCropArg.contains(normalized)) {
+      final crop = cropName ?? widget.result.cropName;
+      return AppStrings.tr(context, normalized, args: {'crop': crop});
+    }
+
+    if (_diagnosisKeys.contains(normalized)) {
+      return AppStrings.tr(context, normalized);
+    }
+
+    final byClass = DiseaseInfo.all[normalized.toLowerCase()];
+    if (byClass != null) {
+      return DiseaseInfo.localizeDiseaseName(
+        byClass.displayName,
+        classKey: byClass.className,
+      );
+    }
+
+    return DiseaseInfo.localizeDiseaseName(normalized);
+  }
+
+  String _qualityIssueText(String issue) {
+    final localized = AppStrings.tr(context, issue);
+    return localized == issue ? issue : localized;
+  }
+
+  String _resolvedCurrentDiseaseLabel() {
+    final info = DiseaseInfo.resolveByCropAndDiseaseName(
+      widget.result.cropName,
+      widget.result.diseaseName,
+    );
+    if (info != null) return info.displayName;
+    return _localizeStoredDiagnosis(widget.result.diseaseName);
+  }
+
+  String _predictionLabel(String classKey) {
+    if (classKey == 'other_leaf') {
+      return AppStrings.tr(context, 'unsupportedCrop');
+    }
+
+    final info = DiseaseInfo.all[classKey];
+    if (info != null) {
+      final diseaseLabel = info.isHealthy
+          ? AppStrings.tr(context, 'healthy')
+          : DiseaseInfo.localizeDiseaseName(
+              info.displayName,
+              classKey: info.className,
+            );
+      return '${info.cropName} - $diseaseLabel';
+    }
+
+    return AppStrings.tr(context, 'unknownCondition');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -114,19 +190,21 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   String _getHeaderText() {
+    final localizedDisease = _resolvedCurrentDiseaseLabel();
+
     switch (widget.result.resultType) {
       case 'poor_quality':
-        return '⚠️ Image Quality Issue';
+        return '⚠️ ${AppStrings.tr(context, 'poorQualityHeader')}';
       case 'unsupported':
-        return '❓ Crop Not Recognized';
+        return '❓ ${AppStrings.tr(context, 'unsupportedHeader')}';
       case 'uncertain':
-        return '🤔 Uncertain Result';
+        return '🤔 ${AppStrings.tr(context, 'uncertainHeader')}';
       case 'unknown_disease':
-        return '🔬 ${widget.result.cropName} - Unknown Condition';
+        return '🔬 ${AppStrings.tr(context, 'unknownConditionHeader', args: {'crop': widget.result.cropName})}';
       case 'healthy':
-        return '✅ ${widget.result.cropName} - Healthy';
+        return '✅ ${AppStrings.tr(context, 'healthyHeader', args: {'crop': widget.result.cropName})}';
       case 'disease':
-        return '⚠️ ${widget.result.cropName} - ${widget.result.diseaseName}';
+        return '⚠️ ${AppStrings.tr(context, 'diseaseHeader', args: {'crop': widget.result.cropName, 'disease': localizedDisease})}';
       default:
         return widget.result.cropName;
     }
@@ -165,16 +243,18 @@ class _ResultScreenState extends State<ResultScreen> {
                     color: Colors.red.shade300,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Image Quality Too Low',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Text(
+                    AppStrings.tr(context, 'imageQualityTooLow'),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'The image could not be analyzed reliably. '
-                    'Please take a new photo following the tips below.',
+                  Text(
+                    AppStrings.tr(context, 'imageNotReliable'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
                   if (widget.result.qualityIssues != null)
@@ -192,7 +272,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                issue,
+                                _qualityIssueText(issue),
                                 style: TextStyle(color: Colors.red.shade800),
                               ),
                             ),
@@ -231,16 +311,15 @@ class _ResultScreenState extends State<ResultScreen> {
                     color: Colors.blueGrey.shade300,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Crop Not Recognized',
+                  Text(
+                    AppStrings.tr(context, 'unsupportedHeader'),
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'This image does not appear to match any of the crops '
-                    'supported by this app. Currently we support:',
+                  Text(
+                    AppStrings.tr(context, 'unsupportedIntro'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
                   Wrap(
@@ -248,16 +327,15 @@ class _ResultScreenState extends State<ResultScreen> {
                     runSpacing: 8,
                     alignment: WrapAlignment.center,
                     children: [
-                      _buildCropChip('🍌', 'Banana'),
-                      _buildCropChip('🫘', 'Beans'),
-                      _buildCropChip('🌽', 'Maize'),
-                      _buildCropChip('🥔', 'Potato'),
+                      _buildCropChip('🍌', AppStrings.tr(context, 'banana')),
+                      _buildCropChip('🫘', AppStrings.tr(context, 'beans')),
+                      _buildCropChip('🌽', AppStrings.tr(context, 'maize')),
+                      _buildCropChip('🥔', AppStrings.tr(context, 'potato')),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'If this IS one of these crops, try taking a clearer photo '
-                    'of a single leaf in good lighting.',
+                    AppStrings.tr(context, 'unsupportedRetryHint'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
@@ -299,7 +377,11 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '${widget.result.cropName} Detected',
+                    AppStrings.tr(
+                      context,
+                      'cropDetected',
+                      args: {'crop': widget.result.cropName},
+                    ),
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -308,7 +390,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   const SizedBox(height: 4),
                   ConfidenceBar(
                     confidence: widget.result.confidence,
-                    label: 'Crop Detection Confidence',
+                    label: AppStrings.tr(context, 'cropDetectionConfidence'),
                   ),
                   const SizedBox(height: 16),
                   Container(
@@ -327,7 +409,13 @@ class _ResultScreenState extends State<ResultScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Your ${widget.result.cropName.toLowerCase()} appears to be unhealthy',
+                          AppStrings.tr(
+                            context,
+                            'yourCropUnhealthy',
+                            args: {
+                              'crop': widget.result.cropName.toLowerCase(),
+                            },
+                          ),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -337,10 +425,13 @@ class _ResultScreenState extends State<ResultScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Sadly, the disease or pest affecting your '
-                          '${widget.result.cropName.toLowerCase()} is not currently '
-                          'supported by this app. Our app can only detect the following '
-                          'diseases:',
+                          AppStrings.tr(
+                            context,
+                            'unknownDiseaseMessage',
+                            args: {
+                              'crop': widget.result.cropName.toLowerCase(),
+                            },
+                          ),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -376,7 +467,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       Icon(Icons.emergency, color: Colors.red.shade700),
                       const SizedBox(width: 8),
                       Text(
-                        'What You Should Do',
+                        AppStrings.tr(context, 'whatYouShouldDo'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -388,27 +479,23 @@ class _ResultScreenState extends State<ResultScreen> {
                   const SizedBox(height: 12),
                   _buildActionItem(
                     Icons.person_search,
-                    'Contact an agricultural professional immediately',
-                    'Visit your local agricultural extension office or '
-                        'RAB center for expert diagnosis.',
+                    AppStrings.tr(context, 'contactProfessionalNow'),
+                    AppStrings.tr(context, 'contactProfessionalDesc'),
                   ),
                   _buildActionItem(
                     Icons.timer,
-                    'Act quickly to prevent spread',
-                    'Isolate affected plants if possible. Do not wait — '
-                        'diseases can spread rapidly.',
+                    AppStrings.tr(context, 'actQuickly'),
+                    AppStrings.tr(context, 'actQuicklyDesc'),
                   ),
                   _buildActionItem(
                     Icons.camera_alt,
-                    'Take multiple photos',
-                    'Photograph affected leaves from different angles to '
-                        'show the professional.',
+                    AppStrings.tr(context, 'takeMultiplePhotos'),
+                    AppStrings.tr(context, 'takeMultiplePhotosDesc'),
                   ),
                   _buildActionItem(
                     Icons.note_alt,
-                    'Note the symptoms',
-                    'Record when you first noticed the problem, which '
-                        'plants are affected, and how fast it spreads.',
+                    AppStrings.tr(context, 'noteSymptoms'),
+                    AppStrings.tr(context, 'noteSymptomsDesc'),
                   ),
                 ],
               ),
@@ -426,16 +513,13 @@ class _ResultScreenState extends State<ResultScreen> {
                 children: [
                   Icon(Icons.contact_phone, color: Colors.blue.shade700),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Contact Agriculture Professionals',
+                  Text(
+                    AppStrings.tr(context, 'contactAgriPros'),
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '• Visit your nearest RAB (Rwanda Agriculture Board) center\n'
-                    '• Contact your sector agronomist\n'
-                    '• Call the agriculture helpline for guidance\n'
-                    '• Visit a local agro-dealer for recommended treatments',
+                  Text(
+                    AppStrings.tr(context, 'contactAgriList'),
                     style: TextStyle(fontSize: 13, height: 1.6),
                   ),
                 ],
@@ -447,7 +531,7 @@ class _ResultScreenState extends State<ResultScreen> {
           _buildRetakeButton(),
           const SizedBox(height: 8),
           Text(
-            DiseaseInfo.professionalAdvice,
+            AppStrings.tr(context, 'professionalAdvice'),
             style: TextStyle(
               fontSize: 11,
               color: Colors.grey.shade500,
@@ -475,7 +559,11 @@ class _ResultScreenState extends State<ResultScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Diseases we CAN detect for ${widget.result.cropName}:',
+              AppStrings.tr(
+                context,
+                'detectableDiseasesForCrop',
+                args: {'crop': widget.result.cropName},
+              ),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -497,7 +585,7 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'The condition on your crop does not match any of the above.',
+              AppStrings.tr(context, 'conditionNotInList'),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -560,23 +648,29 @@ class _ResultScreenState extends State<ResultScreen> {
                     color: Colors.amber.shade700,
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Uncertain Result',
+                  Text(
+                    AppStrings.tr(context, 'uncertainHeader'),
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'The app thinks this might be '
-                    '${widget.result.cropName} (${widget.result.diseaseName}), '
-                    'but confidence is low at '
-                    '${(widget.result.confidence * 100).toStringAsFixed(1)}%.',
+                    AppStrings.tr(
+                      context,
+                      'uncertainBody',
+                      args: {
+                        'crop': widget.result.cropName,
+                        'disease': _resolvedCurrentDiseaseLabel(),
+                        'confidence': (widget.result.confidence * 100)
+                            .toStringAsFixed(1),
+                      },
+                    ),
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 12),
                   ConfidenceBar(
                     confidence: widget.result.confidence,
-                    label: 'Confidence',
+                    label: AppStrings.tr(context, 'confidence'),
                   ),
                 ],
               ),
@@ -588,7 +682,7 @@ class _ResultScreenState extends State<ResultScreen> {
           _buildRetakeButton(),
           const SizedBox(height: 8),
           Text(
-            DiseaseInfo.professionalAdvice,
+            AppStrings.tr(context, 'professionalAdvice'),
             style: TextStyle(
               fontSize: 11,
               color: Colors.grey.shade500,
@@ -603,9 +697,11 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // ─── CONFIDENT RESULT (healthy or known disease) ───────────
   Widget _buildConfidentResult() {
-    final key =
-        '${widget.result.cropName.toLowerCase()}_${widget.result.diseaseName.toLowerCase().replaceAll(' ', '_')}';
-    final diseaseInfo = DiseaseInfo.all[key];
+    final localizedDisease = _resolvedCurrentDiseaseLabel();
+    final diseaseInfo = DiseaseInfo.resolveByCropAndDiseaseName(
+      widget.result.cropName,
+      widget.result.diseaseName,
+    );
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -627,8 +723,12 @@ class _ResultScreenState extends State<ResultScreen> {
                   const SizedBox(height: 8),
                   Text(
                     widget.result.resultType == 'healthy'
-                        ? '${widget.result.cropName} - Healthy'
-                        : '${widget.result.cropName} - ${widget.result.diseaseName}',
+                        ? AppStrings.tr(
+                            context,
+                            'healthyHeader',
+                            args: {'crop': widget.result.cropName},
+                          )
+                        : '${widget.result.cropName} - $localizedDisease',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -638,7 +738,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   const SizedBox(height: 12),
                   ConfidenceBar(
                     confidence: widget.result.confidence,
-                    label: 'Detection Confidence',
+                    label: AppStrings.tr(context, 'detectionConfidence'),
                   ),
                 ],
               ),
@@ -655,7 +755,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
           const SizedBox(height: 16),
           Text(
-            DiseaseInfo.professionalAdvice,
+            AppStrings.tr(context, 'professionalAdvice'),
             style: TextStyle(
               fontSize: 11,
               color: Colors.grey.shade500,
@@ -680,8 +780,8 @@ class _ResultScreenState extends State<ResultScreen> {
               style: const TextStyle(fontSize: 14, height: 1.5),
             ),
             const Divider(height: 24),
-            const Text(
-              '🛠️ What To Do',
+            Text(
+              '🛠️ ${AppStrings.tr(context, 'whatToDo')}',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -701,8 +801,8 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
             if (!info.isHealthy) ...[
               const Divider(height: 24),
-              const Text(
-                '🛡️ Prevention',
+              Text(
+                '🛡️ ${AppStrings.tr(context, 'prevention')}',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -738,8 +838,8 @@ class _ResultScreenState extends State<ResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Top Predictions',
+            Text(
+              AppStrings.tr(context, 'topPredictions'),
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -748,7 +848,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: ConfidenceBar(
                   confidence: entry.value,
-                  label: entry.key.replaceAll('_', ' '),
+                  label: _predictionLabel(entry.key),
                 ),
               ),
             ),
@@ -788,7 +888,10 @@ class _ResultScreenState extends State<ResultScreen> {
             _buildTip(Icons.straighten, AppStrings.tr(context, 'tipDistance')),
             _buildTip(Icons.blur_off, AppStrings.tr(context, 'tipSteady')),
             _buildTip(Icons.contrast, AppStrings.tr(context, 'tipBackground')),
-            _buildTip(Icons.crop_original, AppStrings.tr(context, 'tipAffected')),
+            _buildTip(
+              Icons.crop_original,
+              AppStrings.tr(context, 'tipAffected'),
+            ),
           ],
         ),
       ),
@@ -840,9 +943,7 @@ class _ResultScreenState extends State<ResultScreen> {
     }
     setState(() => _saved = true);
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppStrings.tr(context, 'resultSaved'))),
       );
     }

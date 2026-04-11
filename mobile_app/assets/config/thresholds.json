@@ -1,6 +1,8 @@
 {
   "version": 1,
   "model_date": "2026-04-07",
+  "threshold_source": "field_hotfix_runtime",
+  "threshold_source_note": "Pilot truth source: keep runtime hotfix thresholds (0.84/0.12) for lower false unsupported on beans/potato.",
   "thresholds": {
     "cropTotalThreshold": 0.84,
     "otherLeafAbsoluteFloor": 0.12
