@@ -73,7 +73,7 @@ class StorageService {
   Future<List<ScanResult>> getRecentScans() async {
     await cleanupExpiredRecentScans();
     final db = await database;
-    final maps = await db.query('scan_history', orderBy: 'id DESC', limit: 50);
+    final maps = await db.query('scan_history', orderBy: 'id DESC');
     return maps.map((m) => ScanResult.fromMap(m)).toList();
   }
 

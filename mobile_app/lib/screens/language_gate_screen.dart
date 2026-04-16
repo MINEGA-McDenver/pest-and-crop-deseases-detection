@@ -51,6 +51,7 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
   late int _currentSlideIndex;
   Timer? _autoSlideTimer;
   bool _submitting = false;
+  double _dragDeltaX = 0;
 
   @override
   void initState() {
@@ -121,12 +122,26 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
           Container(
             color: Colors.black.withValues(alpha: 0.45),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onHorizontalDragUpdate: (details) {
+              _dragDeltaX += details.primaryDelta ?? 0;
+            },
+            onHorizontalDragEnd: (_) {
+              const swipeThreshold = 28.0;
+              if (_dragDeltaX > swipeThreshold) {
+                _goToPreviousSlide();
+              } else if (_dragDeltaX < -swipeThreshold) {
+                _goToNextSlide();
+              }
+              _dragDeltaX = 0;
+            },
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                   const SizedBox(height: 16),
                   Text(
                     AppStrings.trCode('appTitle', code: 'en'),
@@ -225,12 +240,33 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
                       );
                     }),
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _goToNextSlide() {
+    if (!_pageController.hasClients || _slides.isEmpty) return;
+    final next = (_currentSlideIndex + 1) % _slides.length;
+    _pageController.animateToPage(
+      next,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _goToPreviousSlide() {
+    if (!_pageController.hasClients || _slides.isEmpty) return;
+    final previous = (_currentSlideIndex - 1 + _slides.length) % _slides.length;
+    _pageController.animateToPage(
+      previous,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOut,
     );
   }
 

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/scan_result.dart';
 import '../data/disease_info.dart';
-import '../widgets/confidence_bar.dart';
 import '../services/storage_service.dart';
 import '../l10n/app_strings.dart';
 
@@ -18,7 +17,6 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   final StorageService _storage = StorageService();
   bool _saved = false;
-  bool _showTechnicalDetails = false;
 
   static const Set<String> _diagnosisKeys = {
     'uncertain',
@@ -44,8 +42,8 @@ class _ResultScreenState extends State<ResultScreen> {
     if (normalized.isEmpty) return stored;
 
     if (_diagnosisKeysWithCropArg.contains(normalized)) {
-      final crop = cropName ?? widget.result.cropName;
-      return AppStrings.tr(context, normalized, args: {'crop': crop});
+      final crop = _displayCropName(cropName ?? widget.result.cropName);
+      return AppStrings.tr(context, normalized, args: {'crop': crop.toLowerCase()});
     }
 
     if (_diagnosisKeys.contains(normalized)) {
@@ -54,13 +52,31 @@ class _ResultScreenState extends State<ResultScreen> {
 
     final byClass = DiseaseInfo.all[normalized.toLowerCase()];
     if (byClass != null) {
-      return DiseaseInfo.localizeDiseaseName(
+      return DiseaseInfo.englishDiseaseName(
         byClass.displayName,
         classKey: byClass.className,
       );
     }
 
-    return DiseaseInfo.localizeDiseaseName(normalized);
+    return DiseaseInfo.englishDiseaseName(normalized);
+  }
+
+  String _displayCropName(String cropName) {
+    final cropKey = DiseaseInfo.canonicalCropKey(cropName);
+    switch (cropKey) {
+      case 'banana':
+        return AppStrings.tr(context, 'banana');
+      case 'beans':
+        return AppStrings.tr(context, 'beans');
+      case 'maize':
+        return AppStrings.tr(context, 'maize');
+      case 'potato':
+        return AppStrings.tr(context, 'potato');
+      case 'unknown':
+        return AppStrings.tr(context, 'unknownCrop');
+      default:
+        return cropName;
+    }
   }
 
   String _qualityIssueText(String issue) {
@@ -73,42 +89,14 @@ class _ResultScreenState extends State<ResultScreen> {
       widget.result.cropName,
       widget.result.diseaseName,
     );
-    if (info != null) return info.displayName;
+    if (info != null) {
+      return DiseaseInfo.englishDiseaseName(
+        info.displayName,
+        classKey: info.className,
+      );
+    }
     return _localizeStoredDiagnosis(widget.result.diseaseName);
   }
-
-  String _predictionLabel(String classKey) {
-    if (classKey == 'other_leaf') {
-      return AppStrings.tr(context, 'unsupportedCrop');
-    }
-
-    final info = DiseaseInfo.all[classKey];
-    if (info != null) {
-      final diseaseLabel = info.isHealthy
-          ? AppStrings.tr(context, 'healthy')
-          : DiseaseInfo.localizeDiseaseName(
-              info.displayName,
-              classKey: info.className,
-            );
-      return '${info.cropName} - $diseaseLabel';
-    }
-
-    return AppStrings.tr(context, 'unknownCondition');
-  }
-
-  String _confidenceBandText(double confidence) {
-    if (confidence >= 0.8) return AppStrings.tr(context, 'confidenceHigh');
-    if (confidence >= 0.5) return AppStrings.tr(context, 'confidenceMedium');
-    return AppStrings.tr(context, 'confidenceLowVerify');
-  }
-
-  Color _confidenceBandColor(double confidence) {
-    if (confidence >= 0.8) return Colors.green.shade700;
-    if (confidence >= 0.5) return Colors.orange.shade700;
-    return Colors.red.shade700;
-  }
-
-  bool _isLowConfidence(double confidence) => confidence < 0.5;
 
   Widget _buildDiagnosisSummary(String diagnosisText) {
     return Container(
@@ -139,36 +127,6 @@ class _ResultScreenState extends State<ResultScreen> {
       ),
     );
   }
-
-  Widget _buildConfidenceBandCard(double confidence) {
-    final bandColor = _confidenceBandColor(confidence);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: bandColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: bandColor.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.shield_outlined, color: bandColor),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '${AppStrings.tr(context, 'confidenceLevel')}: ${_confidenceBandText(confidence)}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: bandColor,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildLowConfidenceGuidanceCard() {
     return Card(
       color: Colors.amber.shade50,
@@ -200,38 +158,6 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAdvancedDetailsSection({bool includeTopPredictions = true}) {
-    return Card(
-      child: ExpansionTile(
-        title: Text(AppStrings.tr(context, 'advancedDetails')),
-        initiallyExpanded: _showTechnicalDetails,
-        onExpansionChanged: (expanded) {
-          setState(() {
-            _showTechnicalDetails = expanded;
-          });
-        },
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${AppStrings.tr(context, 'exactConfidence')}: ${(widget.result.confidence * 100).toStringAsFixed(1)}%',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                if (includeTopPredictions) ...[
-                  const SizedBox(height: 12),
-                  _buildTopPredictions(),
-                ],
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -332,6 +258,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   String _getHeaderText() {
     final localizedDisease = _resolvedCurrentDiseaseLabel();
+    final localizedCrop = _displayCropName(widget.result.cropName);
 
     switch (widget.result.resultType) {
       case 'poor_quality':
@@ -341,13 +268,13 @@ class _ResultScreenState extends State<ResultScreen> {
       case 'uncertain':
         return '🤔 ${AppStrings.tr(context, 'uncertainHeader')}';
       case 'unknown_disease':
-        return '🔬 ${AppStrings.tr(context, 'unknownConditionHeader', args: {'crop': widget.result.cropName})}';
+        return '🔬 ${AppStrings.tr(context, 'unknownConditionHeader', args: {'crop': localizedCrop})}';
       case 'healthy':
-        return '✅ ${AppStrings.tr(context, 'healthyHeader', args: {'crop': widget.result.cropName})}';
+        return '✅ ${AppStrings.tr(context, 'healthyHeader', args: {'crop': localizedCrop})}';
       case 'disease':
-        return '⚠️ ${AppStrings.tr(context, 'diseaseHeader', args: {'crop': widget.result.cropName, 'disease': localizedDisease})}';
+        return '⚠️ ${AppStrings.tr(context, 'diseaseHeader', args: {'crop': localizedCrop, 'disease': localizedDisease})}';
       default:
-        return widget.result.cropName;
+        return localizedCrop;
     }
   }
 
@@ -499,7 +426,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // ─── UNKNOWN DISEASE (crop identified, disease not supported) ──
   Widget _buildUnknownDiseaseCard() {
-    final diagnosis = '${widget.result.cropName} - ${AppStrings.tr(context, 'unknownCondition')}';
+    final localizedCrop = _displayCropName(widget.result.cropName);
+    final diagnosis = '$localizedCrop - ${AppStrings.tr(context, 'unknownCondition')}';
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -523,7 +451,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     AppStrings.tr(
                       context,
                       'cropDetected',
-                      args: {'crop': widget.result.cropName},
+                      args: {'crop': localizedCrop},
                     ),
                     style: const TextStyle(
                       fontSize: 22,
@@ -532,8 +460,6 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildDiagnosisSummary(diagnosis),
-                  const SizedBox(height: 12),
-                  _buildConfidenceBandCard(widget.result.confidence),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -553,9 +479,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           AppStrings.tr(
                             context,
                             'yourCropUnhealthy',
-                            args: {
-                              'crop': widget.result.cropName.toLowerCase(),
-                            },
+                            args: {'crop': localizedCrop.toLowerCase()},
                           ),
                           style: const TextStyle(
                             fontSize: 16,
@@ -569,9 +493,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           AppStrings.tr(
                             context,
                             'unknownDiseaseMessage',
-                            args: {
-                              'crop': widget.result.cropName.toLowerCase(),
-                            },
+                            args: {'crop': localizedCrop.toLowerCase()},
                           ),
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -591,14 +513,6 @@ class _ResultScreenState extends State<ResultScreen> {
 
           // Supported diseases for this crop
           _buildSupportedDiseasesCard(),
-
-          const SizedBox(height: 12),
-          _buildAdvancedDetailsSection(includeTopPredictions: true),
-
-          if (_isLowConfidence(widget.result.confidence)) ...[
-            const SizedBox(height: 12),
-            _buildLowConfidenceGuidanceCard(),
-          ],
 
           const SizedBox(height: 12),
 
@@ -694,10 +608,12 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Widget _buildSupportedDiseasesCard() {
-    final cropName = widget.result.cropName.toLowerCase();
-    final diseases = DiseaseInfo.all.values
-        .where((d) => d.cropName.toLowerCase() == cropName && !d.isHealthy)
-        .toList();
+    final localizedCrop = _displayCropName(widget.result.cropName);
+    final normalizedCrop = DiseaseInfo.canonicalCropKey(widget.result.cropName);
+    final diseases = DiseaseInfo.all.values.where((d) {
+      final sameCrop = DiseaseInfo.canonicalCropKey(d.cropName) == normalizedCrop;
+      return sameCrop && !d.isHealthy;
+    }).toList();
 
     if (diseases.isEmpty) return const SizedBox.shrink();
 
@@ -711,7 +627,7 @@ class _ResultScreenState extends State<ResultScreen> {
               AppStrings.tr(
                 context,
                 'detectableDiseasesForCrop',
-                args: {'crop': widget.result.cropName},
+                args: {'crop': localizedCrop},
               ),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
@@ -727,7 +643,13 @@ class _ResultScreenState extends State<ResultScreen> {
                       color: Colors.green.shade600,
                     ),
                     const SizedBox(width: 8),
-                    Text(d.displayName, style: const TextStyle(fontSize: 13)),
+                    Text(
+                      DiseaseInfo.englishDiseaseName(
+                        d.displayName,
+                        classKey: d.className,
+                      ),
+                      style: const TextStyle(fontSize: 13),
+                    ),
                   ],
                 ),
               ),
@@ -781,7 +703,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // ─── UNCERTAIN ─────────────────────────────────────────────
   Widget _buildUncertainCard() {
-    final diagnosis = '${widget.result.cropName} - ${_resolvedCurrentDiseaseLabel()}';
+    final localizedCrop = _displayCropName(widget.result.cropName);
+    final diagnosis = '$localizedCrop - ${_resolvedCurrentDiseaseLabel()}';
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -809,7 +732,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       context,
                       'uncertainBody',
                       args: {
-                        'crop': widget.result.cropName,
+                        'crop': localizedCrop,
                         'disease': _resolvedCurrentDiseaseLabel(),
                       },
                     ),
@@ -818,14 +741,10 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildDiagnosisSummary(diagnosis),
-                  const SizedBox(height: 12),
-                  _buildConfidenceBandCard(widget.result.confidence),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          _buildAdvancedDetailsSection(includeTopPredictions: true),
           const SizedBox(height: 12),
           _buildLowConfidenceGuidanceCard(),
           const SizedBox(height: 12),
@@ -850,13 +769,14 @@ class _ResultScreenState extends State<ResultScreen> {
   // ─── CONFIDENT RESULT (healthy or known disease) ───────────
   Widget _buildConfidentResult() {
     final localizedDisease = _resolvedCurrentDiseaseLabel();
+    final localizedCrop = _displayCropName(widget.result.cropName);
     final diagnosis = widget.result.resultType == 'healthy'
         ? AppStrings.tr(
             context,
             'healthyHeader',
-            args: {'crop': widget.result.cropName},
+            args: {'crop': localizedCrop},
           )
-        : '${widget.result.cropName} - $localizedDisease';
+        : '$localizedCrop - $localizedDisease';
     final diseaseInfo = DiseaseInfo.resolveByCropAndDiseaseName(
       widget.result.cropName,
       widget.result.diseaseName,
@@ -890,8 +810,6 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildDiagnosisSummary(diagnosis),
-                  const SizedBox(height: 12),
-                  _buildConfidenceBandCard(widget.result.confidence),
                 ],
               ),
             ),
@@ -900,14 +818,6 @@ class _ResultScreenState extends State<ResultScreen> {
           if (diseaseInfo != null) ...[
             const SizedBox(height: 12),
             _buildDiseaseInfoCard(diseaseInfo),
-          ],
-
-          const SizedBox(height: 12),
-          _buildAdvancedDetailsSection(includeTopPredictions: true),
-
-          if (_isLowConfidence(widget.result.confidence)) ...[
-            const SizedBox(height: 12),
-            _buildLowConfidenceGuidanceCard(),
           ],
 
           const SizedBox(height: 16),
@@ -978,37 +888,6 @@ class _ResultScreenState extends State<ResultScreen> {
                 ),
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTopPredictions() {
-    final sorted = widget.result.allProbabilities.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final top5 = sorted.take(5).toList();
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppStrings.tr(context, 'topPredictions'),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            ...top5.map(
-              (entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: ConfidenceBar(
-                  confidence: entry.value,
-                  label: _predictionLabel(entry.key),
-                ),
-              ),
-            ),
           ],
         ),
       ),

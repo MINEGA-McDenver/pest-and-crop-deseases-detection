@@ -820,6 +820,31 @@ class DiseaseInfo {
     return diseaseName;
   }
 
+  static String englishDiseaseName(String diseaseName, {String? classKey}) {
+    final normalized = diseaseName.trim().toLowerCase();
+    if (normalized.isEmpty) return diseaseName;
+
+    final canonicalKey = canonicalDiseaseKey(diseaseName, classKey: classKey);
+    if (canonicalKey != null) {
+      final byClass = _enAll[canonicalKey];
+      if (byClass != null) return byClass.displayName;
+
+      if (canonicalKey == 'healthy') return 'Healthy';
+      if (canonicalKey == 'uncertain') return 'Uncertain';
+      if (canonicalKey == 'unknownCondition') return 'Unknown Condition';
+    }
+
+    for (final entry in _enAll.entries) {
+      final enName = entry.value.displayName.toLowerCase();
+      final rwName = _rwAll[entry.key]?.displayName.toLowerCase();
+      if (normalized == enName || normalized == rwName) {
+        return entry.value.displayName;
+      }
+    }
+
+    return diseaseName;
+  }
+
   static DiseaseInfo? resolveByCropAndDiseaseName(
     String cropName,
     String diseaseName,

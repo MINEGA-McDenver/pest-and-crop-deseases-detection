@@ -88,13 +88,13 @@ class _HistoryScreenState extends State<HistoryScreen>
 
     final byClass = DiseaseInfo.all[stored.toLowerCase()];
     if (byClass != null) {
-      return DiseaseInfo.localizeDiseaseName(
+      return DiseaseInfo.englishDiseaseName(
         byClass.displayName,
         classKey: byClass.className,
       );
     }
 
-    return DiseaseInfo.localizeDiseaseName(scan.diseaseName);
+    return DiseaseInfo.englishDiseaseName(scan.diseaseName);
   }
 
   String _resolvedDiseaseLabel(ScanResult scan) {
@@ -103,7 +103,12 @@ class _HistoryScreenState extends State<HistoryScreen>
         scan.cropName,
         scan.diseaseName,
       );
-      if (info != null) return info.displayName;
+      if (info != null) {
+        return DiseaseInfo.englishDiseaseName(
+          info.displayName,
+          classKey: info.className,
+        );
+      }
       return _localizeStoredDiagnosis(scan);
     } catch (_) {
       return scan.diseaseName;
@@ -370,14 +375,6 @@ class _HistoryScreenState extends State<HistoryScreen>
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      '${(scan.confidence * 100).toStringAsFixed(1)}% ${AppStrings.tr(context, 'confidence').toLowerCase()}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
                     Row(
                       children: [
                         Text(
