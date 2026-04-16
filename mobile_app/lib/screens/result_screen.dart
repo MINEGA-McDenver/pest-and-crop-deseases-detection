@@ -18,6 +18,7 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   final StorageService _storage = StorageService();
   bool _saved = false;
+  bool _showTechnicalDetails = false;
 
   static const Set<String> _diagnosisKeys = {
     'uncertain',
@@ -93,6 +94,146 @@ class _ResultScreenState extends State<ResultScreen> {
     }
 
     return AppStrings.tr(context, 'unknownCondition');
+  }
+
+  String _confidenceBandText(double confidence) {
+    if (confidence >= 0.8) return AppStrings.tr(context, 'confidenceHigh');
+    if (confidence >= 0.5) return AppStrings.tr(context, 'confidenceMedium');
+    return AppStrings.tr(context, 'confidenceLowVerify');
+  }
+
+  Color _confidenceBandColor(double confidence) {
+    if (confidence >= 0.8) return Colors.green.shade700;
+    if (confidence >= 0.5) return Colors.orange.shade700;
+    return Colors.red.shade700;
+  }
+
+  bool _isLowConfidence(double confidence) => confidence < 0.5;
+
+  Widget _buildDiagnosisSummary(String diagnosisText) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppStrings.tr(context, 'diagnosisLabel'),
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            diagnosisText,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfidenceBandCard(double confidence) {
+    final bandColor = _confidenceBandColor(confidence);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bandColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: bandColor.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.shield_outlined, color: bandColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${AppStrings.tr(context, 'confidenceLevel')}: ${_confidenceBandText(confidence)}',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: bandColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLowConfidenceGuidanceCard() {
+    return Card(
+      color: Colors.amber.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppStrings.tr(context, 'lowConfidenceGuidanceTitle'),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.amber.shade900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildTip(
+              Icons.wb_sunny_outlined,
+              AppStrings.tr(context, 'lowConfidenceTipLight'),
+            ),
+            _buildTip(
+              Icons.center_focus_strong,
+              AppStrings.tr(context, 'lowConfidenceTipCloser'),
+            ),
+            _buildTip(
+              Icons.blur_off,
+              AppStrings.tr(context, 'lowConfidenceTipBlur'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdvancedDetailsSection({bool includeTopPredictions = true}) {
+    return Card(
+      child: ExpansionTile(
+        title: Text(AppStrings.tr(context, 'advancedDetails')),
+        initiallyExpanded: _showTechnicalDetails,
+        onExpansionChanged: (expanded) {
+          setState(() {
+            _showTechnicalDetails = expanded;
+          });
+        },
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${AppStrings.tr(context, 'exactConfidence')}: ${(widget.result.confidence * 100).toStringAsFixed(1)}%',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                if (includeTopPredictions) ...[
+                  const SizedBox(height: 12),
+                  _buildTopPredictions(),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -358,6 +499,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // ─── UNKNOWN DISEASE (crop identified, disease not supported) ──
   Widget _buildUnknownDiseaseCard() {
+    final diagnosis = '${widget.result.cropName} - ${AppStrings.tr(context, 'unknownCondition')}';
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -387,12 +530,10 @@ class _ResultScreenState extends State<ResultScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  ConfidenceBar(
-                    confidence: widget.result.confidence,
-                    label: AppStrings.tr(context, 'cropDetectionConfidence'),
-                  ),
                   const SizedBox(height: 16),
+                  _buildDiagnosisSummary(diagnosis),
+                  const SizedBox(height: 12),
+                  _buildConfidenceBandCard(widget.result.confidence),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -450,6 +591,14 @@ class _ResultScreenState extends State<ResultScreen> {
 
           // Supported diseases for this crop
           _buildSupportedDiseasesCard(),
+
+          const SizedBox(height: 12),
+          _buildAdvancedDetailsSection(includeTopPredictions: true),
+
+          if (_isLowConfidence(widget.result.confidence)) ...[
+            const SizedBox(height: 12),
+            _buildLowConfidenceGuidanceCard(),
+          ],
 
           const SizedBox(height: 12),
 
@@ -632,6 +781,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // ─── UNCERTAIN ─────────────────────────────────────────────
   Widget _buildUncertainCard() {
+    final diagnosis = '${widget.result.cropName} - ${_resolvedCurrentDiseaseLabel()}';
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -660,22 +811,23 @@ class _ResultScreenState extends State<ResultScreen> {
                       args: {
                         'crop': widget.result.cropName,
                         'disease': _resolvedCurrentDiseaseLabel(),
-                        'confidence': (widget.result.confidence * 100)
-                            .toStringAsFixed(1),
                       },
                     ),
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 12),
-                  ConfidenceBar(
-                    confidence: widget.result.confidence,
-                    label: AppStrings.tr(context, 'confidence'),
-                  ),
+                  _buildDiagnosisSummary(diagnosis),
+                  const SizedBox(height: 12),
+                  _buildConfidenceBandCard(widget.result.confidence),
                 ],
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          _buildAdvancedDetailsSection(includeTopPredictions: true),
+          const SizedBox(height: 12),
+          _buildLowConfidenceGuidanceCard(),
           const SizedBox(height: 12),
           _buildPhotoTipsCard(),
           const SizedBox(height: 16),
@@ -698,6 +850,13 @@ class _ResultScreenState extends State<ResultScreen> {
   // ─── CONFIDENT RESULT (healthy or known disease) ───────────
   Widget _buildConfidentResult() {
     final localizedDisease = _resolvedCurrentDiseaseLabel();
+    final diagnosis = widget.result.resultType == 'healthy'
+        ? AppStrings.tr(
+            context,
+            'healthyHeader',
+            args: {'crop': widget.result.cropName},
+          )
+        : '${widget.result.cropName} - $localizedDisease';
     final diseaseInfo = DiseaseInfo.resolveByCropAndDiseaseName(
       widget.result.cropName,
       widget.result.diseaseName,
@@ -722,13 +881,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.result.resultType == 'healthy'
-                        ? AppStrings.tr(
-                            context,
-                            'healthyHeader',
-                            args: {'crop': widget.result.cropName},
-                          )
-                        : '${widget.result.cropName} - $localizedDisease',
+                    diagnosis,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -736,10 +889,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
-                  ConfidenceBar(
-                    confidence: widget.result.confidence,
-                    label: AppStrings.tr(context, 'detectionConfidence'),
-                  ),
+                  _buildDiagnosisSummary(diagnosis),
+                  const SizedBox(height: 12),
+                  _buildConfidenceBandCard(widget.result.confidence),
                 ],
               ),
             ),
@@ -751,7 +903,12 @@ class _ResultScreenState extends State<ResultScreen> {
           ],
 
           const SizedBox(height: 12),
-          _buildTopPredictions(),
+          _buildAdvancedDetailsSection(includeTopPredictions: true),
+
+          if (_isLowConfidence(widget.result.confidence)) ...[
+            const SizedBox(height: 12),
+            _buildLowConfidenceGuidanceCard(),
+          ],
 
           const SizedBox(height: 16),
           Text(

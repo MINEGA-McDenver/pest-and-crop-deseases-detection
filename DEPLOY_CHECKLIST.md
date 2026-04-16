@@ -146,6 +146,45 @@ Fill in the table below after each successful deployment.
 
 ---
 
+## Step 7 — Balanced Mode Acceptance And Drift Monitoring
+
+Before shipping beans/potato balanced mode, run:
+
+```bash
+python -u scripts/audit_field_photos.py --images-dir "C:\\Users\\Mbakenge\\Downloads\\test_app"
+```
+
+- [ ] `analysis_outputs/field_audit_summary.json` generated
+- [ ] `analysis_outputs/field_audit_rows.tsv` generated
+- [ ] Beans supported_confident_rate is within 0.12 of banana/maize reference
+- [ ] Potato supported_confident_rate is within 0.12 of banana/maize reference
+- [ ] Beans unsupported_or_other_leaf rate <= 0.20
+- [ ] Potato unsupported_or_other_leaf rate <= 0.20
+- [ ] Gate distribution reviewed: G5b/G7a regressions do not spike vs previous release
+
+Post-release monitoring (first 7 days):
+
+- [ ] Keep decision logging enabled for gate-level analysis
+- [ ] Track daily counts of G5, G5b, G7a, and uncertain gates by crop
+- [ ] If beans/potato unsupported spikes by >25% versus pilot baseline, open one controlled hotfix window
+- [ ] Hotfix policy: one threshold-only update, then freeze and re-evaluate with fresh holdout
+
+Strict release gate (mandatory before shipping):
+
+```bash
+python -u scripts/validate_release_readiness.py
+```
+
+- [ ] `models/release_readiness.json` generated
+- [ ] `models/release_readiness.json` verdict is `PASS`
+- [ ] No blocker remains for strict policy:
+- [ ] Field supported_confident_rate >= 0.80 for banana, beans, maize, potato
+- [ ] Beans<->Potato confusion rate <= 0.02
+- [ ] Supported<->Unsupported confusion rates <= 0.02 in both directions
+- [ ] Do not release when verdict is `BLOCKED`
+
+---
+
 ## Quick failure guide
 
 | Symptom | Likely cause | Fix |

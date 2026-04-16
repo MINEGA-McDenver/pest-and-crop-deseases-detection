@@ -5,7 +5,7 @@
     "banana_pestalotiopsis": 2966,
     "banana_sigatoka": 3171,
     "beans_angular_leaf_spot": 2728,
-    "beans_healthy": 2769,
+    "beans_healthy": 2777,
     "beans_rust": 3108,
     "maize_common_rust": 2770,
     "maize_gray_leaf_spot": 2771,
@@ -13,7 +13,7 @@
     "maize_northern_leaf_blight": 2772,
     "other_leaf": 3329,
     "potato_early_blight": 3122,
-    "potato_healthy": 1036,
+    "potato_healthy": 1054,
     "potato_late_blight": 3469
   },
   "val_counts": {
@@ -22,7 +22,7 @@
     "banana_pestalotiopsis": 128,
     "banana_sigatoka": 152,
     "beans_angular_leaf_spot": 117,
-    "beans_healthy": 131,
+    "beans_healthy": 133,
     "beans_rust": 193,
     "maize_common_rust": 179,
     "maize_gray_leaf_spot": 77,
@@ -39,7 +39,7 @@
     "banana_pestalotiopsis": 132,
     "banana_sigatoka": 159,
     "beans_angular_leaf_spot": 122,
-    "beans_healthy": 137,
+    "beans_healthy": 139,
     "beans_rust": 198,
     "maize_common_rust": 182,
     "maize_gray_leaf_spot": 81,
@@ -47,16 +47,16 @@
     "maize_northern_leaf_blight": 152,
     "other_leaf": 234,
     "potato_early_blight": 228,
-    "potato_healthy": 43,
+    "potato_healthy": 46,
     "potato_late_blight": 303
   },
   "totals": {
-    "train": 42748,
-    "val": 2314,
-    "test": 2397
+    "train": 42774,
+    "val": 2316,
+    "test": 2402
   },
   "leakage_check": {
-    "by_class": {
+    "by_class_stem": {
       "banana_cordana": {
         "train_val_overlap": 0,
         "train_test_overlap": 0,
@@ -83,9 +83,9 @@
         "val_test_overlap": 0
       },
       "beans_healthy": {
-        "train_val_overlap": 0,
-        "train_test_overlap": 0,
-        "val_test_overlap": 0
+        "train_val_overlap": 2,
+        "train_test_overlap": 2,
+        "val_test_overlap": 2
       },
       "beans_rust": {
         "train_val_overlap": 0,
@@ -124,7 +124,84 @@
       },
       "potato_healthy": {
         "train_val_overlap": 0,
+        "train_test_overlap": 3,
+        "val_test_overlap": 0
+      },
+      "potato_late_blight": {
+        "train_val_overlap": 0,
         "train_test_overlap": 0,
+        "val_test_overlap": 0
+      }
+    },
+    "by_class_hash": {
+      "banana_cordana": {
+        "train_val_overlap": 35,
+        "train_test_overlap": 30,
+        "val_test_overlap": 3
+      },
+      "banana_healthy": {
+        "train_val_overlap": 29,
+        "train_test_overlap": 17,
+        "val_test_overlap": 4
+      },
+      "banana_pestalotiopsis": {
+        "train_val_overlap": 33,
+        "train_test_overlap": 39,
+        "val_test_overlap": 12
+      },
+      "banana_sigatoka": {
+        "train_val_overlap": 96,
+        "train_test_overlap": 98,
+        "val_test_overlap": 20
+      },
+      "beans_angular_leaf_spot": {
+        "train_val_overlap": 70,
+        "train_test_overlap": 77,
+        "val_test_overlap": 10
+      },
+      "beans_healthy": {
+        "train_val_overlap": 72,
+        "train_test_overlap": 73,
+        "val_test_overlap": 17
+      },
+      "beans_rust": {
+        "train_val_overlap": 72,
+        "train_test_overlap": 83,
+        "val_test_overlap": 14
+      },
+      "maize_common_rust": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "maize_gray_leaf_spot": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "maize_healthy": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "maize_northern_leaf_blight": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "other_leaf": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 1
+      },
+      "potato_early_blight": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 0,
+        "val_test_overlap": 0
+      },
+      "potato_healthy": {
+        "train_val_overlap": 0,
+        "train_test_overlap": 3,
         "val_test_overlap": 0
       },
       "potato_late_blight": {
@@ -134,9 +211,12 @@
       }
     },
     "totals": {
-      "train_val_overlap": 0,
-      "train_test_overlap": 0,
-      "val_test_overlap": 1
+      "train_val_overlap": 2,
+      "train_test_overlap": 5,
+      "val_test_overlap": 3,
+      "train_val_hash_overlap": 407,
+      "train_test_hash_overlap": 420,
+      "val_test_hash_overlap": 81
     }
   }
 }

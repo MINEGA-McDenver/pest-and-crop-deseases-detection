@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../l10n/app_strings.dart';
 import 'home_screen.dart';
@@ -18,7 +20,36 @@ class LanguageGateScreen extends StatefulWidget {
 
 class _LanguageGateScreenState extends State<LanguageGateScreen> {
   static const bool _enableLocaleDebugLogs = true;
+  static const Duration _autoSlideInterval = Duration(seconds: 5);
+
+  final PageController _pageController = PageController();
+
+  static const List<_LanguageSlide> _slides = [
+    _LanguageSlide(
+      imagePath: 'assets/images/language_slide_potato.jpg',
+      titleKey: 'languageSlide2Title',
+      subtitleKey: 'languageSlide2Subtitle',
+    ),
+    _LanguageSlide(
+      imagePath: 'assets/images/language_slide_maize.jpg',
+      titleKey: 'languageSlide3Title',
+      subtitleKey: 'languageSlide3Subtitle',
+    ),
+    _LanguageSlide(
+      imagePath: 'assets/images/language_slide_beans.jpg',
+      titleKey: 'languageSlide4Title',
+      subtitleKey: 'languageSlide4Subtitle',
+    ),
+    _LanguageSlide(
+      imagePath: 'assets/images/language_slide_banana.jpg',
+      titleKey: 'languageSlide5Title',
+      subtitleKey: 'languageSlide5Subtitle',
+    ),
+  ];
+
   late String _selectedCode;
+  late int _currentSlideIndex;
+  Timer? _autoSlideTimer;
   bool _submitting = false;
 
   @override
@@ -27,6 +58,23 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
     _selectedCode = widget.currentLocale.languageCode.toLowerCase() == 'rw'
         ? 'rw'
         : 'en';
+    _currentSlideIndex = 0;
+    _autoSlideTimer = Timer.periodic(_autoSlideInterval, (_) {
+      if (!mounted || !_pageController.hasClients || _slides.isEmpty) return;
+      final next = (_currentSlideIndex + 1) % _slides.length;
+      _pageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoSlideTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -39,153 +87,145 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF153F28), Color(0xFF2E7D32), Color(0xFF77A95A)],
-              ),
-            ),
-          ),
-          Positioned(
-            top: -70,
-            left: -40,
-            child: Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -90,
-            right: -30,
-            child: Container(
-              width: 240,
-              height: 240,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFFFD54F).withValues(alpha: 0.18),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
+          PageView.builder(
+            controller: _pageController,
+            itemCount: _slides.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentSlideIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final slide = _slides[index];
+              return Image.asset(
+                slide.imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) {
+                  return const DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.20),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.24),
-                        width: 1.2,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF1B5E20),
+                          Color(0xFF2E7D32),
+                          Color(0xFF4CAF50),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Icon(
-                          Icons.agriculture,
-                          color: Colors.white,
-                          size: 52,
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          tr('launchHeadline'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            height: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          tr('launchSubheadline'),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.93),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            height: 1.35,
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: const [
-                            _CropChip(icon: '🍌', label: 'Banana'),
-                            _CropChip(icon: '🫘', label: 'Beans'),
-                            _CropChip(icon: '🌽', label: 'Maize'),
-                            _CropChip(icon: '🥔', label: 'Potato'),
-                          ],
-                        ),
-                        const SizedBox(height: 22),
-                        Text(
-                          tr('chooseLanguage'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        _languageSelector(
-                          code: 'en',
-                          label: AppStrings.trCode('english', code: 'en').toUpperCase(),
-                        ),
-                        const SizedBox(height: 10),
-                        _languageSelector(
-                          code: 'rw',
-                          label: AppStrings.trCode('kinyarwanda', code: 'rw').toUpperCase(),
-                        ),
-                        const SizedBox(height: 22),
-                        SizedBox(
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _submitting ? null : _continue,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFFD54F),
-                              foregroundColor: const Color(0xFF173322),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            child: _submitting
-                                ? const SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.2,
-                                      color: Color(0xFF173322),
-                                    ),
-                                  )
-                                : Text(
-                                    tr('gettingStarted').toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
+                  );
+                },
+              );
+            },
+          ),
+          Container(
+            color: Colors.black.withValues(alpha: 0.45),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    AppStrings.trCode('appTitle', code: 'en'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Text(
+                    tr(_slides[_currentSlideIndex].titleKey),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tr(_slides[_currentSlideIndex].subtitleKey),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1.3,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    tr('chooseLanguage'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _buildLanguageSegmentedControl(),
+                  const SizedBox(height: 26),
+                  SizedBox(
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: _submitting ? null : _continue,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.95),
+                          width: 2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: _submitting
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              tr('gettingStarted').toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_slides.length, (index) {
+                      final isActive = index == _currentSlideIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        width: isActive ? 12 : 9,
+                        height: isActive ? 12 : 9,
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? const Color(0xFF4CAF50)
+                              : Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      );
+                    }),
+                  ),
+                ],
               ),
             ),
           ),
@@ -194,35 +234,50 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
     );
   }
 
-  Widget _languageSelector({required String code, required String label}) {
+  Widget _buildLanguageSegmentedControl() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _languageSegment(
+              code: 'en',
+              label: AppStrings.trCode('english', code: 'en').toUpperCase(),
+            ),
+          ),
+          Expanded(
+            child: _languageSegment(
+              code: 'rw',
+              label: AppStrings.trCode('kinyarwanda', code: 'rw').toUpperCase(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _languageSegment({required String code, required String label}) {
     final selected = _selectedCode == code;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => setState(() => _selectedCode = code),
-        borderRadius: BorderRadius.circular(8),
         child: Container(
-          height: 62,
+          height: 64,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.10),
-            border: Border.all(
-              color: selected
-                  ? const Color(0xFF173322)
-                  : Colors.white.withValues(alpha: 0.65),
-              width: selected ? 2 : 1.4,
-            ),
-            borderRadius: BorderRadius.circular(12),
+            color: selected ? const Color(0xFF1E1E1E) : Colors.white,
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? const Color(0xFF1B5E20) : Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
+              color: selected ? Colors.white : const Color(0xFF1E3A2D),
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -249,29 +304,14 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
   }
 }
 
-class _CropChip extends StatelessWidget {
-  final String icon;
-  final String label;
+class _LanguageSlide {
+  final String imagePath;
+  final String titleKey;
+  final String subtitleKey;
 
-  const _CropChip({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-      ),
-      child: Text(
-        '$icon $label',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
+  const _LanguageSlide({
+    required this.imagePath,
+    required this.titleKey,
+    required this.subtitleKey,
+  });
 }

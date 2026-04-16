@@ -1,0 +1,17 @@
+{
+  "beans_potato": {
+    "confusions": 3,
+    "total": 1036,
+    "rate": 0.002896
+  },
+  "supported_to_unsupported": {
+    "confusions": 36,
+    "total": 2168,
+    "rate": 0.016605
+  },
+  "unsupported_to_supported": {
+    "confusions": 4,
+    "total": 234,
+    "rate": 0.017094
+  }
+}

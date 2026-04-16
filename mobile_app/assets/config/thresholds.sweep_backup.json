@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "model_date": "2026-04-12",
+  "threshold_source": "balanced_mode_runtime",
+  "threshold_source_note": "Balanced mode: reduce false unsupported/uncertain on beans and potato while preserving safety gates for true unsupported crops.",
+  "thresholds": {
+    "cropTotalThreshold": 0.81,
+    "otherLeafAbsoluteFloor": 0.14,
+    "beansPotatoCropTotalRelaxation": 0.1,
+    "beansPotatoOtherLeafFloorBoost": 0.08,
+    "beansPotatoUncertainGapThreshold": 0.16,
+    "beansPotatoSecondCropThreshold": 0.3,
+    "beansPotatoRescueMinCropTotal": 0.24,
+    "beansPotatoRescueMaxGapFromBest": 0.18,
+    "beansPotatoRescueMaxOtherLeaf": 0.24
+  },
+  "acceptance_targets": {
+    "min_supported_confident_rate_beans": 0.75,
+    "min_supported_confident_rate_potato": 0.75,
+    "max_unsupported_rate_beans": 0.2,
+    "max_unsupported_rate_potato": 0.2,
+    "parity_gap_max_vs_banana_maize": 0.12
+  },
+  "release_controls": {
+    "decision_logging_required": true,
+    "post_release_drift_monitoring_required": true,
+    "allowed_threshold_hotfix_windows": 1,
+    "hotfix_scope": "thresholds_only"
+  }
+}

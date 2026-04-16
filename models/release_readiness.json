@@ -1,0 +1,51 @@
+{
+  "timestamp_utc": "2026-04-14T09:47:41.355030+00:00",
+  "inputs": {
+    "test_evaluation": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\models\\test_evaluation.json",
+    "field_audit_summary": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\analysis_outputs\\field_audit_summary.json"
+  },
+  "policy": {
+    "field_min_supported_confident_rate": 0.8,
+    "beans_potato_confusion_max": 0.02,
+    "supported_unsupported_confusion_max": 0.02
+  },
+  "measured": {
+    "beans_potato_confusion_rate": 0.002896,
+    "supported_to_unsupported_rate": 0.016605,
+    "unsupported_to_supported_rate": 0.017094,
+    "field_supported_confident_rate_by_crop": {
+      "banana": 0.5556,
+      "beans": 0.4,
+      "maize": 0.375,
+      "potato": 0.6923
+    }
+  },
+  "metric_sources": {
+    "beans_potato_confusion_rate": [
+      "test_evaluation.confusion_diagnostics"
+    ],
+    "supported_to_unsupported_rate": [
+      "test_evaluation.confusion_diagnostics"
+    ],
+    "unsupported_to_supported_rate": [
+      "test_evaluation.confusion_diagnostics"
+    ]
+  },
+  "searched_metric_sources": {
+    "supported_vs_unsupported_candidates": [
+      "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\models\\supported_vs_unsupported_confusion.json",
+      "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\models\\supported_vs_unsupported_confusion.json"
+    ],
+    "crop_pair_candidates": [
+      "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\models\\confusion_by_crop_pair.json",
+      "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\models\\confusion_by_crop_pair.json"
+    ]
+  },
+  "blockers": [
+    "field_banana_supported_confident_rate=0.5556 < 0.8000",
+    "field_beans_supported_confident_rate=0.4000 < 0.8000",
+    "field_maize_supported_confident_rate=0.3750 < 0.8000",
+    "field_potato_supported_confident_rate=0.6923 < 0.8000"
+  ],
+  "verdict": "BLOCKED"
+}

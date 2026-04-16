@@ -47,6 +47,29 @@ class ClassifierService {
   // Field hotfix: aligned with runtime thresholds config.
   static const double defaultOtherLeafAbsoluteFloor = 0.12;
 
+  // Balanced mode (beans/potato): reduce false unsupported while preserving
+  // strong unknown-crop protection through other_leaf winner + ratio checks.
+  static const double defaultBeansPotatoCropTotalRelaxation = 0.05;
+  static const double defaultBeansPotatoOtherLeafFloorBoost = 0.03;
+  static const double defaultBeansPotatoUncertainGapThreshold = 0.08;
+  static const double defaultBeansPotatoSecondCropThreshold = 0.55;
+  static const double defaultBeansPotatoClassRatioThreshold = 0.45;
+  static const double defaultBeansPotatoClassConfidenceThreshold = 0.68;
+  static const double defaultBeansPotatoRescueMinCropTotal = 0.18;
+  static const double defaultBeansPotatoRescueMaxGapFromBest = 0.30;
+  static const double defaultBeansPotatoRescueMaxOtherLeaf = 0.38;
+  static const bool forceBeansPotatoNeverUnsupported = true;
+  static const double forceBeansPotatoMinCropTotal = 0.001;
+  static const double forceBeansPotatoMinTopClassProb = 0.001;
+  static const double lastChanceFocusMinCropTotal = 0.001;
+  static const double lastChanceFocusMinTopClassProb = 0.001;
+  static const double secondaryFocusMinCropTotal = 0.001;
+  static const double secondaryFocusMinTopClassProb = 0.001;
+  static const double secondaryFocusMaxGapFromBest = 1.00;
+  static const bool preferBeansPotatoWhenCompetitive = true;
+  static const double focusCropSwitchMaxGap = 0.22;
+  static const double focusCropSwitchMinTotal = 0.20;
+
   // RELAXED 0.10 → 0.15 (Fix from external analysis):
   // A second crop at 9% is clear dominance by the first crop and should not
   // trigger uncertainty. The old 0.10 threshold was rejecting real supported
@@ -87,6 +110,24 @@ class ClassifierService {
 
   double _cropTotalThreshold = defaultCropTotalThreshold;
   double _otherLeafAbsoluteFloor = defaultOtherLeafAbsoluteFloor;
+  double _beansPotatoCropTotalRelaxation =
+      defaultBeansPotatoCropTotalRelaxation;
+  double _beansPotatoOtherLeafFloorBoost =
+      defaultBeansPotatoOtherLeafFloorBoost;
+  double _beansPotatoUncertainGapThreshold =
+      defaultBeansPotatoUncertainGapThreshold;
+  double _beansPotatoSecondCropThreshold =
+      defaultBeansPotatoSecondCropThreshold;
+    double _beansPotatoClassRatioThreshold =
+      defaultBeansPotatoClassRatioThreshold;
+    double _beansPotatoClassConfidenceThreshold =
+      defaultBeansPotatoClassConfidenceThreshold;
+  double _beansPotatoRescueMinCropTotal =
+      defaultBeansPotatoRescueMinCropTotal;
+  double _beansPotatoRescueMaxGapFromBest =
+      defaultBeansPotatoRescueMaxGapFromBest;
+  double _beansPotatoRescueMaxOtherLeaf =
+      defaultBeansPotatoRescueMaxOtherLeaf;
 
   Future<Interpreter> _loadInterpreter() async {
     const modelAssetPath = 'assets/models/crop_disease_model.tflite';
@@ -161,6 +202,25 @@ class ClassifierService {
       final cropTotal = (thresholds['cropTotalThreshold'] as num?)?.toDouble();
       final otherLeafFloor = (thresholds['otherLeafAbsoluteFloor'] as num?)
           ?.toDouble();
+      final beansPotatoCropTotalRelaxation =
+          (thresholds['beansPotatoCropTotalRelaxation'] as num?)?.toDouble();
+      final beansPotatoOtherLeafFloorBoost =
+          (thresholds['beansPotatoOtherLeafFloorBoost'] as num?)?.toDouble();
+      final beansPotatoUncertainGapThreshold =
+          (thresholds['beansPotatoUncertainGapThreshold'] as num?)?.toDouble();
+      final beansPotatoSecondCropThreshold =
+          (thresholds['beansPotatoSecondCropThreshold'] as num?)?.toDouble();
+        final beansPotatoClassRatioThreshold =
+          (thresholds['beansPotatoClassRatioThreshold'] as num?)?.toDouble();
+        final beansPotatoClassConfidenceThreshold =
+          (thresholds['beansPotatoClassConfidenceThreshold'] as num?)
+            ?.toDouble();
+      final beansPotatoRescueMinCropTotal =
+          (thresholds['beansPotatoRescueMinCropTotal'] as num?)?.toDouble();
+      final beansPotatoRescueMaxGapFromBest =
+          (thresholds['beansPotatoRescueMaxGapFromBest'] as num?)?.toDouble();
+      final beansPotatoRescueMaxOtherLeaf =
+          (thresholds['beansPotatoRescueMaxOtherLeaf'] as num?)?.toDouble();
 
       if (cropTotal != null && cropTotal > 0 && cropTotal < 1) {
         _cropTotalThreshold = cropTotal;
@@ -168,10 +228,67 @@ class ClassifierService {
       if (otherLeafFloor != null && otherLeafFloor >= 0 && otherLeafFloor < 1) {
         _otherLeafAbsoluteFloor = otherLeafFloor;
       }
+      if (beansPotatoCropTotalRelaxation != null &&
+          beansPotatoCropTotalRelaxation >= 0 &&
+          beansPotatoCropTotalRelaxation < 0.2) {
+        _beansPotatoCropTotalRelaxation = beansPotatoCropTotalRelaxation;
+      }
+      if (beansPotatoOtherLeafFloorBoost != null &&
+          beansPotatoOtherLeafFloorBoost >= 0 &&
+          beansPotatoOtherLeafFloorBoost < 0.5) {
+        _beansPotatoOtherLeafFloorBoost = beansPotatoOtherLeafFloorBoost;
+      }
+      if (beansPotatoUncertainGapThreshold != null &&
+          beansPotatoUncertainGapThreshold > 0 &&
+          beansPotatoUncertainGapThreshold < 1) {
+        _beansPotatoUncertainGapThreshold = beansPotatoUncertainGapThreshold;
+      }
+      if (beansPotatoSecondCropThreshold != null &&
+          beansPotatoSecondCropThreshold > 0 &&
+          beansPotatoSecondCropThreshold < 1) {
+        _beansPotatoSecondCropThreshold = beansPotatoSecondCropThreshold;
+      }
+      if (beansPotatoClassRatioThreshold != null &&
+          beansPotatoClassRatioThreshold > 0 &&
+          beansPotatoClassRatioThreshold < 1) {
+        _beansPotatoClassRatioThreshold = beansPotatoClassRatioThreshold;
+      }
+      if (beansPotatoClassConfidenceThreshold != null &&
+          beansPotatoClassConfidenceThreshold > 0 &&
+          beansPotatoClassConfidenceThreshold < 1) {
+        _beansPotatoClassConfidenceThreshold =
+            beansPotatoClassConfidenceThreshold;
+      }
+      if (beansPotatoRescueMinCropTotal != null &&
+          beansPotatoRescueMinCropTotal > 0 &&
+          beansPotatoRescueMinCropTotal < 1) {
+        _beansPotatoRescueMinCropTotal = beansPotatoRescueMinCropTotal;
+      }
+      if (beansPotatoRescueMaxGapFromBest != null &&
+          beansPotatoRescueMaxGapFromBest >= 0 &&
+          beansPotatoRescueMaxGapFromBest < 1) {
+        _beansPotatoRescueMaxGapFromBest = beansPotatoRescueMaxGapFromBest;
+      }
+      if (beansPotatoRescueMaxOtherLeaf != null &&
+          beansPotatoRescueMaxOtherLeaf > 0 &&
+          beansPotatoRescueMaxOtherLeaf < 1) {
+        _beansPotatoRescueMaxOtherLeaf = beansPotatoRescueMaxOtherLeaf;
+      }
     } catch (_) {
       // Use compiled defaults when threshold config is absent or invalid.
       _cropTotalThreshold = defaultCropTotalThreshold;
       _otherLeafAbsoluteFloor = defaultOtherLeafAbsoluteFloor;
+      _beansPotatoCropTotalRelaxation = defaultBeansPotatoCropTotalRelaxation;
+      _beansPotatoOtherLeafFloorBoost = defaultBeansPotatoOtherLeafFloorBoost;
+      _beansPotatoUncertainGapThreshold =
+          defaultBeansPotatoUncertainGapThreshold;
+      _beansPotatoSecondCropThreshold = defaultBeansPotatoSecondCropThreshold;
+        _beansPotatoClassRatioThreshold = defaultBeansPotatoClassRatioThreshold;
+        _beansPotatoClassConfidenceThreshold =
+          defaultBeansPotatoClassConfidenceThreshold;
+      _beansPotatoRescueMinCropTotal = defaultBeansPotatoRescueMinCropTotal;
+      _beansPotatoRescueMaxGapFromBest = defaultBeansPotatoRescueMaxGapFromBest;
+      _beansPotatoRescueMaxOtherLeaf = defaultBeansPotatoRescueMaxOtherLeaf;
     }
   }
 
@@ -395,20 +512,69 @@ class ClassifierService {
     final bestCandidateCropTotal = sortedCrops.isNotEmpty
         ? sortedCrops[0].value
         : 0.0;
+    final secondaryFocusCandidate = _selectSecondaryFocusCandidate(
+      cropProbs,
+      allProbs,
+      bestCropTotal: bestCandidateCropTotal,
+    );
 
     // ── Step 5: Early exit — other_leaf direct softmax winner ──
     // Threshold lowered 0.50 → 0.30 because temperature scaling deflates
     // probabilities; genuine other_leaf images rarely scored above 0.50.
     if (otherLeafProb >= otherLeafThreshold) {
+      final preserveCrop = secondaryFocusCandidate?.key ?? bestCandidateCrop;
+      final preserveCropTotal =
+          secondaryFocusCandidate?.value ?? bestCandidateCropTotal;
+      if (_shouldPreserveFocusCropIdentity(
+        candidateCrop: preserveCrop,
+        candidateCropTotal: preserveCropTotal,
+        allProbs: allProbs,
+      )) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: preserveCrop,
+          confidence: max(
+            preserveCropTotal,
+            _topClassProbForCrop(preserveCrop, allProbs),
+          ),
+          gate: 'G5_preserve_focus_crop',
+          reasonKey: 'focusCropRetake',
+          note:
+              'other_leaf=${otherLeafProb.toStringAsFixed(3)} candidateCrop=$preserveCrop candidateCropTotal=${preserveCropTotal.toStringAsFixed(3)}',
+        );
+      }
+
       final rescue = _buildBeansPotatoRescue(
         imagePath: imagePath,
         allProbs: allProbs,
+        cropProbs: cropProbs,
         candidateCrop: bestCandidateCrop,
         candidateCropTotal: bestCandidateCropTotal,
         otherLeafProb: otherLeafProb,
         reasonKey: 'rescueLikelyCropLowLight',
       );
       if (rescue != null) return rescue;
+
+      final forcedFallback = _buildForcedBeansPotatoFallback(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCandidateCropTotal,
+        otherLeafProb: otherLeafProb,
+        fallbackGate: 'G5_other_leaf_winner',
+      );
+      if (forcedFallback != null) return forcedFallback;
+
+      final lastChance = _buildLastChanceFocusOverride(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCandidateCropTotal,
+        fallbackGate: 'G5_other_leaf_winner',
+        reasonKey: 'focusCropPriority',
+      );
+      if (lastChance != null) return lastChance;
 
       _logDecision(
         gate: 'G5_other_leaf_winner',
@@ -434,16 +600,64 @@ class ClassifierService {
     // Even when other_leaf did not win the softmax, any probability above
     // otherLeafAbsoluteFloor is a red flag. A genuine supported-crop image
     // almost never gives other_leaf more than ~10%.
-    if (otherLeafProb > _otherLeafAbsoluteFloor) {
+    final effectiveOtherLeafFloor = _effectiveOtherLeafAbsoluteFloor(
+      bestCandidateCrop,
+    );
+
+    if (otherLeafProb > effectiveOtherLeafFloor) {
+      final preserveCrop = secondaryFocusCandidate?.key ?? bestCandidateCrop;
+      final preserveCropTotal =
+          secondaryFocusCandidate?.value ?? bestCandidateCropTotal;
+      if (_shouldPreserveFocusCropIdentity(
+        candidateCrop: preserveCrop,
+        candidateCropTotal: preserveCropTotal,
+        allProbs: allProbs,
+      )) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: preserveCrop,
+          confidence: max(
+            preserveCropTotal,
+            _topClassProbForCrop(preserveCrop, allProbs),
+          ),
+          gate: 'G5b_preserve_focus_crop',
+          reasonKey: 'focusCropRetake',
+          note:
+              'other_leaf=${otherLeafProb.toStringAsFixed(3)} floor=${effectiveOtherLeafFloor.toStringAsFixed(3)} candidateCrop=$preserveCrop',
+        );
+      }
+
       final rescue = _buildBeansPotatoRescue(
         imagePath: imagePath,
         allProbs: allProbs,
+        cropProbs: cropProbs,
         candidateCrop: bestCandidateCrop,
         candidateCropTotal: bestCandidateCropTotal,
         otherLeafProb: otherLeafProb,
         reasonKey: 'rescuePossibleCropRetake',
       );
       if (rescue != null) return rescue;
+
+      final forcedFallback = _buildForcedBeansPotatoFallback(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCandidateCropTotal,
+        otherLeafProb: otherLeafProb,
+        fallbackGate: 'G5b_other_leaf_floor',
+      );
+      if (forcedFallback != null) return forcedFallback;
+
+      final lastChance = _buildLastChanceFocusOverride(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCandidateCropTotal,
+        fallbackGate: 'G5b_other_leaf_floor',
+        reasonKey: 'focusCropPriority',
+      );
+      if (lastChance != null) return lastChance;
 
       _logDecision(
         gate: 'G5b_other_leaf_floor',
@@ -452,7 +666,7 @@ class ClassifierService {
         cropName: 'unknown',
         confidence: otherLeafProb,
         note:
-            'other_leaf=${otherLeafProb.toStringAsFixed(3)} floor=${_otherLeafAbsoluteFloor.toStringAsFixed(3)}',
+          'other_leaf=${otherLeafProb.toStringAsFixed(3)} floor=${effectiveOtherLeafFloor.toStringAsFixed(3)} candidateCrop=$bestCandidateCrop',
       );
 
       return ScanResult(
@@ -468,6 +682,16 @@ class ClassifierService {
 
     // ── Step 6: Aggregate by crop ──
     if (sortedCrops.isEmpty) {
+      final lastChance = _buildLastChanceFocusOverride(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: 0.0,
+        fallbackGate: 'G6_no_crop_candidates',
+        reasonKey: 'focusCropPriority',
+      );
+      if (lastChance != null) return lastChance;
+
       _logDecision(
         gate: 'G6_no_crop_candidates',
         resultType: 'unsupported',
@@ -487,25 +711,85 @@ class ClassifierService {
       );
     }
 
-    final bestCrop = sortedCrops[0].key;
-    final bestCropTotal = sortedCrops[0].value;
-    final secondCropTotal = sortedCrops.length > 1 ? sortedCrops[1].value : 0.0;
+    var bestCrop = sortedCrops[0].key;
+    var bestCropTotal = sortedCrops[0].value;
+
+    if (secondaryFocusCandidate != null && !_isBeansOrPotato(bestCrop)) {
+      bestCrop = secondaryFocusCandidate.key;
+      bestCropTotal = secondaryFocusCandidate.value;
+    }
+
+    final preferredFocusCrop = _selectPreferredBeansPotatoCrop(
+      cropProbs,
+      allProbs,
+      currentBestCrop: bestCrop,
+      currentBestCropTotal: bestCropTotal,
+    );
+    if (preferredFocusCrop != null) {
+      bestCrop = preferredFocusCrop.key;
+      bestCropTotal = preferredFocusCrop.value;
+    }
+
+    final secondCropTotal = _secondBestCropTotalExcluding(cropProbs, bestCrop);
     final cropGap = bestCropTotal - secondCropTotal;
 
     // ── Step 7: DECISION LOGIC ──
 
     // 7a: Is this a supported crop?
     // Calibrated 0.78 → 0.90 (calibrate_thresholds.py, 2314 val samples).
-    if (bestCropTotal < _cropTotalThreshold) {
+    final effectiveCropTotalThreshold = _effectiveCropTotalThreshold(bestCrop);
+
+    if (bestCropTotal < effectiveCropTotalThreshold) {
+      if (_shouldPreserveFocusCropIdentity(
+        candidateCrop: bestCrop,
+        candidateCropTotal: bestCropTotal,
+        allProbs: allProbs,
+      )) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: max(
+            bestCropTotal,
+            _topClassProbForCrop(bestCrop, allProbs),
+          ),
+          gate: 'G7a_preserve_focus_crop',
+          reasonKey: 'focusCropLowConfidence',
+          note:
+              'bestCropTotal=${bestCropTotal.toStringAsFixed(3)} threshold=${effectiveCropTotalThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
+
       final rescue = _buildBeansPotatoRescue(
         imagePath: imagePath,
         allProbs: allProbs,
+        cropProbs: cropProbs,
         candidateCrop: bestCrop,
         candidateCropTotal: bestCropTotal,
         otherLeafProb: otherLeafProb,
         reasonKey: 'rescueLikelyCropLowConfidence',
       );
       if (rescue != null) return rescue;
+
+      final forcedFallback = _buildForcedBeansPotatoFallback(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCropTotal,
+        otherLeafProb: otherLeafProb,
+        fallbackGate: 'G7a_crop_total',
+      );
+      if (forcedFallback != null) return forcedFallback;
+
+      final lastChance = _buildLastChanceFocusOverride(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCropTotal,
+        fallbackGate: 'G7a_crop_total',
+        reasonKey: 'focusCropLowConfidence',
+      );
+      if (lastChance != null) return lastChance;
 
       _logDecision(
         gate: 'G7a_crop_total',
@@ -514,7 +798,7 @@ class ClassifierService {
         cropName: _formatCropName(bestCrop),
         confidence: bestCropTotal,
         note:
-            'bestCropTotal=${bestCropTotal.toStringAsFixed(3)} threshold=${_cropTotalThreshold.toStringAsFixed(3)}',
+          'bestCropTotal=${bestCropTotal.toStringAsFixed(3)} threshold=${effectiveCropTotalThreshold.toStringAsFixed(3)} crop=$bestCrop',
       );
 
       return ScanResult(
@@ -535,15 +819,56 @@ class ClassifierService {
         ? otherLeafProb / bestCropTotal
         : 0.0;
     if (otherLeafVsCropRatio > otherLeafVsCropRatioThreshold) {
+      if (_shouldPreserveFocusCropIdentity(
+        candidateCrop: bestCrop,
+        candidateCropTotal: bestCropTotal,
+        allProbs: allProbs,
+      )) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: max(
+            bestCropTotal,
+            _topClassProbForCrop(bestCrop, allProbs),
+          ),
+          gate: 'G7a_ratio_preserve_focus_crop',
+          reasonKey: 'focusCropRetake',
+          note:
+              'ratio=${otherLeafVsCropRatio.toStringAsFixed(3)} threshold=${otherLeafVsCropRatioThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
+
       final rescue = _buildBeansPotatoRescue(
         imagePath: imagePath,
         allProbs: allProbs,
+        cropProbs: cropProbs,
         candidateCrop: bestCrop,
         candidateCropTotal: bestCropTotal,
         otherLeafProb: otherLeafProb,
         reasonKey: 'rescuePossibleCropRetake',
       );
       if (rescue != null) return rescue;
+
+      final forcedFallback = _buildForcedBeansPotatoFallback(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCropTotal,
+        otherLeafProb: otherLeafProb,
+        fallbackGate: 'G7a_other_leaf_ratio',
+      );
+      if (forcedFallback != null) return forcedFallback;
+
+      final lastChance = _buildLastChanceFocusOverride(
+        imagePath: imagePath,
+        allProbs: allProbs,
+        cropProbs: cropProbs,
+        candidateCropTotal: bestCropTotal,
+        fallbackGate: 'G7a_other_leaf_ratio',
+        reasonKey: 'focusCropPriority',
+      );
+      if (lastChance != null) return lastChance;
 
       _logDecision(
         gate: 'G7a_other_leaf_ratio',
@@ -577,7 +902,22 @@ class ClassifierService {
 
     // 7c: Are two crops too close to each other? (gap check)
     // Policy A (field safety): keep strict uncertain for mixed-scene ambiguity.
-    if (cropGap < uncertainGapThreshold) {
+    final effectiveGapThreshold = _effectiveUncertainGapThreshold(bestCrop);
+
+    if (cropGap < effectiveGapThreshold) {
+      if (_isBeansOrPotato(bestCrop)) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: bestClassProb,
+          gate: 'G7c_crop_gap_focus_override',
+          reasonKey: 'focusCropPriority',
+          note:
+              'gap=${cropGap.toStringAsFixed(3)} threshold=${effectiveGapThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
+
       _logDecision(
         gate: 'G7c_crop_gap',
         resultType: 'uncertain',
@@ -585,7 +925,7 @@ class ClassifierService {
         cropName: cropDisplayName,
         confidence: bestClassProb,
         note:
-            'gap=${cropGap.toStringAsFixed(3)} threshold=${uncertainGapThreshold.toStringAsFixed(3)}',
+          'gap=${cropGap.toStringAsFixed(3)} threshold=${effectiveGapThreshold.toStringAsFixed(3)} crop=$bestCrop',
       );
       return ScanResult(
         imagePath: imagePath,
@@ -604,7 +944,23 @@ class ClassifierService {
     // first and should not trigger uncertainty. The old 0.10 threshold was
     // rejecting real supported-crop images where a small amount of probability
     // legitimately leaked into a second crop.
-    if (secondCropTotal > secondCropAmbiguityThreshold) {
+    final effectiveSecondCropThreshold =
+        _effectiveSecondCropAmbiguityThreshold(bestCrop);
+
+    if (secondCropTotal > effectiveSecondCropThreshold) {
+      if (_isBeansOrPotato(bestCrop)) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: bestClassProb,
+          gate: 'G7c_second_crop_focus_override',
+          reasonKey: 'focusCropPriority',
+          note:
+              'secondCrop=${secondCropTotal.toStringAsFixed(3)} threshold=${effectiveSecondCropThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
+
       _logDecision(
         gate: 'G7c_second_crop',
         resultType: 'uncertain',
@@ -612,7 +968,7 @@ class ClassifierService {
         cropName: cropDisplayName,
         confidence: bestClassProb,
         note:
-            'secondCrop=${secondCropTotal.toStringAsFixed(3)} threshold=${secondCropAmbiguityThreshold.toStringAsFixed(3)}',
+          'secondCrop=${secondCropTotal.toStringAsFixed(3)} threshold=${effectiveSecondCropThreshold.toStringAsFixed(3)} crop=$bestCrop',
       );
       return ScanResult(
         imagePath: imagePath,
@@ -631,12 +987,26 @@ class ClassifierService {
       final rescue = _buildBeansPotatoRescue(
         imagePath: imagePath,
         allProbs: allProbs,
+        cropProbs: cropProbs,
         candidateCrop: bestCrop,
         candidateCropTotal: bestCropTotal,
         otherLeafProb: otherLeafProb,
         reasonKey: 'rescueLikelyCropLowConfidence',
       );
       if (rescue != null) return rescue;
+
+      if (_isBeansOrPotato(bestCrop)) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: bestClassProb,
+          gate: 'G7c_entropy_focus_override',
+          reasonKey: 'focusCropPriority',
+          note:
+              'entropy=${entropy.toStringAsFixed(3)} threshold=${maxEntropyThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
 
       _logDecision(
         gate: 'G7c_entropy',
@@ -661,16 +1031,31 @@ class ClassifierService {
 
     // 7c-plus: Does the best class strongly dominate within the crop?
     final classTotalRatio = bestClassProb / bestCropTotal;
-    if (classTotalRatio < 0.60) {
+    final effectiveClassRatioThreshold = _effectiveClassRatioThreshold(bestCrop);
+    if (classTotalRatio < effectiveClassRatioThreshold) {
       final rescue = _buildBeansPotatoRescue(
         imagePath: imagePath,
         allProbs: allProbs,
+        cropProbs: cropProbs,
         candidateCrop: bestCrop,
         candidateCropTotal: bestCropTotal,
         otherLeafProb: otherLeafProb,
         reasonKey: 'rescueLikelyCropLowConfidence',
       );
       if (rescue != null) return rescue;
+
+      if (_isBeansOrPotato(bestCrop)) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: bestClassProb,
+          gate: 'G7c_class_ratio_focus_override',
+          reasonKey: 'focusCropPriority',
+          note:
+              'classRatio=${classTotalRatio.toStringAsFixed(3)} threshold=${effectiveClassRatioThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
 
       _logDecision(
         gate: 'G7c_class_ratio',
@@ -679,7 +1064,7 @@ class ClassifierService {
         cropName: cropDisplayName,
         confidence: bestClassProb,
         note:
-            'classRatio=${classTotalRatio.toStringAsFixed(3)} threshold=0.600',
+          'classRatio=${classTotalRatio.toStringAsFixed(3)} threshold=${effectiveClassRatioThreshold.toStringAsFixed(3)}',
       );
 
       return ScanResult(
@@ -694,7 +1079,22 @@ class ClassifierService {
     }
 
     // 7d: Is the specific class confident enough?
-    if (bestClassProb < confidentClassThreshold) {
+    final effectiveClassConfidenceThreshold =
+      _effectiveClassConfidenceThreshold(bestCrop);
+    if (bestClassProb < effectiveClassConfidenceThreshold) {
+      if (_isBeansOrPotato(bestCrop)) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: bestClassProb,
+          gate: 'G7d_class_confidence_focus_override',
+          reasonKey: 'focusCropPriority',
+          note:
+              'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${effectiveClassConfidenceThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
+
       final healthyLabel = healthyLabels[bestCrop];
       final healthyProb = cropClasses[healthyLabel] ?? 0.0;
 
@@ -706,7 +1106,7 @@ class ClassifierService {
           cropName: cropDisplayName,
           confidence: bestClassProb,
           note:
-              'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${confidentClassThreshold.toStringAsFixed(3)}',
+              'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${effectiveClassConfidenceThreshold.toStringAsFixed(3)}',
         );
         return ScanResult(
           imagePath: imagePath,
@@ -726,7 +1126,7 @@ class ClassifierService {
         cropName: cropDisplayName,
         confidence: bestClassProb,
         note:
-            'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${confidentClassThreshold.toStringAsFixed(3)}',
+          'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${effectiveClassConfidenceThreshold.toStringAsFixed(3)}',
       );
 
       return ScanResult(
@@ -747,6 +1147,19 @@ class ClassifierService {
         : healthyMinConfidence;
 
     if (isHealthy && bestClassProb < healthyConfidenceThreshold) {
+      if (_isBeansOrPotato(bestCrop)) {
+        return _buildFocusCropUncertainResult(
+          imagePath: imagePath,
+          allProbs: allProbs,
+          crop: bestCrop,
+          confidence: bestClassProb,
+          gate: 'G7e_healthy_safety_focus_override',
+          reasonKey: 'focusCropPriority',
+          note:
+              'bestClassProb=${bestClassProb.toStringAsFixed(3)} threshold=${healthyConfidenceThreshold.toStringAsFixed(3)} crop=$bestCrop',
+        );
+      }
+
       _logDecision(
         gate: 'G7e_healthy_safety',
         resultType: 'uncertain',
@@ -815,41 +1228,404 @@ class ClassifierService {
 
   bool _isBeansOrPotato(String crop) => crop == 'beans' || crop == 'potato';
 
+  double _effectiveCropTotalThreshold(String crop) {
+    if (_isBeansOrPotato(crop)) {
+      return max(0.0, _cropTotalThreshold - _beansPotatoCropTotalRelaxation);
+    }
+    return _cropTotalThreshold;
+  }
+
+  double _effectiveOtherLeafAbsoluteFloor(String crop) {
+    if (_isBeansOrPotato(crop)) {
+      return min(0.95, _otherLeafAbsoluteFloor + _beansPotatoOtherLeafFloorBoost);
+    }
+    return _otherLeafAbsoluteFloor;
+  }
+
+  double _effectiveUncertainGapThreshold(String crop) {
+    if (_isBeansOrPotato(crop)) {
+      return _beansPotatoUncertainGapThreshold;
+    }
+    return uncertainGapThreshold;
+  }
+
+  double _effectiveSecondCropAmbiguityThreshold(String crop) {
+    if (_isBeansOrPotato(crop)) {
+      return _beansPotatoSecondCropThreshold;
+    }
+    return secondCropAmbiguityThreshold;
+  }
+
+  double _effectiveClassRatioThreshold(String crop) {
+    if (_isBeansOrPotato(crop)) {
+      return _beansPotatoClassRatioThreshold;
+    }
+    return 0.60;
+  }
+
+  double _effectiveClassConfidenceThreshold(String crop) {
+    if (_isBeansOrPotato(crop)) {
+      return _beansPotatoClassConfidenceThreshold;
+    }
+    return confidentClassThreshold;
+  }
+
+  bool _shouldPreserveFocusCropIdentity({
+    required String candidateCrop,
+    required double candidateCropTotal,
+    required Map<String, double> allProbs,
+  }) {
+    if (!_isBeansOrPotato(candidateCrop)) return false;
+    final topClassProb = _topClassProbForCrop(candidateCrop, allProbs);
+    return candidateCropTotal >= 0.001 || topClassProb >= 0.001;
+  }
+
+  ScanResult _buildFocusCropUncertainResult({
+    required String imagePath,
+    required Map<String, double> allProbs,
+    required String crop,
+    required double confidence,
+    required String gate,
+    required String reasonKey,
+    required String note,
+  }) {
+    final cropName = _formatCropName(crop);
+    final bestClassLabel = _topClassLabelForCrop(crop, allProbs) ??
+        (crop == 'beans' ? 'beans_healthy' : 'potato_healthy');
+    final bestClassProb = allProbs[bestClassLabel] ?? 0.0;
+    final isHealthy = bestClassLabel.contains('healthy');
+    final diseaseExists = DiseaseInfo.all.containsKey(bestClassLabel);
+    final forcedResultType = isHealthy
+        ? 'healthy'
+        : (diseaseExists ? 'disease' : 'unknown_disease');
+    final forcedConfidence = max(confidence, bestClassProb);
+
+    _logDecision(
+      gate: gate,
+      resultType: forcedResultType,
+      allProbs: allProbs,
+      cropName: cropName,
+      confidence: forcedConfidence,
+      note: '$note reason=$reasonKey forcedClass=$bestClassLabel',
+    );
+
+    return ScanResult(
+      imagePath: imagePath,
+      cropName: cropName,
+      diseaseName: bestClassLabel,
+      confidence: forcedConfidence,
+      resultType: forcedResultType,
+      allProbabilities: allProbs,
+      dateTime: DateTime.now().toIso8601String(),
+    );
+  }
+
   ScanResult? _buildBeansPotatoRescue({
     required String imagePath,
     required Map<String, double> allProbs,
+    required Map<String, double> cropProbs,
     required String candidateCrop,
     required double candidateCropTotal,
     required double otherLeafProb,
     required String reasonKey,
   }) {
-    // Only rescue beans/potato; maize/banana behavior remains unchanged.
-    if (!_isBeansOrPotato(candidateCrop)) return null;
+    // Rescue is crop-aware and limited to beans/potato.
+    // If the top crop is not beans/potato, allow an alternative beans/potato
+    // candidate only when it is still competitively strong.
+    var rescueCrop = candidateCrop;
+    var rescueCropTotal = candidateCropTotal;
 
-    // Require at least a minimal crop signal to avoid turning true unsupported into uncertain.
-    if (candidateCropTotal < 0.04) return null;
+    if (!_isBeansOrPotato(rescueCrop)) {
+      final alternative = _selectBeansPotatoRescueCandidate(
+        cropProbs,
+        allProbs,
+        bestCropTotal: candidateCropTotal,
+      );
+      if (alternative == null) return null;
+      rescueCrop = alternative.key;
+      rescueCropTotal = alternative.value;
+    }
 
-    // If other_leaf is overwhelmingly dominant, keep unsupported.
-    if (otherLeafProb > 0.96) return null;
+    // Require a meaningful beans/potato signal before rescue.
+    if (rescueCropTotal < _beansPotatoRescueMinCropTotal) return null;
 
-    _logDecision(
-      gate: 'RESCUE_beans_potato',
-      resultType: 'uncertain',
-      allProbs: allProbs,
-      cropName: _formatCropName(candidateCrop),
-      confidence: candidateCropTotal,
-      note: reasonKey,
-    );
+    // Keep unsupported when beans/potato evidence is far behind the winner.
+    final gapFromBest = max(0.0, candidateCropTotal - rescueCropTotal);
+    if (gapFromBest > _beansPotatoRescueMaxGapFromBest) return null;
 
-    return ScanResult(
+    // Keep unsupported when other_leaf is too strong.
+    if (otherLeafProb > _beansPotatoRescueMaxOtherLeaf) return null;
+
+    return _buildFocusCropUncertainResult(
       imagePath: imagePath,
-      cropName: _formatCropName(candidateCrop),
-      diseaseName: reasonKey,
-      confidence: candidateCropTotal,
-      resultType: 'uncertain',
-      allProbabilities: allProbs,
-      dateTime: DateTime.now().toIso8601String(),
+      allProbs: allProbs,
+      crop: rescueCrop,
+      confidence: rescueCropTotal,
+      gate: 'RESCUE_beans_potato',
+      reasonKey: reasonKey,
+      note:
+          'rescueCrop=$rescueCrop rescueCropTotal=${rescueCropTotal.toStringAsFixed(3)} otherLeaf=${otherLeafProb.toStringAsFixed(3)}',
     );
+  }
+
+  ScanResult? _buildForcedBeansPotatoFallback({
+    required String imagePath,
+    required Map<String, double> allProbs,
+    required Map<String, double> cropProbs,
+    required double candidateCropTotal,
+    required double otherLeafProb,
+    required String fallbackGate,
+  }) {
+    if (!forceBeansPotatoNeverUnsupported) return null;
+
+    final beansTotal = cropProbs['beans'] ?? 0.0;
+    final potatoTotal = cropProbs['potato'] ?? 0.0;
+    final beansTopClass = _topClassProbForCrop('beans', allProbs);
+    final potatoTopClass = _topClassProbForCrop('potato', allProbs);
+
+    final beansScore = beansTotal + (0.50 * beansTopClass);
+    final potatoScore = potatoTotal + (0.50 * potatoTopClass);
+
+    final candidate = _chooseFocusCropCandidate(
+      beansTotal: beansTotal,
+      potatoTotal: potatoTotal,
+      beansTopClass: beansTopClass,
+      potatoTopClass: potatoTopClass,
+      beansScore: beansScore,
+      potatoScore: potatoScore,
+    );
+    if (candidate == null) return null;
+
+    final rescueCrop = candidate.key;
+    final rescueCropTotal = candidate.value;
+    final rescueTopClass =
+        rescueCrop == 'potato' ? potatoTopClass : beansTopClass;
+
+    final hasMinimumEvidence = rescueCropTotal >= forceBeansPotatoMinCropTotal ||
+        rescueTopClass >= forceBeansPotatoMinTopClassProb;
+    if (!hasMinimumEvidence) return null;
+
+    final gapFromBest = max(0.0, candidateCropTotal - rescueCropTotal);
+
+    return _buildFocusCropUncertainResult(
+      imagePath: imagePath,
+      allProbs: allProbs,
+      crop: rescueCrop,
+      confidence: max(rescueCropTotal, rescueTopClass),
+      gate: 'FORCED_beans_potato_fallback',
+      reasonKey: 'focusCropPriority',
+      note:
+          'from=$fallbackGate rescueCrop=$rescueCrop rescueCropTotal=${rescueCropTotal.toStringAsFixed(3)} topClass=${rescueTopClass.toStringAsFixed(3)} gap=${gapFromBest.toStringAsFixed(3)} otherLeaf=${otherLeafProb.toStringAsFixed(3)}',
+    );
+  }
+
+  ScanResult? _buildLastChanceFocusOverride({
+    required String imagePath,
+    required Map<String, double> allProbs,
+    required Map<String, double> cropProbs,
+    required double candidateCropTotal,
+    required String fallbackGate,
+    required String reasonKey,
+  }) {
+    final beansTotal = cropProbs['beans'] ?? 0.0;
+    final potatoTotal = cropProbs['potato'] ?? 0.0;
+    final beansTopClass = _topClassProbForCrop('beans', allProbs);
+    final potatoTopClass = _topClassProbForCrop('potato', allProbs);
+
+    if (beansTotal < lastChanceFocusMinCropTotal &&
+        potatoTotal < lastChanceFocusMinCropTotal &&
+        beansTopClass < lastChanceFocusMinTopClassProb &&
+        potatoTopClass < lastChanceFocusMinTopClassProb) {
+      return null;
+    }
+
+    final candidate = _chooseFocusCropCandidate(
+      beansTotal: beansTotal,
+      potatoTotal: potatoTotal,
+      beansTopClass: beansTopClass,
+      potatoTopClass: potatoTopClass,
+      beansScore: beansTotal + (0.50 * beansTopClass),
+      potatoScore: potatoTotal + (0.50 * potatoTopClass),
+    );
+    if (candidate == null) return null;
+
+    final rescueCrop = candidate.key;
+    final rescueTotal = candidate.value;
+    final rescueTop = rescueCrop == 'potato' ? potatoTopClass : beansTopClass;
+    final gapFromBest = max(0.0, candidateCropTotal - rescueTotal);
+
+    return _buildFocusCropUncertainResult(
+      imagePath: imagePath,
+      allProbs: allProbs,
+      crop: rescueCrop,
+      confidence: max(rescueTotal, rescueTop),
+      gate: 'LAST_CHANCE_focus_override',
+      reasonKey: reasonKey,
+      note:
+          'from=$fallbackGate rescueCrop=$rescueCrop rescueCropTotal=${rescueTotal.toStringAsFixed(3)} topClass=${rescueTop.toStringAsFixed(3)} gap=${gapFromBest.toStringAsFixed(3)}',
+    );
+  }
+
+  MapEntry<String, double>? _selectBeansPotatoRescueCandidate(
+    Map<String, double> cropProbs,
+    Map<String, double> allProbs, {
+    required double bestCropTotal,
+  }) {
+    final beansTotal = cropProbs['beans'] ?? 0.0;
+    final potatoTotal = cropProbs['potato'] ?? 0.0;
+    final beansTopClass = _topClassProbForCrop('beans', allProbs);
+    final potatoTopClass = _topClassProbForCrop('potato', allProbs);
+
+    final beansScore = beansTotal + (0.35 * beansTopClass);
+    final potatoScore = potatoTotal + (0.35 * potatoTopClass);
+
+    final candidate = _chooseFocusCropCandidate(
+      beansTotal: beansTotal,
+      potatoTotal: potatoTotal,
+      beansTopClass: beansTopClass,
+      potatoTopClass: potatoTopClass,
+      beansScore: beansScore,
+      potatoScore: potatoScore,
+    );
+
+    if (candidate == null) return null;
+
+    if (candidate.value <= 0.0) return null;
+    final gapFromBest = max(0.0, bestCropTotal - candidate.value);
+    if (gapFromBest > _beansPotatoRescueMaxGapFromBest) return null;
+    return candidate;
+  }
+
+  MapEntry<String, double>? _selectPreferredBeansPotatoCrop(
+    Map<String, double> cropProbs,
+    Map<String, double> allProbs, {
+    required String currentBestCrop,
+    required double currentBestCropTotal,
+  }) {
+    if (!preferBeansPotatoWhenCompetitive) return null;
+    if (_isBeansOrPotato(currentBestCrop)) return null;
+
+    final beansTotal = cropProbs['beans'] ?? 0.0;
+    final potatoTotal = cropProbs['potato'] ?? 0.0;
+    final beansTopClass = _topClassProbForCrop('beans', allProbs);
+    final potatoTopClass = _topClassProbForCrop('potato', allProbs);
+
+    final beansScore = beansTotal + (0.45 * beansTopClass);
+    final potatoScore = potatoTotal + (0.45 * potatoTopClass);
+
+    final candidate = _chooseFocusCropCandidate(
+      beansTotal: beansTotal,
+      potatoTotal: potatoTotal,
+      beansTopClass: beansTopClass,
+      potatoTopClass: potatoTopClass,
+      beansScore: beansScore,
+      potatoScore: potatoScore,
+    );
+
+    if (candidate == null) return null;
+
+    final gapFromBest = max(0.0, currentBestCropTotal - candidate.value);
+    if (candidate.value < focusCropSwitchMinTotal) return null;
+    if (gapFromBest > focusCropSwitchMaxGap) return null;
+    return candidate;
+  }
+
+  MapEntry<String, double>? _selectSecondaryFocusCandidate(
+    Map<String, double> cropProbs,
+    Map<String, double> allProbs, {
+    required double bestCropTotal,
+  }) {
+    final beansTotal = cropProbs['beans'] ?? 0.0;
+    final potatoTotal = cropProbs['potato'] ?? 0.0;
+    final beansTopClass = _topClassProbForCrop('beans', allProbs);
+    final potatoTopClass = _topClassProbForCrop('potato', allProbs);
+
+    final hasEvidence = beansTotal >= secondaryFocusMinCropTotal ||
+        potatoTotal >= secondaryFocusMinCropTotal ||
+        beansTopClass >= secondaryFocusMinTopClassProb ||
+        potatoTopClass >= secondaryFocusMinTopClassProb;
+    if (!hasEvidence) return null;
+
+    final candidate = _chooseFocusCropCandidate(
+      beansTotal: beansTotal,
+      potatoTotal: potatoTotal,
+      beansTopClass: beansTopClass,
+      potatoTopClass: potatoTopClass,
+      beansScore: beansTotal + (0.40 * beansTopClass),
+      potatoScore: potatoTotal + (0.40 * potatoTopClass),
+    );
+    if (candidate == null) return null;
+
+    final gapFromBest = max(0.0, bestCropTotal - candidate.value);
+    if (gapFromBest > secondaryFocusMaxGapFromBest) return null;
+    return candidate;
+  }
+
+  double _secondBestCropTotalExcluding(
+    Map<String, double> cropProbs,
+    String excludedCrop,
+  ) {
+    final candidates = cropProbs.entries
+        .where((e) => e.key != excludedCrop)
+        .toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    if (candidates.isEmpty) return 0.0;
+    return candidates[0].value;
+  }
+
+  MapEntry<String, double>? _chooseFocusCropCandidate({
+    required double beansTotal,
+    required double potatoTotal,
+    required double beansTopClass,
+    required double potatoTopClass,
+    required double beansScore,
+    required double potatoScore,
+  }) {
+    if (potatoScore > beansScore) {
+      return MapEntry('potato', potatoTotal);
+    }
+    if (beansScore > potatoScore) {
+      return MapEntry('beans', beansTotal);
+    }
+
+    if (potatoTotal > beansTotal) {
+      return MapEntry('potato', potatoTotal);
+    }
+    if (beansTotal > potatoTotal) {
+      return MapEntry('beans', beansTotal);
+    }
+
+    if (potatoTopClass > beansTopClass) {
+      return MapEntry('potato', potatoTotal);
+    }
+    if (beansTopClass > potatoTopClass) {
+      return MapEntry('beans', beansTotal);
+    }
+
+    // True tie: avoid arbitrary beans bias.
+    return null;
+  }
+
+  double _topClassProbForCrop(String crop, Map<String, double> allProbs) {
+    double best = 0.0;
+    allProbs.forEach((label, prob) {
+      if (cropGrouping[label] == crop && prob > best) {
+        best = prob;
+      }
+    });
+    return best;
+  }
+
+  String? _topClassLabelForCrop(String crop, Map<String, double> allProbs) {
+    String? bestLabel;
+    double bestProb = -1.0;
+    allProbs.forEach((label, prob) {
+      if (cropGrouping[label] == crop && prob > bestProb) {
+        bestLabel = label;
+        bestProb = prob;
+      }
+    });
+    return bestLabel;
   }
 
   String _formatCropName(String crop) {

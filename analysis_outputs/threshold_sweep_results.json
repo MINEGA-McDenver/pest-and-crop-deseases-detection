@@ -1,0 +1,41 @@
+﻿[
+    {
+        "candidate":  "C1",
+        "beans_rate":  0.2667,
+        "beans_unsupported_rate":  0,
+        "unsupported_like_count":  4,
+        "stable":  true,
+        "cropTotalThreshold":  0.81,
+        "otherLeafAbsoluteFloor":  0.14,
+        "beansPotatoCropTotalRelaxation":  0.12,
+        "beansPotatoOtherLeafFloorBoost":  0.1,
+        "beansPotatoUncertainGapThreshold":  0.14,
+        "beansPotatoSecondCropThreshold":  0.35
+    },
+    {
+        "candidate":  "C2",
+        "beans_rate":  0.2667,
+        "beans_unsupported_rate":  0,
+        "unsupported_like_count":  4,
+        "stable":  true,
+        "cropTotalThreshold":  0.81,
+        "otherLeafAbsoluteFloor":  0.14,
+        "beansPotatoCropTotalRelaxation":  0.14,
+        "beansPotatoOtherLeafFloorBoost":  0.12,
+        "beansPotatoUncertainGapThreshold":  0.12,
+        "beansPotatoSecondCropThreshold":  0.4
+    },
+    {
+        "candidate":  "C3",
+        "beans_rate":  0.2667,
+        "beans_unsupported_rate":  0,
+        "unsupported_like_count":  4,
+        "stable":  true,
+        "cropTotalThreshold":  0.8,
+        "otherLeafAbsoluteFloor":  0.14,
+        "beansPotatoCropTotalRelaxation":  0.12,
+        "beansPotatoOtherLeafFloorBoost":  0.12,
+        "beansPotatoUncertainGapThreshold":  0.1,
+        "beansPotatoSecondCropThreshold":  0.45
+    }
+]

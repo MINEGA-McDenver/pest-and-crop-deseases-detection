@@ -1,18 +1,43 @@
 {
   "recommended": {
-    "crop_total_threshold": 0.9,
-    "ol_absolute_floor": 0.1,
-    "crop_recall": 0.9058,
-    "ol_false_positive_rate": 0.005,
-    "ol_recall": 0.995,
-    "meets_min_crop_recall": true
+    "crop_total_threshold": 0.81,
+    "ol_absolute_floor": 0.14,
+    "crop_recall": 0.9176,
+    "focus_recall": 0.9231,
+    "ol_false_positive_rate": 0.0102,
+    "ol_recall": 0.9898,
+    "meets_min_crop_recall": true,
+    "meets_min_focus_recall": true,
+    "meets_ol_fp_target": true,
+    "selection_mode": "balanced"
   },
   "min_crop_recall_target": 0.9,
+  "min_focus_recall_target": 0.92,
+  "max_other_leaf_fp_target": 0.015,
+  "focus_crops": [
+    "beans",
+    "potato"
+  ],
+  "focus_weight": 0.7,
   "temperature": 1.8,
   "fixed_thresholds": {
     "otherLeafThreshold": 0.3,
-    "otherLeafVsCropRatioThreshold": 0.18,
+    "otherLeafVsCropRatioThreshold": 0.24,
     "secondCropAmbiguityThreshold": 0.15
+  },
+  "balanced_mode_runtime_adjustments": {
+    "beansPotatoCropTotalRelaxation": 0.06,
+    "beansPotatoOtherLeafFloorBoost": 0.04,
+    "beansPotatoUncertainGapThreshold": 0.2,
+    "beansPotatoSecondCropThreshold": 0.22,
+    "beansPotatoRescueMinCropTotal": 0.24,
+    "beansPotatoRescueMaxGapFromBest": 0.18,
+    "beansPotatoRescueMaxOtherLeaf": 0.24
+  },
+  "release_controls": {
+    "decision_logging_required": true,
+    "allowed_threshold_hotfix_windows": 1,
+    "hotfix_scope": "thresholds_only"
   },
   "sweep": [
     {

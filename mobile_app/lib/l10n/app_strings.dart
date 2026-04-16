@@ -5,13 +5,33 @@ class AppStrings {
   static String _activeLanguageCode = 'en';
 
   static const Map<String, String> _en = {
-    'appTitle': 'Crop Doctor',
+    'appTitle': 'CropDoc',
     'language': 'Language',
     'english': 'English',
     'kinyarwanda': 'Kinyarwanda',
     'launchHeadline': 'Keep your crops healthy and your harvest secure',
     'launchSubheadline':
         'Choose a language to continue with diagnosis, history, and guidance in your preferred language.',
+    'languageSlide1Title':
+        'Fast crop disease detection for banana, beans, maize, and potato',
+    'languageSlide1Subtitle':
+        'Take a leaf photo and get diagnosis guidance in seconds.',
+    'languageSlide2Title':
+        'Protect potato harvest with early blight detection',
+    'languageSlide2Subtitle':
+        'Spot likely issues early and act before spread increases.',
+    'languageSlide3Title':
+        'Monitor maize leaves before damage grows',
+    'languageSlide3Subtitle':
+        'Clear leaf photos help identify disease risk quickly.',
+    'languageSlide4Title':
+        'Keep beans healthy with regular photo checks',
+    'languageSlide4Subtitle':
+        'Frequent scans support faster field decisions.',
+    'languageSlide5Title':
+        'Support banana farmers with simple AI screening',
+    'languageSlide5Subtitle':
+        'Use your phone camera for practical first-level guidance.',
     'chooseLanguage': 'Choose Language',
     'gettingStarted': 'Getting Started',
     'scanHistory': 'Scan History',
@@ -30,6 +50,17 @@ class AppStrings {
     'savedPermanently': 'Saved permanently',
     'expiresInDays': 'Expires in {days}d',
     'confidence': 'Confidence',
+    'confidenceLevel': 'Confidence Level',
+    'confidenceHigh': 'High confidence',
+    'confidenceMedium': 'Medium confidence',
+    'confidenceLowVerify': 'Low confidence (verify with another photo)',
+    'diagnosisLabel': 'Diagnosis',
+    'advancedDetails': 'Advanced Details',
+    'exactConfidence': 'Exact confidence',
+    'lowConfidenceGuidanceTitle': 'Try this for a more reliable result',
+    'lowConfidenceTipLight': 'Retake in better light',
+    'lowConfidenceTipCloser': 'Capture closer leaf',
+    'lowConfidenceTipBlur': 'Avoid blurry image',
     'healthy': 'Healthy',
     'uncertain': 'Uncertain',
     'unknownCondition': 'Unknown Condition',
@@ -132,7 +163,7 @@ class AppStrings {
     'conditionNotInList':
         'The condition on your crop does not match any of the above.',
     'uncertainBody':
-        'The app thinks this might be {crop} ({disease}), but confidence is low at {confidence}%.',
+        'The app thinks this might be {crop} ({disease}), but confidence is low.',
     'detectionConfidence': 'Detection Confidence',
     'whatToDo': 'What To Do',
     'prevention': 'Prevention',
@@ -170,7 +201,7 @@ class AppStrings {
   };
 
   static const Map<String, String> _rw = {
-    'appTitle': 'Muganga w\'Ibihingwa',
+    'appTitle': 'CropDoc',
     'language': 'Ururimi',
     'english': 'Icyongereza',
     'kinyarwanda': 'Ikinyarwanda',
@@ -178,6 +209,26 @@ class AppStrings {
         'Rinda ibihingwa byawe kandi urinde umusaruro wawe',
     'launchSubheadline':
         'Hitamo ururimi kugira ngo ukomeze ukoresha isesengura, amateka, n\'ubujyanama mu rurimi wahisemo.',
+    'languageSlide1Title':
+        'Menya indwara z\'ibihingwa vuba ku gitoki, ibishyimbo, ibigori n\'ibirayi',
+    'languageSlide1Subtitle':
+        'Fata ifoto y\'ikibabi ubone ubujyanama bw\'isesengura mu masegonda make.',
+    'languageSlide2Title':
+        'Rinda umusaruro w\'ibirayi ukoresheje kumenya indwara hakiri kare',
+    'languageSlide2Subtitle':
+        'Menya ibibazo hakiri kare kugira ngo ubihagarike bitarakwira.',
+    'languageSlide3Title':
+        'Kurikirana amababi y\'ibigori mbere y\'uko ikibazo gikomera',
+    'languageSlide3Subtitle':
+        'Ifoto isobanutse y\'ikibabi ifasha kubona ibyago by\'indwara vuba.',
+    'languageSlide4Title':
+        'Bungabunga ibishyimbo ukoresheje amafoto ya buri gihe',
+    'languageSlide4Subtitle':
+        'Gusesengura kenshi kugufasha gufata icyemezo cyihuse mu murima.',
+    'languageSlide5Title':
+        'Fasha abahinzi b\'ibitoki ukoresheje AI yoroshye yo gusuzuma',
+    'languageSlide5Subtitle':
+        'Koresha camera ya telefoni ubone ubujyanama bw\'ibanze bufatika.',
     'chooseLanguage': 'Hitamo Ururimi',
     'gettingStarted': 'Tangira',
     'scanHistory': 'Amateka y\'Isesengura',
@@ -197,6 +248,19 @@ class AppStrings {
     'savedPermanently': 'Byabitswe burundu',
     'expiresInDays': 'Bizasibwa mu {days}d',
     'confidence': 'Icyizere',
+    'confidenceLevel': 'Urwego rw\'icyizere',
+    'confidenceHigh': 'Icyizere kiri hejuru',
+    'confidenceMedium': 'Icyizere kiri hagati',
+    'confidenceLowVerify':
+        'Icyizere kiri hasi (suzuma ukoresheje indi foto)',
+    'diagnosisLabel': 'Icyagaragaye',
+    'advancedDetails': 'Amakuru arambuye',
+    'exactConfidence': 'Icyizere nyacyo',
+    'lowConfidenceGuidanceTitle':
+        'Kora ibi kugira ngo ubone igisubizo cyizewe kurushaho',
+    'lowConfidenceTipLight': 'Ongera ufate ahari urumuri rwiza',
+    'lowConfidenceTipCloser': 'Fata ifoto ya hafi y\'ikibabi',
+    'lowConfidenceTipBlur': 'Irinde ifoto itagaragara neza',
     'healthy': 'Cyiza',
     'uncertain': 'Ntibirasobanuka',
     'unknownCondition': 'Indwara itazwi',
@@ -299,7 +363,7 @@ class AppStrings {
     'conditionNotInList':
         'Indwara iri ku gihingwa cyawe ntijya muri izi zavuzwe haruguru.',
     'uncertainBody':
-        'Porogaramu ibona ko ishobora kuba {crop} ({disease}), ariko icyizere ni gito: {confidence}%.',
+        'Porogaramu ibona ko ishobora kuba {crop} ({disease}), ariko icyizere ni gito.',
     'detectionConfidence': 'Icyizere cy\'isesengura',
     'whatToDo': 'Ibyo wakora',
     'prevention': 'Uko wakwirinda',

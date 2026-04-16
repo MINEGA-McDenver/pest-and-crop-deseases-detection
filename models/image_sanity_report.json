@@ -1,0 +1,26 @@
+{
+  "train": {
+    "split": "train",
+    "total_images": 42774,
+    "broken_count": 0,
+    "non_rgb_count": 0,
+    "broken_examples": [],
+    "non_rgb_examples": []
+  },
+  "val": {
+    "split": "val",
+    "total_images": 2316,
+    "broken_count": 0,
+    "non_rgb_count": 0,
+    "broken_examples": [],
+    "non_rgb_examples": []
+  },
+  "test": {
+    "split": "test",
+    "total_images": 2402,
+    "broken_count": 0,
+    "non_rgb_count": 0,
+    "broken_examples": [],
+    "non_rgb_examples": []
+  }
+}

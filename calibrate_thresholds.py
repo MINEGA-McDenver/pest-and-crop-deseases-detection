@@ -46,7 +46,7 @@ BATCH      = 8
 # ── These must match classifier_service.dart ──────────────────────────
 TEMPERATURE            = 1.8    # temperatureScaling
 OL_THRESHOLD           = 0.30   # otherLeafThreshold (direct softmax winner)
-OL_RATIO_THRESHOLD     = 0.18   # otherLeafVsCropRatioThreshold
+OL_RATIO_THRESHOLD     = 0.24   # otherLeafVsCropRatioThreshold
 SECOND_CROP_THRESHOLD  = 0.15   # secondCropAmbiguityThreshold (already relaxed)
 
 # Sweep ranges — adjust if your validation results cluster outside these
@@ -57,6 +57,10 @@ OL_FLOOR_SWEEP    = np.arange(0.08, 0.22, 0.02)   # otherLeafAbsoluteFloor
 # reach a confident result (not be rejected as unsupported/uncertain).
 # Tune this to match your product requirements.
 MIN_CROP_RECALL = 0.90
+MIN_FOCUS_RECALL = 0.92
+MAX_OL_FP_RATE = 0.015
+FOCUS_CROPS = {'beans', 'potato'}
+FOCUS_WEIGHT = 0.70
 
 # Crop grouping — must exactly match classifier_service.dart
 CROP_GROUPING = {
@@ -103,6 +107,13 @@ if "other_leaf" not in class_names:
 
 OTHER_LEAF_IDX = class_names.index("other_leaf")
 print(f"other_leaf index: {OTHER_LEAF_IDX}", flush=True)
+
+label_to_crop = {}
+for i, name in enumerate(class_names):
+    crop = CROP_GROUPING.get(name)
+    if crop is None:
+        crop = 'other_leaf' if name == 'other_leaf' else 'unknown'
+    label_to_crop[i] = crop
 
 
 # ── Load validation set ───────────────────────────────────────────────
@@ -209,7 +220,12 @@ is_other_leaf = (all_labels == OTHER_LEAF_IDX)
 is_supported  = ~is_other_leaf
 n_supported   = int(is_supported.sum())
 n_other_leaf  = int(is_other_leaf.sum())
+sample_crops = np.array([label_to_crop[int(i)] for i in all_labels])
+is_focus = np.array([c in FOCUS_CROPS for c in sample_crops])
+is_focus_supported = is_supported & is_focus
+n_focus_supported = int(is_focus_supported.sum())
 print(f"Validation breakdown: {n_supported} supported-crop, {n_other_leaf} other_leaf", flush=True)
+print(f"Focus subset ({sorted(FOCUS_CROPS)}): {n_focus_supported} supported-crop samples", flush=True)
 
 
 # ── Sweep cropTotalThreshold × otherLeafAbsoluteFloor ────────────────
@@ -225,7 +241,11 @@ for ct in CROP_TOTAL_SWEEP:
 
         # Crop recall: fraction of real supported-crop images that reach 'accepted'
         crop_recall = float(np.mean(decisions[is_supported] == 'accepted')) \
-                      if n_supported > 0 else 0.0
+                  if n_supported > 0 else 0.0
+
+        # Focus recall: beans/potato supported-crop acceptance rate.
+        focus_recall = float(np.mean(decisions[is_focus_supported] == 'accepted')) \
+                   if n_focus_supported > 0 else 0.0
 
         # Other-leaf false-positive rate: fraction of real other_leaf images
         # that were 'accepted' as a real crop (the bug we are trying to fix)
@@ -240,29 +260,58 @@ for ct in CROP_TOTAL_SWEEP:
             "crop_total_threshold":      round(float(ct), 4),
             "ol_absolute_floor":         round(float(ol_floor), 4),
             "crop_recall":               round(crop_recall, 4),
+            "focus_recall":              round(focus_recall, 4),
             "ol_false_positive_rate":    round(ol_fp_rate, 4),
             "ol_recall":                 round(ol_recall, 4),
             "meets_min_crop_recall":     crop_recall >= MIN_CROP_RECALL,
+            "meets_min_focus_recall":    focus_recall >= MIN_FOCUS_RECALL,
+            "meets_ol_fp_target":        ol_fp_rate <= MAX_OL_FP_RATE,
         })
 
 print(f"Sweep complete. {len(results)} combinations evaluated.", flush=True)
 
 
 # ── Find best combination ─────────────────────────────────────────────
-# Among combinations that meet the minimum crop recall target, pick the
-# one that minimises the other_leaf false-positive rate.
-# Tiebreak: prefer the higher cropTotalThreshold (more conservative).
-valid = [r for r in results if r["meets_min_crop_recall"]]
-if valid:
-    best = min(valid, key=lambda r: (r["ol_false_positive_rate"], -r["crop_total_threshold"]))
-else:
-    # No combination meets the recall target — relax and take best overall
-    print(
-        f"WARNING: No combination achieved crop_recall ≥ {MIN_CROP_RECALL:.0%}. "
-        "Your other_leaf dataset may be too aggressive or your supported-crop val "
-        "set too small. Showing best available.", flush=True
+# Balanced objective prioritises beans/potato recall while constraining
+# unsupported risk from other_leaf false positives.
+def balanced_score(r):
+    return (
+        FOCUS_WEIGHT * r["focus_recall"] +
+        (1.0 - FOCUS_WEIGHT) * r["crop_recall"] -
+        2.0 * r["ol_false_positive_rate"]
     )
-    best = min(results, key=lambda r: r["ol_false_positive_rate"])
+
+strict_valid = [
+    r for r in results
+    if r["meets_min_crop_recall"] and
+       r["meets_min_focus_recall"] and
+       r["meets_ol_fp_target"]
+]
+
+if strict_valid:
+    best = max(
+        strict_valid,
+        key=lambda r: (balanced_score(r), r["crop_total_threshold"], r["ol_absolute_floor"]),
+    )
+else:
+    valid = [r for r in results if r["meets_min_crop_recall"]]
+    if valid:
+        print(
+            "WARNING: No combination met all strict balanced constraints. "
+            "Falling back to crop-recall-constrained optimum.",
+            flush=True,
+        )
+        best = max(
+            valid,
+            key=lambda r: (balanced_score(r), r["crop_total_threshold"], r["ol_absolute_floor"]),
+        )
+    else:
+        print(
+            f"WARNING: No combination achieved crop_recall ≥ {MIN_CROP_RECALL:.0%}. "
+            "Showing best available by balanced score.",
+            flush=True,
+        )
+        best = max(results, key=balanced_score)
 
 print(f"\n{'='*60}", flush=True)
 print(f"RECOMMENDED THRESHOLDS", flush=True)
@@ -270,9 +319,12 @@ print(f"{'='*60}", flush=True)
 print(f"  cropTotalThreshold:       {best['crop_total_threshold']}", flush=True)
 print(f"  otherLeafAbsoluteFloor:   {best['ol_absolute_floor']}", flush=True)
 print(f"  Supported-crop recall:    {best['crop_recall']:.2%}", flush=True)
+print(f"  Beans/Potato recall:      {best['focus_recall']:.2%}", flush=True)
 print(f"  Other-leaf FP rate:       {best['ol_false_positive_rate']:.2%}", flush=True)
 print(f"  Other-leaf recall:        {best['ol_recall']:.2%}", flush=True)
 print(f"  Meets recall target (≥{MIN_CROP_RECALL:.0%}): {best['meets_min_crop_recall']}", flush=True)
+print(f"  Meets focus recall (≥{MIN_FOCUS_RECALL:.0%}): {best['meets_min_focus_recall']}", flush=True)
+print(f"  Meets other_leaf FP target (≤{MAX_OL_FP_RATE:.2%}): {best['meets_ol_fp_target']}", flush=True)
 print(f"{'='*60}", flush=True)
 print(f"\nUpdate these two constants in classifier_service.dart:", flush=True)
 print(f"  static const double cropTotalThreshold = {best['crop_total_threshold']};", flush=True)
@@ -285,6 +337,10 @@ with open(out_path, 'w') as f:
     json.dump({
         "recommended": best,
         "min_crop_recall_target": MIN_CROP_RECALL,
+        "min_focus_recall_target": MIN_FOCUS_RECALL,
+        "max_other_leaf_fp_target": MAX_OL_FP_RATE,
+        "focus_crops": sorted(list(FOCUS_CROPS)),
+        "focus_weight": FOCUS_WEIGHT,
         "temperature": TEMPERATURE,
         "fixed_thresholds": {
             "otherLeafThreshold":          OL_THRESHOLD,

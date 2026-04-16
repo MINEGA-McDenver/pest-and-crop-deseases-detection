@@ -1,0 +1,104 @@
+{
+  "images_dir": "datasets\\holdout_user_dirs",
+  "strict_real_photos": true,
+  "total_images": 58,
+  "known_label_images": 58,
+  "unknown_label_images": 0,
+  "thresholds_used": {
+    "cropTotalThreshold": 0.8,
+    "otherLeafAbsoluteFloor": 0.14,
+    "beansPotatoCropTotalRelaxation": 0.12,
+    "beansPotatoOtherLeafFloorBoost": 0.12,
+    "beansPotatoUncertainGapThreshold": 0.1,
+    "beansPotatoSecondCropThreshold": 0.45,
+    "beansPotatoClassRatioThreshold": 0.52,
+    "beansPotatoClassConfidenceThreshold": 0.74
+  },
+  "result_counts": {
+    "disease": 10,
+    "healthy": 24,
+    "uncertain": 20,
+    "unsupported": 4
+  },
+  "gate_counts": {
+    "G7g_confident": 34,
+    "G7c_class_ratio": 2,
+    "G7c_entropy": 4,
+    "G7d_class_confidence": 1,
+    "RESCUE_beans_potato_from_G5": 7,
+    "RESCUE_beans_potato_from_G5b": 2,
+    "RESCUE_beans_potato_from_G7a": 2,
+    "G7a_crop_total": 4,
+    "RESCUE_beans_potato_from_G7a_ratio": 1,
+    "G7d_class_confidence_healthy_candidate": 1
+  },
+  "source_counts": {
+    "raw_photo-like": 58
+  },
+  "per_crop_reliability": {
+    "banana": {
+      "total": 9,
+      "supported_confident": 5,
+      "uncertain": 4,
+      "unsupported_or_other_leaf": 0,
+      "wrong_confident": 0,
+      "supported_confident_rate": 0.5556,
+      "uncertain_rate": 0.4444,
+      "unsupported_rate": 0.0
+    },
+    "beans": {
+      "total": 15,
+      "supported_confident": 6,
+      "uncertain": 8,
+      "unsupported_or_other_leaf": 0,
+      "wrong_confident": 1,
+      "supported_confident_rate": 0.4,
+      "uncertain_rate": 0.5333,
+      "unsupported_rate": 0.0
+    },
+    "maize": {
+      "total": 8,
+      "supported_confident": 3,
+      "uncertain": 0,
+      "unsupported_or_other_leaf": 4,
+      "wrong_confident": 1,
+      "supported_confident_rate": 0.375,
+      "uncertain_rate": 0.0,
+      "unsupported_rate": 0.5
+    },
+    "potato": {
+      "total": 26,
+      "supported_confident": 18,
+      "uncertain": 8,
+      "unsupported_or_other_leaf": 0,
+      "wrong_confident": 0,
+      "supported_confident_rate": 0.6923,
+      "uncertain_rate": 0.3077,
+      "unsupported_rate": 0.0
+    }
+  },
+  "unsupported_top1_top2": [
+    {
+      "top1": "maize_healthy",
+      "top2": "banana_healthy",
+      "count": 3
+    },
+    {
+      "top1": "banana_healthy",
+      "top2": "maize_healthy",
+      "count": 1
+    }
+  ],
+  "pattern_counts": {
+    "top1_other_leaf_top2_beans": 0,
+    "top1_other_leaf_top2_potato": 0,
+    "expected_crop_appears_top2_unsupported_like": 1
+  },
+  "acceptance": {
+    "reference_rate_banana_maize": 0.4653,
+    "parity_gap_max": 0.12,
+    "beans_pass": true,
+    "potato_pass": true,
+    "overall_pass": true
+  }
+}

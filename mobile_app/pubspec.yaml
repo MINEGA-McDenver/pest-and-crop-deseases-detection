@@ -40,5 +40,5 @@ flutter:
     - assets/models/crop_disease_model.tflite
     - assets/models/labels.txt
     - assets/config/thresholds.json
-    - assets/images/language_gate_bg.jpg
+    - assets/images/
  
