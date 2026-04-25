@@ -91,7 +91,7 @@ static const double otherLeafAbsoluteFloor = <value from script>;
 
 Current calibration result (2026-04-07):
 
-- [x] `cropTotalThreshold = 0.84` (pilot runtime hotfix truth source)
+- [x] `cropTotalThreshold = 0.82` (pilot runtime hotfix truth source)
 - [x] `otherLeafAbsoluteFloor = 0.12` (pilot runtime hotfix truth source)
 - [x] Ambiguity policy = **Option A (strict uncertain)** for mixed-scene crop ambiguity gates (`cropGap`, `secondCropTotal`) to avoid false-safe disease/healthy claims
 - [x] Supported-crop recall = 90.58%
@@ -173,7 +173,11 @@ Strict release gate (mandatory before shipping):
 
 ```bash
 python -u scripts/validate_release_readiness.py
+python -u scripts/check_release_gate.py
 ```
+
+These commands exit with a non-zero status when verdict is `BLOCKED`.
+Use them as required CI/build steps before publishing artifacts.
 
 - [ ] `models/release_readiness.json` generated
 - [ ] `models/release_readiness.json` verdict is `PASS`

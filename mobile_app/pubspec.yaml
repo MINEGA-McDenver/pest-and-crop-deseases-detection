@@ -40,5 +40,6 @@ flutter:
     - assets/models/crop_disease_model.tflite
     - assets/models/labels.txt
     - assets/config/thresholds.json
+    - assets/config/mobile_runtime_recommendations.json
     - assets/images/
  

@@ -20,7 +20,7 @@ TTA_AUGMENTS = 5   # NEW: number of augmented copies per image
 
 # ── Load model ──────────────────────────────────────────────────────
 print("Loading model ...", flush=True)
-model = tf.keras.models.load_model(MODEL_PATH)
+model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 
 # ── Load test set ───────────────────────────────────────────────────
 print("Loading test set ...", flush=True)
@@ -34,6 +34,13 @@ with open(os.path.join(MODEL_DIR, "class_index.json")) as f:
 class_names = sorted(_class_index, key=_class_index.get)
 NUM_CLASSES = len(class_names)
 print(f"Classes ({NUM_CLASSES}): {class_names}", flush=True)
+
+if test_ds.class_names != class_names:
+    print("ERROR: test dataset class order differs from models/class_index.json.", flush=True)
+    print(f"  test_ds:     {test_ds.class_names}", flush=True)
+    print(f"  class_index: {class_names}", flush=True)
+    print("  Rebuild dataset splits and class_index before evaluation.", flush=True)
+    raise SystemExit(1)
 
 # Preprocess
 def preprocess(images, labels):

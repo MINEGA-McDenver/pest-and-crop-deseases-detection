@@ -21,21 +21,28 @@
   "crops": [
     "banana",
     "potato",
-    "maize",
     "other_leaf",
-    "beans"
+    "beans",
+    "maize"
   ],
   "image_size": [
     224,
     224
   ],
   "batch_size": 8,
+  "data_pipeline": {
+    "data_autotune": false,
+    "parallel_calls": 2,
+    "prefetch": 2,
+    "inter_op_threads": 2,
+    "intra_op_threads": 4
+  },
   "seed": 42,
-  "loss": "FocalLoss(gamma=2.0, alpha=0.25, ol_smoothing=0.1)",
-  "other_leaf_weight_multiplier": 3.0,
+  "loss": "FocalLoss(gamma=2.0, alpha=0.25, ol_smoothing=0.15)",
+  "other_leaf_weight_multiplier": 1.0,
   "focus_crop_weight_multiplier": 1.15,
   "enable_focus_crop_weighting": true,
-  "other_leaf_label_smoothing": 0.1,
+  "other_leaf_label_smoothing": 0.15,
   "other_leaf_mixup_alpha": 0.4,
   "enable_ol_mixup": true,
   "enable_ol_label_smoothing": true,
@@ -44,19 +51,19 @@
   "unfreeze_last_base_layers": 60,
   "fine_tune_from_layer": 80,
   "phase1_epochs": 15,
-  "phase2_epochs": 14,
-  "total_epochs": 29,
-  "phase1_time_min": 994.1,
-  "phase2_time_min": 560.7,
-  "total_time_min": 1554.7,
-  "best_val_accuracy": 0.9637,
-  "phase1_best_val": 0.9283,
-  "phase2_best_val": 0.9637,
+  "phase2_epochs": 10,
+  "total_epochs": 25,
+  "phase1_time_min": 893.8,
+  "phase2_time_min": 385.9,
+  "total_time_min": 1279.7,
+  "best_val_accuracy": 0.951,
+  "phase1_best_val": 0.9311,
+  "phase2_best_val": 0.951,
   "best_model_path": "best_model.keras",
   "final_model_path": "final_model.keras",
   "phase2_lr_schedule": "cosine_annealing",
   "calibration_defaults": {
-    "min_confidence": 0.6,
+    "min_confidence": 0.55,
     "min_margin": 0.2,
     "max_entropy": 1.5,
     "temperature": 1.0
@@ -71,12 +78,12 @@
     },
     "other_leaf": {
       "flip": "horizontal_and_vertical",
-      "rotation": 0.15,
-      "zoom": 0.15,
-      "contrast": 0.4,
-      "brightness": 0.3,
+      "rotation": 0.1,
+      "zoom": 0.12,
+      "contrast": 0.3,
+      "brightness": 0.25,
       "mixup_alpha": 0.4,
-      "label_smoothing": 0.1
+      "label_smoothing": 0.15
     }
   }
 }

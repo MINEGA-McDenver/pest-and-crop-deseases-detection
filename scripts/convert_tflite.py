@@ -21,6 +21,56 @@ Usage:
 """
 
 import os, sys, json, time, gc
+
+# Register custom loss for model loading
+import tensorflow as tf
+from tensorflow.keras.utils import register_keras_serializable
+
+@register_keras_serializable()
+class FocalLoss(tf.keras.losses.Loss):
+    def __init__(
+        self,
+        gamma=2.0,
+        alpha=0.25,
+        other_leaf_idx=None,
+        num_classes=None,
+        other_leaf_smoothing=0.0,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.gamma               = gamma
+        self.alpha               = alpha
+        self.other_leaf_idx      = other_leaf_idx
+        self.num_classes         = num_classes
+        self.other_leaf_smoothing = other_leaf_smoothing
+
+    def call(self, y_true, y_pred):
+        y_true_int = tf.cast(tf.reshape(y_true, [-1]), tf.int32)
+        y_pred     = tf.clip_by_value(y_pred, 1e-7, 1.0 - 1e-7)
+        pt = tf.gather(y_pred, y_true_int, batch_dims=1)
+        if (
+            self.other_leaf_idx is not None
+            and self.num_classes is not None
+            and self.other_leaf_smoothing > 0.0
+        ):
+            eps = self.other_leaf_smoothing
+            n   = tf.cast(self.num_classes, tf.float32)
+            is_other = tf.cast(tf.equal(y_true_int, self.other_leaf_idx), tf.float32)
+            pt = pt * (1.0 - is_other * eps) + is_other * (eps / n)
+        ce = -tf.math.log(tf.clip_by_value(pt, 1e-7, 1.0))
+        focal = self.alpha * tf.pow(1.0 - pt, self.gamma) * ce
+        return tf.reduce_mean(focal)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "gamma":                self.gamma,
+            "alpha":                self.alpha,
+            "other_leaf_idx":       self.other_leaf_idx,
+            "num_classes":          self.num_classes,
+            "other_leaf_smoothing": self.other_leaf_smoothing,
+        })
+        return config
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")

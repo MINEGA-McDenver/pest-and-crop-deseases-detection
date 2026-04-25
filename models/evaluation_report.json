@@ -1,200 +1,216 @@
 {
   "model": "MobileNetV2 (4-crop)",
   "model_path": "best_model.keras",
-  "test_accuracy": 0.9737,
-  "test_accuracy_tta": 0.9784,
+  "test_accuracy": 0.9498,
+  "test_accuracy_tta": 0.957,
   "tta_augments": 5,
-  "top3_accuracy": 0.9982,
-  "top5_accuracy": 0.9991,
-  "top3_accuracy_tta": 0.9977,
-  "top5_accuracy_tta": 1.0,
-  "num_classes": 14,
+  "top3_accuracy": 0.9964,
+  "top5_accuracy": 1.0,
+  "top3_accuracy_tta": 0.998,
+  "top5_accuracy_tta": 0.9995,
+  "num_classes": 15,
   "crops": [
     "banana",
     "beans",
     "maize",
     "potato"
   ],
-  "total_test_images": 2171,
-  "average_confidence": 0.983,
+  "total_test_images": 1952,
+  "average_confidence": 0.8364,
   "recommended_threshold": 0.7,
   "confidence_thresholds": {
     "0.5": {
-      "accuracy": 0.9815,
-      "coverage": 0.9945,
-      "count": 2159
+      "accuracy": 0.9741,
+      "coverage": 0.9698,
+      "count": 1893
     },
     "0.6": {
-      "accuracy": 0.9837,
-      "coverage": 0.9862,
-      "count": 2141
+      "accuracy": 0.9841,
+      "coverage": 0.9344,
+      "count": 1824
     },
     "0.7": {
-      "accuracy": 0.9877,
-      "coverage": 0.9774,
-      "count": 2122
+      "accuracy": 0.989,
+      "coverage": 0.8852,
+      "count": 1728
     },
     "0.8": {
-      "accuracy": 0.9905,
-      "coverage": 0.9687,
-      "count": 2103
+      "accuracy": 0.993,
+      "coverage": 0.7326,
+      "count": 1430
     },
     "0.9": {
-      "accuracy": 0.9932,
-      "coverage": 0.9503,
-      "count": 2063
+      "accuracy": 0.9935,
+      "coverage": 0.314,
+      "count": 613
     }
   },
   "per_class": {
     "banana_cordana": {
-      "accuracy": 0.8976,
-      "count": 127
+      "accuracy": 0.8864,
+      "count": 88
     },
     "banana_healthy": {
-      "accuracy": 0.9912,
-      "count": 114
+      "accuracy": 0.9892,
+      "count": 93
     },
     "banana_pestalotiopsis": {
-      "accuracy": 0.9924,
-      "count": 132
+      "accuracy": 0.963,
+      "count": 81
     },
     "banana_sigatoka": {
-      "accuracy": 0.9379,
-      "count": 161
+      "accuracy": 0.7805,
+      "count": 41
     },
     "beans_angular_leaf_spot": {
-      "accuracy": 1.0,
-      "count": 122
+      "accuracy": 0.9714,
+      "count": 35
     },
     "beans_healthy": {
-      "accuracy": 0.9854,
-      "count": 137
+      "accuracy": 0.9216,
+      "count": 51
     },
     "beans_rust": {
-      "accuracy": 0.9747,
-      "count": 198
+      "accuracy": 0.9109,
+      "count": 101
     },
     "maize_common_rust": {
       "accuracy": 0.989,
       "count": 182
     },
     "maize_gray_leaf_spot": {
-      "accuracy": 0.9136,
+      "accuracy": 0.8765,
       "count": 81
     },
     "maize_healthy": {
-      "accuracy": 0.9948,
+      "accuracy": 1.0,
       "count": 191
     },
     "maize_northern_leaf_blight": {
-      "accuracy": 0.9474,
+      "accuracy": 0.9013,
       "count": 152
+    },
+    "other_leaf": {
+      "accuracy": 0.9792,
+      "count": 240
     },
     "potato_early_blight": {
       "accuracy": 0.9868,
       "count": 228
     },
     "potato_healthy": {
-      "accuracy": 1.0,
-      "count": 43
+      "accuracy": 0.9529,
+      "count": 85
     },
     "potato_late_blight": {
-      "accuracy": 0.9868,
+      "accuracy": 0.9274,
       "count": 303
     }
   },
   "per_class_tta": {
     "banana_cordana": {
-      "accuracy": 0.9055,
-      "count": 127
+      "accuracy": 0.8977,
+      "count": 88
     },
     "banana_healthy": {
-      "accuracy": 0.9912,
-      "count": 114
+      "accuracy": 0.9785,
+      "count": 93
     },
     "banana_pestalotiopsis": {
-      "accuracy": 0.9924,
-      "count": 132
+      "accuracy": 0.9753,
+      "count": 81
     },
     "banana_sigatoka": {
-      "accuracy": 0.9503,
-      "count": 161
+      "accuracy": 0.7805,
+      "count": 41
     },
     "beans_angular_leaf_spot": {
-      "accuracy": 1.0,
-      "count": 122
+      "accuracy": 0.9714,
+      "count": 35
     },
     "beans_healthy": {
-      "accuracy": 0.9854,
-      "count": 137
+      "accuracy": 0.9216,
+      "count": 51
     },
     "beans_rust": {
-      "accuracy": 0.9899,
-      "count": 198
+      "accuracy": 0.9208,
+      "count": 101
     },
     "maize_common_rust": {
-      "accuracy": 0.9835,
+      "accuracy": 0.989,
       "count": 182
     },
     "maize_gray_leaf_spot": {
-      "accuracy": 0.9259,
+      "accuracy": 0.8642,
       "count": 81
     },
     "maize_healthy": {
-      "accuracy": 0.9895,
+      "accuracy": 1.0,
       "count": 191
     },
     "maize_northern_leaf_blight": {
-      "accuracy": 0.9671,
+      "accuracy": 0.9211,
       "count": 152
+    },
+    "other_leaf": {
+      "accuracy": 0.9792,
+      "count": 240
     },
     "potato_early_blight": {
       "accuracy": 0.9868,
       "count": 228
     },
     "potato_healthy": {
-      "accuracy": 1.0,
-      "count": 43
+      "accuracy": 0.9765,
+      "count": 85
     },
     "potato_late_blight": {
-      "accuracy": 0.9934,
+      "accuracy": 0.9538,
       "count": 303
     }
   },
   "per_crop": {
     "Banana": {
-      "accuracy": 0.9532,
-      "count": 534
+      "accuracy": 0.9241,
+      "count": 303
     },
     "Beans": {
-      "accuracy": 0.9847,
-      "count": 457
+      "accuracy": 0.9251,
+      "count": 187
     },
     "Maize": {
-      "accuracy": 0.9703,
+      "accuracy": 0.9554,
       "count": 606
     },
+    "Other": {
+      "accuracy": 0.9792,
+      "count": 240
+    },
     "Potato": {
-      "accuracy": 0.9878,
-      "count": 574
+      "accuracy": 0.9529,
+      "count": 616
     }
   },
   "per_crop_tta": {
     "Banana": {
-      "accuracy": 0.9588,
-      "count": 534
+      "accuracy": 0.9274,
+      "count": 303
     },
     "Beans": {
-      "accuracy": 0.9912,
-      "count": 457
+      "accuracy": 0.9305,
+      "count": 187
     },
     "Maize": {
-      "accuracy": 0.9736,
+      "accuracy": 0.9587,
       "count": 606
     },
+    "Other": {
+      "accuracy": 0.9792,
+      "count": 240
+    },
     "Potato": {
-      "accuracy": 0.9913,
-      "count": 574
+      "accuracy": 0.9692,
+      "count": 616
     }
   }
 }

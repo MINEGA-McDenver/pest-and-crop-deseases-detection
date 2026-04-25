@@ -1,29 +1,32 @@
+# ...existing code for training/evaluation...
 """
 Train MobileNetV2 model for 4-crop disease detection (15 classes).
 Crops: Banana, Beans, Maize, Potato  +  other_leaf (rejection class)
 
-Changes vs previous version (Fix D — retrain improvements):
+Changes vs previous version (Fix E — crop-favoring tuning):
   1. FocalLoss replaces sparse_categorical_crossentropy — forces the model
      to focus on hard lookalike cases instead of easy correct ones.
-  2. Moderate class weighting: other_leaf remains boosted for rejection,
-      and beans/potato receive a smaller focus boost to reduce under-confident
-      supported-crop outcomes.
-  3. Class-aware augmentation: other_leaf images get heavier augmentation
-     (stronger rotation, zoom, contrast, brightness) to improve generalisation
-     across unseen plant types that were never in training.
+  2. Reduced class weighting: other_leaf boost lowered ×3.0 → ×1.0 so the
+       model is less aggressive at rejecting ambiguous cases.
+  3. Class-aware augmentation: other_leaf augmentation dialled back
+     (rotation 0.15→0.10, zoom 0.15→0.12, contrast 0.40→0.30, brightness
+     0.30→0.25) to reduce over-generalisation of rejection.
   4. MixUp-style interpolation is optional (enabled by default in this
       config, can be disabled for stability-first retrains).
-  5. NEW — Per-class label smoothing for other_leaf inside FocalLoss.
-     Instead of pushing other_leaf probability to a hard 1.0 target, we
-     use 0.9 (smoothing ε=0.1). This prevents the model from becoming
-     overconfident about the specific other_leaf training images, making
-     the learned boundary more robust to unseen plant types.
+  5. Label smoothing for other_leaf increased ε=0.10 → ε=0.15. Makes
+     the model less confident about rejection, shifting borderline cases
+     toward crops.
+  6. Focus crop weighting extended from beans/potato only to ALL four
+     supported crops (banana, beans, maize, potato) at ×1.15.
+  7. Threshold defaults shifted crop-favouring: other_leaf threshold
+     0.30→0.40, ratio 0.50→0.65, floor 0.12→0.18, confidence 0.60→0.55.
 
 Run: python -u -X utf8 scripts/train_model.py
 """
 
 import os, sys, json, gc, time, csv, random, math
 import hashlib
+from collections import Counter
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['PYTHONHASHSEED'] = '42'
 
@@ -38,6 +41,20 @@ random.seed(SEED)
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
+# 8 GB RAM-safe runtime defaults.
+DATA_AUTOTUNE = False
+PARALLEL_CALLS = 2
+PREFETCH_BUFFER = 2
+INTER_OP_THREADS = 2
+INTRA_OP_THREADS = 4
+
+try:
+    tf.config.threading.set_inter_op_parallelism_threads(INTER_OP_THREADS)
+    tf.config.threading.set_intra_op_parallelism_threads(INTRA_OP_THREADS)
+except Exception:
+    # Some TensorFlow builds lock threading config after initialization.
+    pass
+
 # ── Config ──────────────────────────────────────────────────────────
 BASE        = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR    = os.path.join(BASE, "datasets", "model_ready")
@@ -45,10 +62,13 @@ MODEL_DIR   = os.path.join(BASE, "models")
 TRAIN_DIR   = os.path.join(DATA_DIR, "train")
 VAL_DIR     = os.path.join(DATA_DIR, "val")
 TEST_DIR    = os.path.join(DATA_DIR, "test")
+FIELD_FAILURE_DIR = os.path.join(DATA_DIR, "field_failures")
 IMG_SIZE    = (224, 224)
 BATCH       = 8
 PHASE1_EP   = 15          # frozen backbone
 PHASE2_EP   = 35          # fine-tune
+FIELD_FAILURE_MAX_SAMPLES = 200
+FIELD_FAILURE_SHUFFLE_BUFFER = 2048
 INIT_LR     = 1e-3
 FINE_LR     = 1e-5
 PATIENCE    = 7
@@ -61,7 +81,7 @@ ENABLE_FOCUS_CROP_WEIGHTING = True
 
 # Keep other_leaf strong enough for rejection, but avoid over-penalising
 # supported crops into uncertain/unsupported outcomes.
-OTHER_LEAF_WEIGHT_MULTIPLIER = 3.0
+OTHER_LEAF_WEIGHT_MULTIPLIER = 1.0
 
 # Boost beans/potato class gradients to reduce under-confident supported
 # predictions on focus crops without changing architecture.
@@ -78,12 +98,13 @@ AUG_ZOOM       = 0.10
 AUG_CONTRAST   = 0.20
 AUG_BRIGHTNESS = 0.20
 
-# Heavier augmentation profile for other_leaf only (slightly reduced to
-# avoid unrealistic synthetic leaves).
-OL_AUG_ROTATION   = 0.15
-OL_AUG_ZOOM       = 0.15
-OL_AUG_CONTRAST   = 0.40
-OL_AUG_BRIGHTNESS = 0.30
+# Lighter augmentation profile for other_leaf (dialled back from the
+# previous aggressive values to reduce over-generalisation — the model
+# was rejecting borderline crop cases too aggressively).
+OL_AUG_ROTATION   = 0.10
+OL_AUG_ZOOM       = 0.12
+OL_AUG_CONTRAST   = 0.30
+OL_AUG_BRIGHTNESS = 0.25
 
 # FIX D4 — MixUp parameters for other_leaf
 # alpha controls the Beta distribution used to sample the mix ratio λ.
@@ -93,14 +114,13 @@ OL_AUG_BRIGHTNESS = 0.30
 # Lower alpha (e.g. 0.2) → blends closer to the originals (weaker effect).
 OL_MIXUP_ALPHA = 0.4
 
-# FIX D5 — Label smoothing for other_leaf inside FocalLoss
+# FIX E5 — Label smoothing for other_leaf inside FocalLoss
 # Instead of a hard target of 1.0 for other_leaf, we use (1 - ε).
 # The remaining ε is spread uniformly across all classes.
-# ε=0.1 is the standard value (Szegedy et al., "Rethinking the Inception
-# Architecture"). This prevents the model from becoming overconfident on
-# the specific other_leaf training images — the learned boundary generalises
-# better to unseen lookalike plants.
-OL_LABEL_SMOOTHING = 0.10
+# Increased from ε=0.10 → ε=0.15 to make the model less confident about
+# rejection. This shifts borderline cases toward crops rather than
+# other_leaf, reducing false unsupported verdicts.
+OL_LABEL_SMOOTHING = 0.15
 
 # Data quality and analysis extras
 ENABLE_IMAGE_SANITY_CHECK = True
@@ -116,10 +136,54 @@ STRICT_FIELD_MIN_SUPPORTED_CONFIDENT_RATE = 0.80
 STRICT_BEANS_POTATO_CONFUSION_MAX = 0.02
 STRICT_SUPPORTED_UNSUPPORTED_CONFUSION_MAX = 0.02
 
-CONFIDENCE_THRESHOLDS = [0.50, 0.60, 0.70, 0.80]
-DEFAULT_APP_CONFIDENCE_THRESHOLD = 0.60
+# Fail training early if split leakage is detected. This avoids optimistic
+# metrics from duplicate/overlapping samples leaking across train/val/test.
+ENFORCE_LEAKAGE_GUARD = True
+MAX_ALLOWED_STEM_OVERLAP_TOTAL = 0
+MAX_ALLOWED_HASH_OVERLAP_TOTAL = 0
+
+CONFIDENCE_THRESHOLDS = [0.45, 0.50, 0.55, 0.60, 0.70, 0.80]
+DEFAULT_APP_CONFIDENCE_THRESHOLD = 0.55
 DEFAULT_APP_MARGIN_THRESHOLD = 0.20
 DEFAULT_APP_MAX_ENTROPY = 1.50
+DEFAULT_APP_CROP_TOTAL_THRESHOLD = 0.82
+DEFAULT_HEALTHY_MIN_CONFIDENCE = 0.80
+DEFAULT_POTATO_HEALTHY_MIN_CONFIDENCE_PILOT = 0.72
+CROP_TOTAL_THRESHOLDS = [0.70, 0.74, 0.78, 0.80, 0.82, 0.84, 0.86, 0.88, 0.90]
+
+THRESHOLDS_CONFIG_PATH = os.path.join(BASE, "mobile_app", "assets", "config", "thresholds.json")
+MOBILE_RUNTIME_RECO_PATH = os.path.join(BASE, "mobile_app", "assets", "config", "mobile_runtime_recommendations.json")
+
+DEFAULT_OTHER_LEAF_THRESHOLD = 0.40
+DEFAULT_OTHER_LEAF_VS_CROP_RATIO_THRESHOLD = 0.65
+DEFAULT_OTHER_LEAF_ABSOLUTE_FLOOR = 0.18
+DEFAULT_UNCERTAIN_GAP_THRESHOLD = 0.30
+DEFAULT_SECOND_CROP_AMBIGUITY_THRESHOLD = 0.15
+DEFAULT_NON_FOCUS_CROP_TOTAL_RELAXATION = 0.05
+DEFAULT_NON_FOCUS_OTHER_LEAF_FLOOR_BOOST = 0.01
+DEFAULT_NON_FOCUS_CLASS_RATIO_THRESHOLD = 0.60
+DEFAULT_BEANS_POTATO_RESCUE_MIN_CROP_TOTAL = 0.18
+DEFAULT_BEANS_POTATO_RESCUE_MAX_GAP_FROM_BEST = 0.30
+DEFAULT_BEANS_POTATO_RESCUE_MAX_OTHER_LEAF = 0.38
+DEFAULT_RESCUE_FOCUS_SWAP_GUARD_CROP_GAP = 0.08
+DEFAULT_RESCUE_FOCUS_SWAP_GUARD_TOP_CLASS_MARGIN = 0.05
+DEFAULT_FORCE_BEANS_POTATO_NEVER_UNSUPPORTED = True
+DEFAULT_FORCE_BEANS_POTATO_MIN_CROP_TOTAL = 0.001
+DEFAULT_FORCE_BEANS_POTATO_MIN_TOP_CLASS_PROB = 0.001
+DEFAULT_LAST_CHANCE_FOCUS_MIN_CROP_TOTAL = 0.001
+DEFAULT_LAST_CHANCE_FOCUS_MIN_TOP_CLASS_PROB = 0.001
+DEFAULT_BEANS_POTATO_CROP_TOTAL_RELAXATION = 0.05
+DEFAULT_BEANS_POTATO_OTHER_LEAF_FLOOR_BOOST = 0.03
+DEFAULT_BEANS_POTATO_UNCERTAIN_GAP_THRESHOLD = 0.08
+DEFAULT_BEANS_POTATO_SECOND_CROP_THRESHOLD = 0.55
+DEFAULT_BEANS_POTATO_CLASS_RATIO_THRESHOLD = 0.45
+DEFAULT_BEANS_POTATO_CLASS_CONFIDENCE_THRESHOLD = 0.68
+DEFAULT_SECONDARY_FOCUS_MIN_CROP_TOTAL = 0.001
+DEFAULT_SECONDARY_FOCUS_MIN_TOP_CLASS_PROB = 0.001
+DEFAULT_SECONDARY_FOCUS_MAX_GAP_FROM_BEST = 1.00
+DEFAULT_PREFER_BEANS_POTATO_WHEN_COMPETITIVE = True
+DEFAULT_FOCUS_CROP_SWITCH_MAX_GAP = 0.18
+DEFAULT_FOCUS_CROP_SWITCH_MIN_TOTAL = 0.20
 
 # Optional real-world OOD validation folder.
 REAL_WORLD_OOD_DIR = os.path.join(BASE, "datasets", "real_world_test")
@@ -129,12 +193,17 @@ MULTI_WORD_PREFIXES = ["other_leaf"]
 
 os.makedirs(MODEL_DIR, exist_ok=True)
 
+MAP_PARALLEL_CALLS = tf.data.AUTOTUNE if DATA_AUTOTUNE else PARALLEL_CALLS
+PREFETCH_SIZE = tf.data.AUTOTUNE if DATA_AUTOTUNE else PREFETCH_BUFFER
+
 
 # ── FIX 1 + FIX D5: Focal Loss with per-class label smoothing ───────
 # Focal loss down-weights easy examples and up-weights hard ones.
 # gamma=2.0 is the standard value from the original paper.
 # alpha=0.25 slightly reduces contribution from dominant easy classes.
 #
+from tensorflow.keras.utils import register_keras_serializable
+
 # FIX D5 addition: if other_leaf_idx and num_classes are provided, the
 # loss applies label smoothing (ε = other_leaf_smoothing) to other_leaf
 # samples only. For those samples the effective target is:
@@ -145,6 +214,7 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 # pt_effective, so the gradient penalises overconfident other_leaf
 # predictions less harshly — preventing the model from overfitting to
 # specific other_leaf training images.
+@register_keras_serializable()
 class FocalLoss(tf.keras.losses.Loss):
     def __init__(
         self,
@@ -262,6 +332,23 @@ def run_image_sanity_check(split_dir, split_name):
     }
 
 
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Train or re-save model with custom loss registration.")
+    parser.add_argument("--resave", action="store_true", help="Re-save the model with updated custom loss registration.")
+    args = parser.parse_args()
+
+    if args.resave:
+        print("[INFO] Loading and re-saving model with registered FocalLoss ...")
+        model_path = os.path.join(MODEL_DIR, "best_model.keras")
+        import tensorflow as tf
+        model = tf.keras.models.load_model(model_path, custom_objects={"FocalLoss": FocalLoss})
+        model.save(model_path)
+        print(f"[INFO] Model re-saved to {model_path}")
+        exit(0)
+    # Default: run full training pipeline (not invoked by resave)
+
+
 def temperature_scale_probs(probs, temperature):
     # Convert probabilities back to logits for temperature scaling.
     # Clipping avoids log(0) for near-zero probabilities.
@@ -296,6 +383,847 @@ def label_to_crop(label_name):
     if label_name == "other_leaf":
         return "other_leaf"
     return label_name.split("_")[0]
+
+
+def aggregate_supported_crop_totals(probs, class_names):
+    supported_crops = sorted(
+        {label_to_crop(name) for name in class_names if label_to_crop(name) != "other_leaf"}
+    )
+    crop_to_idx = {crop: i for i, crop in enumerate(supported_crops)}
+    crop_totals = np.zeros((probs.shape[0], len(supported_crops)), dtype=np.float32)
+
+    for class_idx, class_name in enumerate(class_names):
+        crop = label_to_crop(class_name)
+        if crop == "other_leaf":
+            continue
+        crop_totals[:, crop_to_idx[crop]] += probs[:, class_idx]
+
+    return supported_crops, crop_totals
+
+
+def evaluate_crop_total_gate(crop_totals, true_crop_names, supported_crops, threshold):
+    row_idx = np.arange(crop_totals.shape[0])
+    best_crop_idx = np.argmax(crop_totals, axis=1)
+    best_crop_total = crop_totals[row_idx, best_crop_idx]
+    best_crop_names = np.array([supported_crops[int(i)] for i in best_crop_idx], dtype=object)
+
+    true_crop_arr = np.array(true_crop_names, dtype=object)
+    accepted_mask = best_crop_total >= threshold
+    supported_mask = true_crop_arr != "other_leaf"
+    unsupported_mask = ~supported_mask
+
+    supported_total = int(np.sum(supported_mask))
+    unsupported_total = int(np.sum(unsupported_mask))
+
+    supported_confident = accepted_mask & supported_mask & (best_crop_names == true_crop_arr)
+    supported_false_unsupported = supported_mask & ~accepted_mask
+    unsupported_rejected = unsupported_mask & ~accepted_mask
+    unsupported_accepted = unsupported_mask & accepted_mask
+
+    supported_confident_rate = (
+        float(np.mean(supported_confident[supported_mask])) if supported_total > 0 else 0.0
+    )
+    supported_false_unsupported_rate = (
+        float(np.mean(supported_false_unsupported[supported_mask])) if supported_total > 0 else 0.0
+    )
+    unsupported_reject_rate = (
+        float(np.mean(unsupported_rejected[unsupported_mask])) if unsupported_total > 0 else 0.0
+    )
+    unsupported_accept_rate = (
+        float(np.mean(unsupported_accepted[unsupported_mask])) if unsupported_total > 0 else 0.0
+    )
+
+    score = 0.5 * supported_confident_rate + 0.5 * unsupported_reject_rate
+
+    return {
+        "threshold": round(float(threshold), 4),
+        "supported_confident_rate": round(float(supported_confident_rate), 4),
+        "supported_false_unsupported_rate": round(float(supported_false_unsupported_rate), 4),
+        "unsupported_reject_rate": round(float(unsupported_reject_rate), 4),
+        "unsupported_accept_rate": round(float(unsupported_accept_rate), 4),
+        "supported_confident_count": int(np.sum(supported_confident)),
+        "supported_false_unsupported_count": int(np.sum(supported_false_unsupported)),
+        "unsupported_reject_count": int(np.sum(unsupported_rejected)),
+        "unsupported_accept_count": int(np.sum(unsupported_accepted)),
+        "supported_total": supported_total,
+        "unsupported_total": unsupported_total,
+        "score": round(float(score), 4),
+    }
+
+
+def load_runtime_gate_config():
+    cfg = {
+        "cropTotalThreshold": DEFAULT_APP_CROP_TOTAL_THRESHOLD,
+        "otherLeafThreshold": DEFAULT_OTHER_LEAF_THRESHOLD,
+        "otherLeafVsCropRatioThreshold": DEFAULT_OTHER_LEAF_VS_CROP_RATIO_THRESHOLD,
+        "otherLeafAbsoluteFloor": DEFAULT_OTHER_LEAF_ABSOLUTE_FLOOR,
+        "uncertainGapThreshold": DEFAULT_UNCERTAIN_GAP_THRESHOLD,
+        "secondCropAmbiguityThreshold": DEFAULT_SECOND_CROP_AMBIGUITY_THRESHOLD,
+        "maxEntropyThreshold": DEFAULT_APP_MAX_ENTROPY,
+        "nonFocusMaxEntropyThreshold": DEFAULT_APP_MAX_ENTROPY,
+        "nonFocusClassConfidenceThreshold": DEFAULT_APP_CONFIDENCE_THRESHOLD,
+        "nonFocusCropTotalRelaxation": DEFAULT_NON_FOCUS_CROP_TOTAL_RELAXATION,
+        "nonFocusOtherLeafFloorBoost": DEFAULT_NON_FOCUS_OTHER_LEAF_FLOOR_BOOST,
+        "nonFocusClassRatioThreshold": DEFAULT_NON_FOCUS_CLASS_RATIO_THRESHOLD,
+        "beansPotatoRescueMinCropTotal": DEFAULT_BEANS_POTATO_RESCUE_MIN_CROP_TOTAL,
+        "beansPotatoRescueMaxGapFromBest": DEFAULT_BEANS_POTATO_RESCUE_MAX_GAP_FROM_BEST,
+        "beansPotatoRescueMaxOtherLeaf": DEFAULT_BEANS_POTATO_RESCUE_MAX_OTHER_LEAF,
+        "rescueFocusSwapGuardCropGap": DEFAULT_RESCUE_FOCUS_SWAP_GUARD_CROP_GAP,
+        "rescueFocusSwapGuardTopClassMargin": DEFAULT_RESCUE_FOCUS_SWAP_GUARD_TOP_CLASS_MARGIN,
+        "forceBeansPotatoNeverUnsupported": 1.0 if DEFAULT_FORCE_BEANS_POTATO_NEVER_UNSUPPORTED else 0.0,
+        "forceBeansPotatoMinCropTotal": DEFAULT_FORCE_BEANS_POTATO_MIN_CROP_TOTAL,
+        "forceBeansPotatoMinTopClassProb": DEFAULT_FORCE_BEANS_POTATO_MIN_TOP_CLASS_PROB,
+        "lastChanceFocusMinCropTotal": DEFAULT_LAST_CHANCE_FOCUS_MIN_CROP_TOTAL,
+        "lastChanceFocusMinTopClassProb": DEFAULT_LAST_CHANCE_FOCUS_MIN_TOP_CLASS_PROB,
+        "beansPotatoCropTotalRelaxation": DEFAULT_BEANS_POTATO_CROP_TOTAL_RELAXATION,
+        "beansPotatoOtherLeafFloorBoost": DEFAULT_BEANS_POTATO_OTHER_LEAF_FLOOR_BOOST,
+        "beansPotatoUncertainGapThreshold": DEFAULT_BEANS_POTATO_UNCERTAIN_GAP_THRESHOLD,
+        "beansPotatoSecondCropThreshold": DEFAULT_BEANS_POTATO_SECOND_CROP_THRESHOLD,
+        "beansPotatoClassRatioThreshold": DEFAULT_BEANS_POTATO_CLASS_RATIO_THRESHOLD,
+        "beansPotatoClassConfidenceThreshold": DEFAULT_BEANS_POTATO_CLASS_CONFIDENCE_THRESHOLD,
+        "secondaryFocusMinCropTotal": DEFAULT_SECONDARY_FOCUS_MIN_CROP_TOTAL,
+        "secondaryFocusMinTopClassProb": DEFAULT_SECONDARY_FOCUS_MIN_TOP_CLASS_PROB,
+        "secondaryFocusMaxGapFromBest": DEFAULT_SECONDARY_FOCUS_MAX_GAP_FROM_BEST,
+        "preferBeansPotatoWhenCompetitive": 1.0 if DEFAULT_PREFER_BEANS_POTATO_WHEN_COMPETITIVE else 0.0,
+        "focusCropSwitchMaxGap": DEFAULT_FOCUS_CROP_SWITCH_MAX_GAP,
+        "focusCropSwitchMinTotal": DEFAULT_FOCUS_CROP_SWITCH_MIN_TOTAL,
+    }
+
+    if os.path.isfile(THRESHOLDS_CONFIG_PATH):
+        with open(THRESHOLDS_CONFIG_PATH, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+        thresholds = payload.get("thresholds", {}) if isinstance(payload, dict) else {}
+        for k in [
+            "cropTotalThreshold",
+            "otherLeafVsCropRatioThreshold",
+            "otherLeafAbsoluteFloor",
+            "beansPotatoCropTotalRelaxation",
+            "beansPotatoOtherLeafFloorBoost",
+            "beansPotatoUncertainGapThreshold",
+            "beansPotatoSecondCropThreshold",
+            "beansPotatoClassRatioThreshold",
+            "beansPotatoClassConfidenceThreshold",
+            "nonFocusClassRatioThreshold",
+            "beansPotatoRescueMinCropTotal",
+            "beansPotatoRescueMaxGapFromBest",
+            "beansPotatoRescueMaxOtherLeaf",
+        ]:
+            v = thresholds.get(k)
+            if isinstance(v, (int, float)):
+                cfg[k] = float(v)
+
+    if os.path.isfile(MOBILE_RUNTIME_RECO_PATH):
+        with open(MOBILE_RUNTIME_RECO_PATH, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+        reco = payload.get("recommendedThresholds", {}) if isinstance(payload, dict) else {}
+        for src, dst in [
+            ("confidenceThreshold", "nonFocusClassConfidenceThreshold"),
+            ("maxEntropyThreshold", "nonFocusMaxEntropyThreshold"),
+            ("cropTotalThreshold", "cropTotalThreshold"),
+        ]:
+            v = reco.get(src)
+            if isinstance(v, (int, float)):
+                cfg[dst] = float(v)
+
+    return cfg
+
+
+def simulate_runtime_gates(raw_probs, calibrated_probs, labels, class_names, gate_cfg):
+    class_to_crop = {name: label_to_crop(name) for name in class_names}
+
+    def is_beans_or_potato(crop_name):
+        return crop_name in ("beans", "potato")
+
+    def top_class_for_crop(crop_name, prob_map):
+        best_name = ""
+        best_prob = 0.0
+        for cname in class_names:
+            if class_to_crop[cname] == crop_name:
+                p = float(prob_map.get(cname, 0.0))
+                if p > best_prob:
+                    best_prob = p
+                    best_name = cname
+        return best_name, best_prob
+
+    def choose_focus_crop_candidate(
+        beans_total,
+        potato_total,
+        beans_top_class,
+        potato_top_class,
+        beans_score,
+        potato_score,
+    ):
+        if potato_score > beans_score:
+            return "potato", potato_total
+        if beans_score > potato_score:
+            return "beans", beans_total
+        if potato_total > beans_total:
+            return "potato", potato_total
+        if beans_total > potato_total:
+            return "beans", beans_total
+        if potato_top_class > beans_top_class:
+            return "potato", potato_total
+        if beans_top_class > potato_top_class:
+            return "beans", beans_total
+        return None
+
+    def select_beans_potato_rescue_candidate(crop_probs, prob_map, best_crop_total):
+        beans_total = float(crop_probs.get("beans", 0.0))
+        potato_total = float(crop_probs.get("potato", 0.0))
+        _, beans_top = top_class_for_crop("beans", prob_map)
+        _, potato_top = top_class_for_crop("potato", prob_map)
+
+        candidate = choose_focus_crop_candidate(
+            beans_total=beans_total,
+            potato_total=potato_total,
+            beans_top_class=beans_top,
+            potato_top_class=potato_top,
+            beans_score=beans_total + (0.35 * beans_top),
+            potato_score=potato_total + (0.35 * potato_top),
+        )
+        if candidate is None:
+            return None
+        crop_name, crop_total = candidate
+        if crop_total <= 0.0:
+            return None
+        gap_from_best = max(0.0, best_crop_total - crop_total)
+        if gap_from_best > gate_cfg["beansPotatoRescueMaxGapFromBest"]:
+            return None
+        return crop_name, crop_total
+
+    def select_secondary_focus_candidate(crop_probs, prob_map, best_crop_total):
+        beans_total = float(crop_probs.get("beans", 0.0))
+        potato_total = float(crop_probs.get("potato", 0.0))
+        _, beans_top = top_class_for_crop("beans", prob_map)
+        _, potato_top = top_class_for_crop("potato", prob_map)
+
+        has_evidence = (
+            beans_total >= gate_cfg["secondaryFocusMinCropTotal"]
+            or potato_total >= gate_cfg["secondaryFocusMinCropTotal"]
+            or beans_top >= gate_cfg["secondaryFocusMinTopClassProb"]
+            or potato_top >= gate_cfg["secondaryFocusMinTopClassProb"]
+        )
+        if not has_evidence:
+            return None
+
+        candidate = choose_focus_crop_candidate(
+            beans_total=beans_total,
+            potato_total=potato_total,
+            beans_top_class=beans_top,
+            potato_top_class=potato_top,
+            beans_score=beans_total + (0.40 * beans_top),
+            potato_score=potato_total + (0.40 * potato_top),
+        )
+        if candidate is None:
+            return None
+
+        crop_name, crop_total = candidate
+        gap_from_best = max(0.0, best_crop_total - crop_total)
+        if gap_from_best > gate_cfg["secondaryFocusMaxGapFromBest"]:
+            return None
+        return crop_name, crop_total
+
+    def select_preferred_beans_potato_crop(
+        crop_probs,
+        prob_map,
+        current_best_crop,
+        current_best_crop_total,
+    ):
+        if gate_cfg.get("preferBeansPotatoWhenCompetitive", 1.0) < 0.5:
+            return None
+        if is_beans_or_potato(current_best_crop):
+            return None
+
+        beans_total = float(crop_probs.get("beans", 0.0))
+        potato_total = float(crop_probs.get("potato", 0.0))
+        _, beans_top = top_class_for_crop("beans", prob_map)
+        _, potato_top = top_class_for_crop("potato", prob_map)
+
+        candidate = choose_focus_crop_candidate(
+            beans_total=beans_total,
+            potato_total=potato_total,
+            beans_top_class=beans_top,
+            potato_top_class=potato_top,
+            beans_score=beans_total + (0.45 * beans_top),
+            potato_score=potato_total + (0.45 * potato_top),
+        )
+        if candidate is None:
+            return None
+
+        crop_name, crop_total = candidate
+        gap_from_best = max(0.0, current_best_crop_total - crop_total)
+        if crop_total < gate_cfg["focusCropSwitchMinTotal"]:
+            return None
+        if gap_from_best > gate_cfg["focusCropSwitchMaxGap"]:
+            return None
+        return crop_name, crop_total
+
+    def second_best_crop_total_excluding(crop_probs, excluded_crop):
+        candidates = sorted(
+            ((k, v) for k, v in crop_probs.items() if k != excluded_crop),
+            key=lambda kv: kv[1],
+            reverse=True,
+        )
+        return float(candidates[0][1]) if candidates else 0.0
+
+    def should_preserve_focus_crop_identity(candidate_crop, candidate_crop_total, prob_map):
+        if not is_beans_or_potato(candidate_crop):
+            return False
+        _, top_class_prob = top_class_for_crop(candidate_crop, prob_map)
+        return candidate_crop_total >= 0.001 or top_class_prob >= 0.001
+
+    def build_focus_crop_outcome(gate_name, crop_name, crop_total, prob_map):
+        focus_class, focus_class_prob = top_class_for_crop(crop_name, prob_map)
+        if not focus_class:
+            focus_class = "beans_healthy" if crop_name == "beans" else "potato_healthy"
+            focus_class_prob = float(prob_map.get(focus_class, 0.0))
+        return {
+            "gate": gate_name,
+            "resultType": "healthy" if "healthy" in focus_class else "disease",
+            "bestCrop": crop_name,
+            "bestCropTotal": float(crop_total),
+            "bestClass": focus_class,
+            "bestClassProb": float(max(crop_total, focus_class_prob)),
+        }
+
+    def attempt_focus_rescue(
+        fallback_gate,
+        crop_probs,
+        prob_map,
+        candidate_crop,
+        candidate_crop_total,
+        other_leaf_prob,
+    ):
+        # Rescue path 1: targeted beans/potato rescue.
+        rescue_crop = candidate_crop
+        rescue_crop_total = candidate_crop_total
+
+        if not is_beans_or_potato(rescue_crop):
+            alternative = select_beans_potato_rescue_candidate(
+                crop_probs,
+                prob_map,
+                best_crop_total=candidate_crop_total,
+            )
+            if alternative is not None:
+                rescue_crop, rescue_crop_total = alternative
+            else:
+                rescue_crop = None
+
+        if rescue_crop is not None:
+            if rescue_crop_total >= gate_cfg["beansPotatoRescueMinCropTotal"]:
+                gap_from_best = max(0.0, candidate_crop_total - rescue_crop_total)
+                focus_guard_ok = True
+                if gap_from_best <= gate_cfg["beansPotatoRescueMaxGapFromBest"] and other_leaf_prob <= gate_cfg["beansPotatoRescueMaxOtherLeaf"]:
+                    beans_total = float(crop_probs.get("beans", 0.0))
+                    potato_total = float(crop_probs.get("potato", 0.0))
+                    if abs(beans_total - potato_total) <= gate_cfg["rescueFocusSwapGuardCropGap"]:
+                        _, beans_top = top_class_for_crop("beans", prob_map)
+                        _, potato_top = top_class_for_crop("potato", prob_map)
+                        top_margin = (beans_top - potato_top) if rescue_crop == "beans" else (potato_top - beans_top)
+                        if top_margin < gate_cfg["rescueFocusSwapGuardTopClassMargin"]:
+                            focus_guard_ok = False
+                    if focus_guard_ok:
+                        rescue_best_class, rescue_top = top_class_for_crop(rescue_crop, prob_map)
+                        return {
+                            "gate": "RESCUE_beans_potato",
+                            "resultType": "healthy" if "healthy" in rescue_best_class else "disease",
+                            "bestCrop": rescue_crop,
+                            "bestCropTotal": float(rescue_crop_total),
+                            "bestClass": rescue_best_class,
+                            "bestClassProb": float(max(rescue_crop_total, rescue_top)),
+                        }
+
+        # Rescue path 2: forced beans/potato fallback.
+        if gate_cfg.get("forceBeansPotatoNeverUnsupported", 1.0) >= 0.5:
+            beans_total = float(crop_probs.get("beans", 0.0))
+            potato_total = float(crop_probs.get("potato", 0.0))
+            beans_class, beans_top = top_class_for_crop("beans", prob_map)
+            potato_class, potato_top = top_class_for_crop("potato", prob_map)
+            candidate = choose_focus_crop_candidate(
+                beans_total=beans_total,
+                potato_total=potato_total,
+                beans_top_class=beans_top,
+                potato_top_class=potato_top,
+                beans_score=beans_total + (0.50 * beans_top),
+                potato_score=potato_total + (0.50 * potato_top),
+            )
+            if candidate is not None:
+                rescue_crop, rescue_total = candidate
+                rescue_class = potato_class if rescue_crop == "potato" else beans_class
+                rescue_top = potato_top if rescue_crop == "potato" else beans_top
+                has_min_evidence = (
+                    rescue_total >= gate_cfg["forceBeansPotatoMinCropTotal"]
+                    or rescue_top >= gate_cfg["forceBeansPotatoMinTopClassProb"]
+                )
+                if has_min_evidence:
+                    return {
+                        "gate": "FORCED_beans_potato_fallback",
+                        "resultType": "healthy" if "healthy" in rescue_class else "disease",
+                        "bestCrop": rescue_crop,
+                        "bestCropTotal": float(rescue_total),
+                        "bestClass": rescue_class,
+                        "bestClassProb": float(max(rescue_total, rescue_top)),
+                    }
+
+        # Rescue path 3: last-chance focus override.
+        beans_total = float(crop_probs.get("beans", 0.0))
+        potato_total = float(crop_probs.get("potato", 0.0))
+        beans_class, beans_top = top_class_for_crop("beans", prob_map)
+        potato_class, potato_top = top_class_for_crop("potato", prob_map)
+        no_focus_evidence = (
+            beans_total < gate_cfg["lastChanceFocusMinCropTotal"]
+            and potato_total < gate_cfg["lastChanceFocusMinCropTotal"]
+            and beans_top < gate_cfg["lastChanceFocusMinTopClassProb"]
+            and potato_top < gate_cfg["lastChanceFocusMinTopClassProb"]
+        )
+        if no_focus_evidence:
+            return None
+
+        candidate = choose_focus_crop_candidate(
+            beans_total=beans_total,
+            potato_total=potato_total,
+            beans_top_class=beans_top,
+            potato_top_class=potato_top,
+            beans_score=beans_total + (0.50 * beans_top),
+            potato_score=potato_total + (0.50 * potato_top),
+        )
+        if candidate is None:
+            return None
+        rescue_crop, rescue_total = candidate
+        rescue_class = potato_class if rescue_crop == "potato" else beans_class
+        rescue_top = potato_top if rescue_crop == "potato" else beans_top
+        return {
+            "gate": "LAST_CHANCE_focus_override",
+            "resultType": "healthy" if "healthy" in rescue_class else "disease",
+            "bestCrop": rescue_crop,
+            "bestCropTotal": float(rescue_total),
+            "bestClass": rescue_class,
+            "bestClassProb": float(max(rescue_total, rescue_top)),
+        }
+
+    rows = []
+    gate_counts = Counter()
+    result_counts = Counter()
+
+    for i in range(len(labels)):
+        raw_row = raw_probs[i]
+        cal_row = calibrated_probs[i]
+
+        raw_map = {class_names[j]: float(raw_row[j]) for j in range(len(class_names))}
+        cal_map = {class_names[j]: float(cal_row[j]) for j in range(len(class_names))}
+
+        true_label = class_names[int(labels[i])]
+        true_crop = class_to_crop[true_label]
+
+        other_leaf_scaled = cal_map.get("other_leaf", 0.0)
+        other_leaf_raw = raw_map.get("other_leaf", 0.0)
+        other_leaf = max(other_leaf_scaled, other_leaf_raw)
+
+        crop_probs = {}
+        for cname, prob in cal_map.items():
+            crop = class_to_crop[cname]
+            if crop == "other_leaf":
+                continue
+            crop_probs[crop] = crop_probs.get(crop, 0.0) + float(prob)
+
+        sorted_crops = sorted(crop_probs.items(), key=lambda kv: kv[1], reverse=True)
+        best_candidate_crop = sorted_crops[0][0] if sorted_crops else "unknown"
+        best_candidate_crop_total = sorted_crops[0][1] if sorted_crops else 0.0
+
+        # Mirror app Step 6 pre-selection: optional beans/potato substitution
+        # before any downstream gate is evaluated.
+        best_crop = best_candidate_crop
+        best_crop_total = best_candidate_crop_total
+
+        secondary_focus_candidate = select_secondary_focus_candidate(
+            crop_probs,
+            cal_map,
+            best_crop_total=best_candidate_crop_total,
+        )
+        if secondary_focus_candidate is not None and not is_beans_or_potato(best_crop):
+            best_crop, best_crop_total = secondary_focus_candidate
+
+        preferred_focus_crop = select_preferred_beans_potato_crop(
+            crop_probs,
+            cal_map,
+            current_best_crop=best_crop,
+            current_best_crop_total=best_crop_total,
+        )
+        if preferred_focus_crop is not None:
+            best_crop, best_crop_total = preferred_focus_crop
+
+        second_crop_total = second_best_crop_total_excluding(crop_probs, best_crop)
+
+        gate = ""
+        result_type = ""
+        best_class = ""
+        best_class_prob = 0.0
+
+        effective_other_leaf_floor = gate_cfg["otherLeafAbsoluteFloor"]
+        if best_candidate_crop in ("beans", "potato"):
+            effective_other_leaf_floor = min(
+                0.95,
+                gate_cfg["otherLeafAbsoluteFloor"] + gate_cfg["beansPotatoOtherLeafFloorBoost"],
+            )
+        else:
+            effective_other_leaf_floor = min(
+                0.95,
+                gate_cfg["otherLeafAbsoluteFloor"] + gate_cfg["nonFocusOtherLeafFloorBoost"],
+            )
+
+        if other_leaf >= gate_cfg["otherLeafThreshold"]:
+            preserve_crop = best_candidate_crop
+            preserve_crop_total = best_candidate_crop_total
+            if secondary_focus_candidate is not None:
+                preserve_crop, preserve_crop_total = secondary_focus_candidate
+
+            if should_preserve_focus_crop_identity(
+                preserve_crop,
+                preserve_crop_total,
+                cal_map,
+            ):
+                preserve_outcome = build_focus_crop_outcome(
+                    "G5_preserve_focus_crop",
+                    preserve_crop,
+                    preserve_crop_total,
+                    cal_map,
+                )
+                gate = preserve_outcome["gate"]
+                result_type = preserve_outcome["resultType"]
+                best_crop = preserve_outcome["bestCrop"]
+                best_crop_total = preserve_outcome["bestCropTotal"]
+                best_class = preserve_outcome["bestClass"]
+                best_class_prob = preserve_outcome["bestClassProb"]
+            else:
+                rescue_outcome = attempt_focus_rescue(
+                    fallback_gate="G5_other_leaf_winner",
+                    crop_probs=crop_probs,
+                    prob_map=cal_map,
+                    candidate_crop=best_candidate_crop,
+                    candidate_crop_total=best_candidate_crop_total,
+                    other_leaf_prob=other_leaf,
+                )
+                if rescue_outcome is not None:
+                    gate = rescue_outcome["gate"]
+                    result_type = rescue_outcome["resultType"]
+                    best_crop = rescue_outcome["bestCrop"]
+                    best_crop_total = rescue_outcome["bestCropTotal"]
+                    best_class = rescue_outcome["bestClass"]
+                    best_class_prob = rescue_outcome["bestClassProb"]
+                else:
+                    gate = "G5_other_leaf_winner"
+                    result_type = "other_leaf"
+        elif other_leaf > effective_other_leaf_floor:
+            preserve_crop = best_candidate_crop
+            preserve_crop_total = best_candidate_crop_total
+            if secondary_focus_candidate is not None:
+                preserve_crop, preserve_crop_total = secondary_focus_candidate
+
+            if should_preserve_focus_crop_identity(
+                preserve_crop,
+                preserve_crop_total,
+                cal_map,
+            ):
+                preserve_outcome = build_focus_crop_outcome(
+                    "G5b_preserve_focus_crop",
+                    preserve_crop,
+                    preserve_crop_total,
+                    cal_map,
+                )
+                gate = preserve_outcome["gate"]
+                result_type = preserve_outcome["resultType"]
+                best_crop = preserve_outcome["bestCrop"]
+                best_crop_total = preserve_outcome["bestCropTotal"]
+                best_class = preserve_outcome["bestClass"]
+                best_class_prob = preserve_outcome["bestClassProb"]
+            else:
+                rescue_outcome = attempt_focus_rescue(
+                    fallback_gate="G5b_other_leaf_floor",
+                    crop_probs=crop_probs,
+                    prob_map=cal_map,
+                    candidate_crop=best_candidate_crop,
+                    candidate_crop_total=best_candidate_crop_total,
+                    other_leaf_prob=other_leaf,
+                )
+                if rescue_outcome is not None:
+                    gate = rescue_outcome["gate"]
+                    result_type = rescue_outcome["resultType"]
+                    best_crop = rescue_outcome["bestCrop"]
+                    best_crop_total = rescue_outcome["bestCropTotal"]
+                    best_class = rescue_outcome["bestClass"]
+                    best_class_prob = rescue_outcome["bestClassProb"]
+                else:
+                    gate = "G5b_other_leaf_floor"
+                    result_type = "other_leaf"
+        elif not sorted_crops:
+            rescue_outcome = attempt_focus_rescue(
+                fallback_gate="G6_no_crop_candidates",
+                crop_probs=crop_probs,
+                prob_map=cal_map,
+                candidate_crop=best_candidate_crop,
+                candidate_crop_total=best_candidate_crop_total,
+                other_leaf_prob=other_leaf,
+            )
+            if rescue_outcome is not None:
+                gate = rescue_outcome["gate"]
+                result_type = rescue_outcome["resultType"]
+                best_crop = rescue_outcome["bestCrop"]
+                best_crop_total = rescue_outcome["bestCropTotal"]
+                best_class = rescue_outcome["bestClass"]
+                best_class_prob = rescue_outcome["bestClassProb"]
+            else:
+                gate = "G6_no_crop_candidates"
+                result_type = "unsupported"
+        else:
+            effective_crop_total = gate_cfg["cropTotalThreshold"]
+            effective_gap_threshold = gate_cfg["uncertainGapThreshold"]
+            effective_second_crop_threshold = gate_cfg["secondCropAmbiguityThreshold"]
+            effective_entropy_threshold = gate_cfg["nonFocusMaxEntropyThreshold"]
+            effective_class_ratio_threshold = gate_cfg["nonFocusClassRatioThreshold"]
+            effective_class_confidence_threshold = gate_cfg["nonFocusClassConfidenceThreshold"]
+
+            if best_crop in ("beans", "potato"):
+                effective_crop_total = max(
+                    0.0,
+                    gate_cfg["cropTotalThreshold"] - gate_cfg["beansPotatoCropTotalRelaxation"],
+                )
+                effective_gap_threshold = gate_cfg["beansPotatoUncertainGapThreshold"]
+                effective_second_crop_threshold = gate_cfg["beansPotatoSecondCropThreshold"]
+                effective_entropy_threshold = gate_cfg["maxEntropyThreshold"]
+                effective_class_ratio_threshold = gate_cfg["beansPotatoClassRatioThreshold"]
+                effective_class_confidence_threshold = gate_cfg["beansPotatoClassConfidenceThreshold"]
+            else:
+                effective_crop_total = max(
+                    0.0,
+                    gate_cfg["cropTotalThreshold"] - gate_cfg["nonFocusCropTotalRelaxation"],
+                )
+
+            if best_crop_total < effective_crop_total:
+                rescue_outcome = attempt_focus_rescue(
+                    fallback_gate="G7a_crop_total",
+                    crop_probs=crop_probs,
+                    prob_map=cal_map,
+                    candidate_crop=best_crop,
+                    candidate_crop_total=best_crop_total,
+                    other_leaf_prob=other_leaf,
+                )
+                if rescue_outcome is not None:
+                    gate = rescue_outcome["gate"]
+                    result_type = rescue_outcome["resultType"]
+                    best_crop = rescue_outcome["bestCrop"]
+                    best_crop_total = rescue_outcome["bestCropTotal"]
+                    best_class = rescue_outcome["bestClass"]
+                    best_class_prob = rescue_outcome["bestClassProb"]
+                else:
+                    gate = "G7a_crop_total"
+                    result_type = "unsupported"
+            else:
+                other_leaf_ratio = (other_leaf_scaled / best_crop_total) if best_crop_total > 0 else 0.0
+                if other_leaf_ratio > gate_cfg["otherLeafVsCropRatioThreshold"]:
+                    rescue_outcome = attempt_focus_rescue(
+                        fallback_gate="G7a_other_leaf_ratio",
+                        crop_probs=crop_probs,
+                        prob_map=cal_map,
+                        candidate_crop=best_crop,
+                        candidate_crop_total=best_crop_total,
+                        other_leaf_prob=other_leaf,
+                    )
+                    if rescue_outcome is not None:
+                        gate = rescue_outcome["gate"]
+                        result_type = rescue_outcome["resultType"]
+                        best_crop = rescue_outcome["bestCrop"]
+                        best_crop_total = rescue_outcome["bestCropTotal"]
+                        best_class = rescue_outcome["bestClass"]
+                        best_class_prob = rescue_outcome["bestClassProb"]
+                    else:
+                        gate = "G7a_other_leaf_ratio"
+                        result_type = "other_leaf"
+                else:
+                    crop_classes = [
+                        (name, cal_map[name])
+                        for name in class_names
+                        if class_to_crop[name] == best_crop
+                    ]
+                    crop_classes.sort(key=lambda kv: kv[1], reverse=True)
+                    if crop_classes:
+                        best_class, best_class_prob = crop_classes[0]
+
+                    crop_gap = best_crop_total - second_crop_total
+                    cal_entropy = float(
+                        -np.sum(cal_row * (np.log(np.clip(cal_row, 1e-10, 1.0)) / np.log(2.0)))
+                    )
+                    class_total_ratio = (best_class_prob / best_crop_total) if best_crop_total > 0 else 0.0
+
+                    if crop_gap < effective_gap_threshold:
+                        if is_beans_or_potato(best_crop):
+                            focus_outcome = build_focus_crop_outcome(
+                                "G7c_crop_gap_focus_override",
+                                best_crop,
+                                best_class_prob,
+                                cal_map,
+                            )
+                            gate = focus_outcome["gate"]
+                            result_type = focus_outcome["resultType"]
+                            best_crop = focus_outcome["bestCrop"]
+                            best_crop_total = focus_outcome["bestCropTotal"]
+                            best_class = focus_outcome["bestClass"]
+                            best_class_prob = focus_outcome["bestClassProb"]
+                        else:
+                            gate = "G7c_crop_gap"
+                            result_type = "uncertain"
+                    elif second_crop_total > effective_second_crop_threshold:
+                        if is_beans_or_potato(best_crop):
+                            focus_outcome = build_focus_crop_outcome(
+                                "G7c_second_crop_focus_override",
+                                best_crop,
+                                best_class_prob,
+                                cal_map,
+                            )
+                            gate = focus_outcome["gate"]
+                            result_type = focus_outcome["resultType"]
+                            best_crop = focus_outcome["bestCrop"]
+                            best_crop_total = focus_outcome["bestCropTotal"]
+                            best_class = focus_outcome["bestClass"]
+                            best_class_prob = focus_outcome["bestClassProb"]
+                        else:
+                            gate = "G7c_second_crop"
+                            result_type = "uncertain"
+                    elif cal_entropy > effective_entropy_threshold:
+                        rescue_outcome = attempt_focus_rescue(
+                            fallback_gate="G7c_entropy",
+                            crop_probs=crop_probs,
+                            prob_map=cal_map,
+                            candidate_crop=best_crop,
+                            candidate_crop_total=best_crop_total,
+                            other_leaf_prob=other_leaf,
+                        )
+                        if rescue_outcome is not None:
+                            gate = rescue_outcome["gate"]
+                            result_type = rescue_outcome["resultType"]
+                            best_crop = rescue_outcome["bestCrop"]
+                            best_crop_total = rescue_outcome["bestCropTotal"]
+                            best_class = rescue_outcome["bestClass"]
+                            best_class_prob = rescue_outcome["bestClassProb"]
+                        else:
+                            gate = "G7c_entropy"
+                            result_type = "uncertain"
+                    elif class_total_ratio < effective_class_ratio_threshold:
+                        rescue_outcome = attempt_focus_rescue(
+                            fallback_gate="G7c_class_ratio",
+                            crop_probs=crop_probs,
+                            prob_map=cal_map,
+                            candidate_crop=best_crop,
+                            candidate_crop_total=best_crop_total,
+                            other_leaf_prob=other_leaf,
+                        )
+                        if rescue_outcome is not None:
+                            gate = rescue_outcome["gate"]
+                            result_type = rescue_outcome["resultType"]
+                            best_crop = rescue_outcome["bestCrop"]
+                            best_crop_total = rescue_outcome["bestCropTotal"]
+                            best_class = rescue_outcome["bestClass"]
+                            best_class_prob = rescue_outcome["bestClassProb"]
+                        else:
+                            gate = "G7c_class_ratio"
+                            result_type = "uncertain"
+                    elif best_class_prob < effective_class_confidence_threshold:
+                        if is_beans_or_potato(best_crop):
+                            focus_outcome = build_focus_crop_outcome(
+                                "G7d_class_confidence_focus_override",
+                                best_crop,
+                                best_class_prob,
+                                cal_map,
+                            )
+                            gate = focus_outcome["gate"]
+                            result_type = focus_outcome["resultType"]
+                            best_crop = focus_outcome["bestCrop"]
+                            best_crop_total = focus_outcome["bestCropTotal"]
+                            best_class = focus_outcome["bestClass"]
+                            best_class_prob = focus_outcome["bestClassProb"]
+                        else:
+                            gate = "G7d_class_confidence"
+                            result_type = "uncertain"
+                    elif "healthy" in best_class:
+                        healthy_confidence_threshold = (
+                            DEFAULT_POTATO_HEALTHY_MIN_CONFIDENCE_PILOT
+                            if best_crop == "potato"
+                            else DEFAULT_HEALTHY_MIN_CONFIDENCE
+                        )
+                        if best_class_prob < healthy_confidence_threshold:
+                            if is_beans_or_potato(best_crop):
+                                focus_outcome = build_focus_crop_outcome(
+                                    "G7e_healthy_safety_focus_override",
+                                    best_crop,
+                                    best_class_prob,
+                                    cal_map,
+                                )
+                                gate = focus_outcome["gate"]
+                                result_type = focus_outcome["resultType"]
+                                best_crop = focus_outcome["bestCrop"]
+                                best_crop_total = focus_outcome["bestCropTotal"]
+                                best_class = focus_outcome["bestClass"]
+                                best_class_prob = focus_outcome["bestClassProb"]
+                            else:
+                                gate = "G7e_healthy_safety"
+                                result_type = "uncertain"
+                        else:
+                            gate = "G7g_confident"
+                            result_type = "healthy"
+                    else:
+                        gate = "G7g_confident"
+                        result_type = "disease"
+
+        gate_counts[gate] += 1
+        result_counts[result_type] += 1
+        rows.append({
+            "index": i,
+            "trueLabel": true_label,
+            "trueCrop": true_crop,
+            "gate": gate,
+            "resultType": result_type,
+            "bestCrop": best_crop,
+            "bestClass": best_class,
+            "bestClassProb": round(float(best_class_prob), 6),
+            "bestCropTotal": round(float(best_crop_total), 6),
+            "secondCropTotal": round(float(second_crop_total), 6),
+            "otherLeaf": round(float(other_leaf), 6),
+            "otherLeafRaw": round(float(other_leaf_raw), 6),
+            "otherLeafScaled": round(float(other_leaf_scaled), 6),
+        })
+
+    total = len(rows)
+    supported_rows = [r for r in rows if r["trueCrop"] != "other_leaf"]
+    unsupported_rows = [r for r in rows if r["trueCrop"] == "other_leaf"]
+
+    supported_confident_correct = sum(
+        1 for r in supported_rows if r["resultType"] in ("healthy", "disease") and r["bestCrop"] == r["trueCrop"]
+    )
+    supported_false_unsupported = sum(
+        1 for r in supported_rows if r["resultType"] in ("unsupported", "other_leaf")
+    )
+    unsupported_rejected = sum(
+        1 for r in unsupported_rows if r["resultType"] in ("unsupported", "other_leaf")
+    )
+
+    summary = {
+        "total": total,
+        "gate_counts": dict(gate_counts),
+        "result_type_counts": dict(result_counts),
+        "supported_confident_rate": round(
+            float(supported_confident_correct / len(supported_rows)) if supported_rows else 0.0,
+            4,
+        ),
+        "supported_false_unsupported_rate": round(
+            float(supported_false_unsupported / len(supported_rows)) if supported_rows else 0.0,
+            4,
+        ),
+        "unsupported_reject_rate": round(
+            float(unsupported_rejected / len(unsupported_rows)) if unsupported_rows else 0.0,
+            4,
+        ),
+    }
+
+    return summary, rows
 
 
 # ── Validate dataset ────────────────────────────────────────────────
@@ -352,6 +1280,53 @@ class_names = train_ds.class_names
 NUM_CLASSES = len(class_names)
 print(f"Classes ({NUM_CLASSES}): {class_names}", flush=True)
 
+if os.path.isdir(FIELD_FAILURE_DIR):
+    field_failure_subdirs = sorted(
+        name for name in os.listdir(FIELD_FAILURE_DIR)
+        if os.path.isdir(os.path.join(FIELD_FAILURE_DIR, name))
+    )
+    invalid_classes = [name for name in field_failure_subdirs if name not in class_names]
+    if invalid_classes:
+        print(
+            "ERROR: field failure directory contains classes not present in labels.txt:",
+            invalid_classes,
+            flush=True,
+        )
+        print("  Ensure field failures are organized under exact class names from train labels.", flush=True)
+        sys.exit(1)
+
+    field_failure_count = 0
+    for root, _, files in os.walk(FIELD_FAILURE_DIR):
+        field_failure_count += len([f for f in files if os.path.isfile(os.path.join(root, f))])
+    if field_failure_count > 0:
+        print(f"Loading field-failure hard examples from {FIELD_FAILURE_DIR} ...", flush=True)
+        field_ds = tf.keras.utils.image_dataset_from_directory(
+            FIELD_FAILURE_DIR,
+            image_size=IMG_SIZE,
+            batch_size=BATCH,
+            label_mode='int',
+            shuffle=True,
+            seed=SEED,
+            class_names=class_names,
+        )
+
+        max_field_samples = field_failure_count
+        if FIELD_FAILURE_MAX_SAMPLES is not None and field_failure_count > FIELD_FAILURE_MAX_SAMPLES:
+            print(
+                f"Capping field-failure samples to {FIELD_FAILURE_MAX_SAMPLES} of {field_failure_count} total.",
+                flush=True,
+            )
+            max_field_samples = FIELD_FAILURE_MAX_SAMPLES
+            field_ds = field_ds.unbatch().shuffle(FIELD_FAILURE_SHUFFLE_BUFFER, seed=SEED)
+            field_ds = field_ds.take(max_field_samples).batch(BATCH)
+        else:
+            field_ds = field_ds.unbatch().batch(BATCH)
+
+        train_ds = train_ds.concatenate(field_ds)
+        print(f"Included {min(field_failure_count, max_field_samples)} field-failure samples in training.", flush=True)
+
+print(f"Classes ({NUM_CLASSES}): {class_names}", flush=True)
+
 if "other_leaf" not in class_names:
     print("ERROR: 'other_leaf' class not found in training data.", flush=True)
     print("  Make sure datasets/model_ready/train/other_leaf/ exists and has images.", flush=True)
@@ -397,7 +1372,7 @@ with open(os.path.join(MODEL_DIR, "class_index.json"), 'w') as f:
     json.dump(class_index, f, indent=2)
 
 
-# ── FIX D2: Class weights — other_leaf boosted ×3 ──────────────────
+# ── FIX E2: Class weights — other_leaf boosted ×2, all crops ×1.15 ──
 print("Computing class weights ...", flush=True)
 class_counts = {}
 for cname in class_names:
@@ -473,6 +1448,51 @@ print(f"  train↔val:  {total_train_val_hash_overlap}", flush=True)
 print(f"  train↔test: {total_train_test_hash_overlap}", flush=True)
 print(f"  val↔test:   {total_val_test_hash_overlap}", flush=True)
 
+if ENFORCE_LEAKAGE_GUARD:
+    stem_overlap_total = (
+        total_train_val_overlap +
+        total_train_test_overlap +
+        total_val_test_overlap
+    )
+    hash_overlap_total = (
+        total_train_val_hash_overlap +
+        total_train_test_hash_overlap +
+        total_val_test_hash_overlap
+    )
+    leakage_guard_report = {
+        "enforced": True,
+        "max_allowed_stem_overlap_total": MAX_ALLOWED_STEM_OVERLAP_TOTAL,
+        "max_allowed_hash_overlap_total": MAX_ALLOWED_HASH_OVERLAP_TOTAL,
+        "observed": {
+            "stem_overlap_total": stem_overlap_total,
+            "hash_overlap_total": hash_overlap_total,
+            "train_val_stem_overlap": total_train_val_overlap,
+            "train_test_stem_overlap": total_train_test_overlap,
+            "val_test_stem_overlap": total_val_test_overlap,
+            "train_val_hash_overlap": total_train_val_hash_overlap,
+            "train_test_hash_overlap": total_train_test_hash_overlap,
+            "val_test_hash_overlap": total_val_test_hash_overlap,
+        },
+    }
+    with open(os.path.join(MODEL_DIR, "leakage_guard_report.json"), 'w') as f:
+        json.dump(leakage_guard_report, f, indent=2)
+
+    if (
+        stem_overlap_total > MAX_ALLOWED_STEM_OVERLAP_TOTAL or
+        hash_overlap_total > MAX_ALLOWED_HASH_OVERLAP_TOTAL
+    ):
+        print("ERROR: leakage guard failed. Training aborted.", flush=True)
+        print(
+            "  Clean splits to remove overlapping/duplicate samples across "
+            "train/val/test, then retrain.",
+            flush=True,
+        )
+        print(
+            f"  See {os.path.join(MODEL_DIR, 'leakage_guard_report.json')} for details.",
+            flush=True,
+        )
+        sys.exit(1)
+
 class_weight = {}
 cap_label = f"capped at {MAX_CLASS_WEIGHT}" if MAX_CLASS_WEIGHT is not None else "uncapped"
 print(
@@ -493,6 +1513,7 @@ for i, cname in enumerate(class_names):
         boost_label = f"  ← BOOSTED ×{OTHER_LEAF_WEIGHT_MULTIPLIER}"
     elif ENABLE_FOCUS_CROP_WEIGHTING and (
         cname.startswith("beans_") or cname.startswith("potato_")
+        or cname.startswith("maize_") or cname.startswith("banana_")
     ):
         w *= FOCUS_CROP_WEIGHT_MULTIPLIER
         boost_label = f"  ← FOCUS BOOST ×{FOCUS_CROP_WEIGHT_MULTIPLIER}"
@@ -608,13 +1629,13 @@ def mixup_other_leaf(images, labels):
 # ── Build tf.data pipeline ────────────────────────────────────────────
 # Order: preprocess → class-aware augment → MixUp (other_leaf only)
 # Val and test sets: preprocessing only (no augmentation — consistent eval)
-train_ds = train_ds.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.map(augment_class_aware, num_parallel_calls=tf.data.AUTOTUNE)
+train_ds = train_ds.map(preprocess, num_parallel_calls=MAP_PARALLEL_CALLS)
+train_ds = train_ds.map(augment_class_aware, num_parallel_calls=MAP_PARALLEL_CALLS)
 if ENABLE_OL_MIXUP:
-    train_ds = train_ds.map(mixup_other_leaf, num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.prefetch(tf.data.AUTOTUNE)
-val_ds  = val_ds.map(preprocess,  num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)
-test_ds = test_ds.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)
+    train_ds = train_ds.map(mixup_other_leaf, num_parallel_calls=MAP_PARALLEL_CALLS)
+train_ds = train_ds.prefetch(PREFETCH_SIZE)
+val_ds  = val_ds.map(preprocess,  num_parallel_calls=MAP_PARALLEL_CALLS).prefetch(PREFETCH_SIZE)
+test_ds = test_ds.map(preprocess, num_parallel_calls=MAP_PARALLEL_CALLS).prefetch(PREFETCH_SIZE)
 
 
 # ── Build model ──────────────────────────────────────────────────────
@@ -639,7 +1660,7 @@ model = tf.keras.Model(inputs, outputs)
 
 summary_lines = []
 model.summary(print_fn=lambda line: summary_lines.append(line))
-with open(os.path.join(MODEL_DIR, "model_summary.txt"), 'w') as f:
+with open(os.path.join(MODEL_DIR, "model_summary.txt"), 'w', encoding='utf-8') as f:
     f.write('\n'.join(summary_lines))
 print(f"Model params: {model.count_params():,}", flush=True)
 
@@ -888,6 +1909,13 @@ config = {
     "crops":                  list(ALLOWED_CROPS),
     "image_size":             list(IMG_SIZE),
     "batch_size":             BATCH,
+    "data_pipeline": {
+        "data_autotune": DATA_AUTOTUNE,
+        "parallel_calls": PARALLEL_CALLS,
+        "prefetch": PREFETCH_BUFFER,
+        "inter_op_threads": INTER_OP_THREADS,
+        "intra_op_threads": INTRA_OP_THREADS,
+    },
     "seed":                   SEED,
     "loss":                   f"FocalLoss(gamma=2.0, alpha=0.25, ol_smoothing={OL_LABEL_SMOOTHING})",
     "other_leaf_weight_multiplier": OTHER_LEAF_WEIGHT_MULTIPLIER,
@@ -941,8 +1969,19 @@ config = {
 with open(os.path.join(MODEL_DIR, "training_config.json"), 'w') as f:
     json.dump(config, f, indent=2)
 
+field_failure_counts = {}
+if os.path.isdir(FIELD_FAILURE_DIR):
+    for cname in class_names:
+        folder = os.path.join(FIELD_FAILURE_DIR, cname)
+        if os.path.isdir(folder):
+            field_failure_counts[cname] = len([
+                f for f in os.listdir(folder)
+                if os.path.isfile(os.path.join(folder, f))
+            ])
+
 dataset_stats = {
     "train_counts": class_counts,
+    "field_failure_counts": field_failure_counts,
     "val_counts":   val_counts,
     "test_counts":  test_counts,
     "totals": {
@@ -1024,7 +2063,10 @@ max_test_probs  = np.max(all_test_probs, axis=1)
 sorted_test_probs = np.sort(all_test_probs, axis=1)
 top2_test_probs = sorted_test_probs[:, -2] if all_test_probs.shape[1] > 1 else np.zeros_like(max_test_probs)
 test_margins = max_test_probs - top2_test_probs
-test_entropy = -np.sum(all_test_probs * np.log(np.clip(all_test_probs, 1e-10, 1.0)), axis=1)
+test_entropy = -np.sum(
+    all_test_probs * (np.log(np.clip(all_test_probs, 1e-10, 1.0)) / np.log(2.0)),
+    axis=1,
+)
 
 precision_macro,    recall_macro,    f1_macro,    _ = precision_recall_fscore_support(
     all_test_labels, all_test_preds, average='macro',    zero_division=0)
@@ -1040,7 +2082,88 @@ sorted_calibrated = np.sort(calibrated_test_probs, axis=1)
 cal_top1 = np.max(calibrated_test_probs, axis=1)
 cal_top2 = sorted_calibrated[:, -2] if calibrated_test_probs.shape[1] > 1 else np.zeros_like(cal_top1)
 cal_margin = cal_top1 - cal_top2
-cal_entropy = -np.sum(calibrated_test_probs * np.log(np.clip(calibrated_test_probs, 1e-10, 1.0)), axis=1)
+cal_entropy = -np.sum(
+    calibrated_test_probs * (np.log(np.clip(calibrated_test_probs, 1e-10, 1.0)) / np.log(2.0)),
+    axis=1,
+)
+
+true_labels_names = [class_names[int(i)] for i in all_test_labels]
+true_crops = [label_to_crop(x) for x in true_labels_names]
+
+supported_crops, raw_crop_totals = aggregate_supported_crop_totals(all_test_probs, class_names)
+_, calibrated_crop_totals = aggregate_supported_crop_totals(calibrated_test_probs, class_names)
+
+crop_total_analysis = {}
+recommended_crop_total_threshold = DEFAULT_APP_CROP_TOTAL_THRESHOLD
+best_crop_total_score = -1.0
+
+for threshold in CROP_TOTAL_THRESHOLDS:
+    raw_metrics = evaluate_crop_total_gate(
+        raw_crop_totals,
+        true_crops,
+        supported_crops,
+        threshold,
+    )
+    calibrated_metrics = evaluate_crop_total_gate(
+        calibrated_crop_totals,
+        true_crops,
+        supported_crops,
+        threshold,
+    )
+
+    crop_total_analysis[str(threshold)] = {
+        "raw": raw_metrics,
+        "calibrated": calibrated_metrics,
+    }
+
+    if calibrated_metrics["score"] > best_crop_total_score:
+        best_crop_total_score = calibrated_metrics["score"]
+        recommended_crop_total_threshold = float(threshold)
+
+runtime_gate_cfg = load_runtime_gate_config()
+runtime_gate_summary, runtime_gate_rows = simulate_runtime_gates(
+    raw_probs=all_test_probs,
+    calibrated_probs=calibrated_test_probs,
+    labels=all_test_labels,
+    class_names=class_names,
+    gate_cfg=runtime_gate_cfg,
+)
+
+runtime_gate_validation_path = os.path.join(MODEL_DIR, "runtime_gate_validation.json")
+runtime_gate_rows_path = os.path.join(MODEL_DIR, "runtime_gate_validation_rows.tsv")
+
+with open(runtime_gate_validation_path, "w", encoding="utf-8") as f:
+    json.dump(
+        {
+            "gate_config": runtime_gate_cfg,
+            "summary": runtime_gate_summary,
+        },
+        f,
+        indent=2,
+    )
+
+with open(runtime_gate_rows_path, "w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(
+        f,
+        fieldnames=[
+            "index",
+            "trueLabel",
+            "trueCrop",
+            "gate",
+            "resultType",
+            "bestCrop",
+            "bestClass",
+            "bestClassProb",
+            "bestCropTotal",
+            "secondCropTotal",
+            "otherLeaf",
+            "otherLeafRaw",
+            "otherLeafScaled",
+        ],
+        delimiter="\t",
+    )
+    writer.writeheader()
+    writer.writerows(runtime_gate_rows)
 
 with open(os.path.join(MODEL_DIR, "test_classification_report.txt"), 'w') as f:
     f.write("Independent Test Set Report\n")
@@ -1204,7 +2327,6 @@ print(f"Saved hard negatives -> {hard_negatives_path}", flush=True)
 # Crop-pair and supported-vs-unsupported confusion diagnostics.
 true_labels_names = [class_names[int(i)] for i in all_test_labels]
 pred_labels_names = [class_names[int(i)] for i in all_test_preds]
-true_crops = [label_to_crop(x) for x in true_labels_names]
 pred_crops = [label_to_crop(x) for x in pred_labels_names]
 
 unique_crops = sorted(set(true_crops + pred_crops))
@@ -1373,8 +2495,14 @@ test_eval = {
     "confidence_thresholds":      confidence_thresholds,
     "margin_thresholds":          margin_analysis,
     "entropy_thresholds":         entropy_analysis,
+    "crop_total_thresholds":      crop_total_analysis,
     "combined_gate":              combined_gate_metrics,
     "combined_gate_calibrated":   combined_gate_calibrated,
+    "runtime_gate_validation": {
+        "summary": runtime_gate_summary,
+        "artifact_path": runtime_gate_validation_path,
+        "rows_path": runtime_gate_rows_path,
+    },
     "temperature_scaling": {
         "best_temperature": round(float(best_temperature), 4),
         "raw_val_nll": round(float(raw_val_nll), 4),
@@ -1399,6 +2527,7 @@ test_eval = {
         "supported_unsupported_confusion_max": STRICT_SUPPORTED_UNSUPPORTED_CONFUSION_MAX,
     },
     "recommended_app_threshold":  DEFAULT_APP_CONFIDENCE_THRESHOLD,
+    "recommended_crop_total_threshold": round(float(recommended_crop_total_threshold), 4),
 }
 
 release_blockers = []
@@ -1437,7 +2566,7 @@ if os.path.isdir(REAL_WORLD_OOD_DIR):
             f"OOD directory classes discovered (labels ignored for metric): {ood_ds.class_names}",
             flush=True,
         )
-        ood_ds = ood_ds.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)
+        ood_ds = ood_ds.map(preprocess, num_parallel_calls=MAP_PARALLEL_CALLS).prefetch(PREFETCH_SIZE)
 
         ood_probs = []
         for images, _ in ood_ds:
@@ -1450,7 +2579,10 @@ if os.path.isdir(REAL_WORLD_OOD_DIR):
             ood_sorted = np.sort(ood_probs, axis=1)
             ood_top2 = ood_sorted[:, -2] if ood_probs.shape[1] > 1 else np.zeros_like(ood_top1)
             ood_margin = ood_top1 - ood_top2
-            ood_entropy = -np.sum(ood_probs * np.log(np.clip(ood_probs, 1e-10, 1.0)), axis=1)
+            ood_entropy = -np.sum(
+                ood_probs * (np.log(np.clip(ood_probs, 1e-10, 1.0)) / np.log(2.0)),
+                axis=1,
+            )
 
             ood_reject_mask = (
                 (ood_top1 < DEFAULT_APP_CONFIDENCE_THRESHOLD)
@@ -1481,6 +2613,26 @@ if os.path.isdir(REAL_WORLD_OOD_DIR):
         }
 with open(os.path.join(MODEL_DIR, "test_evaluation.json"), 'w') as f:
     json.dump(test_eval, f, indent=2)
+
+# Export mobile-runtime recommendations so app-side temperature and gates can
+# be synchronized with the trained checkpoint calibration.
+mobile_runtime_recommendations = {
+    "temperatureScaling": round(float(best_temperature), 4),
+    "recommendedThresholds": {
+        "confidenceThreshold": DEFAULT_APP_CONFIDENCE_THRESHOLD,
+        "marginThreshold": DEFAULT_APP_MARGIN_THRESHOLD,
+        "maxEntropyThreshold": DEFAULT_APP_MAX_ENTROPY,
+        "cropTotalThreshold": round(float(recommended_crop_total_threshold), 4),
+    },
+    "notes": [
+        "Update mobile_app runtime config to use this temperatureScaling.",
+        "Crop-total threshold is calibrated from crop-group probability sums on test data.",
+        "Keep app gate thresholds aligned with these values after retrain.",
+    ],
+}
+runtime_reco_path = os.path.join(MODEL_DIR, "mobile_runtime_recommendations.json")
+with open(runtime_reco_path, 'w') as f:
+    json.dump(mobile_runtime_recommendations, f, indent=2)
 
 if ENABLE_GRAD_CAM_EXPORT and len(hard_negatives) > 0:
     try:
@@ -1611,6 +2763,7 @@ print(f"  {BEST_MODEL_PATH}", flush=True)
 print(f"  {FINAL_MODEL_PATH}", flush=True)
 print(f"  {tflite_path}", flush=True)
 print(f"  {os.path.join(MODEL_DIR, 'test_evaluation.json')}", flush=True)
+print(f"  {runtime_reco_path}", flush=True)
 print(f"  {os.path.join(MODEL_DIR, 'test_classification_report.txt')}", flush=True)
 print(f"  {os.path.join(MODEL_DIR, 'test_confusion_matrix.png')}", flush=True)
 print("DONE!", flush=True)

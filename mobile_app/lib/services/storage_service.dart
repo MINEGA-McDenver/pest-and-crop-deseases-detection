@@ -1,10 +1,53 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../models/scan_result.dart';
 
 class StorageService {
   static Database? _database;
+  static const String _managedImageFolderName = 'scan_history_images';
+
+  Future<Directory> _managedImageDirectory() async {
+    final docsDir = await getApplicationDocumentsDirectory();
+    final imageDir = Directory(join(docsDir.path, _managedImageFolderName));
+    if (!await imageDir.exists()) {
+      await imageDir.create(recursive: true);
+    }
+    return imageDir;
+  }
+
+  Future<String> _persistImageForHistory(String originalPath) async {
+    final trimmed = originalPath.trim();
+    if (trimmed.isEmpty) return originalPath;
+
+    final source = File(trimmed);
+    if (!await source.exists()) return originalPath;
+
+    try {
+      final managedDir = await _managedImageDirectory();
+      final managedRoot = managedDir.path.toLowerCase();
+      final sourcePathLower = source.path.toLowerCase();
+      if (sourcePathLower.startsWith(managedRoot)) {
+        return source.path;
+      }
+
+      final ext = extension(source.path);
+      final safeExt = ext.isEmpty ? '.jpg' : ext;
+      final fileName = 'scan_${DateTime.now().microsecondsSinceEpoch}$safeExt';
+      final targetPath = join(managedDir.path, fileName);
+      final copied = await source.copy(targetPath);
+      return copied.path;
+    } catch (_) {
+      return originalPath;
+    }
+  }
+
+  Future<bool> _isManagedImagePath(String path) async {
+    if (path.trim().isEmpty) return false;
+    final managedDir = await _managedImageDirectory();
+    return path.toLowerCase().startsWith(managedDir.path.toLowerCase());
+  }
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -54,11 +97,13 @@ class StorageService {
   Future<ScanResult> saveScan(ScanResult result) async {
     final db = await database;
     final map = result.toMap();
+    final persistedImagePath = await _persistImageForHistory(result.imagePath);
+    map['imagePath'] = persistedImagePath;
     final id = await db.insert('scan_history', map);
 
     return ScanResult(
       id: id,
-      imagePath: result.imagePath,
+      imagePath: persistedImagePath,
       cropName: result.cropName,
       diseaseName: result.diseaseName,
       confidence: result.confidence,
@@ -114,12 +159,15 @@ class StorageService {
     if (rows.isNotEmpty) {
       final path = (rows.first['imagePath'] as String?) ?? '';
       if (path.isNotEmpty) {
-        final imageFile = File(path);
-        if (await imageFile.exists()) {
-          try {
-            await imageFile.delete();
-          } catch (_) {
-            // Ignore file delete errors; DB deletion must still complete.
+        final shouldDeleteManagedCopy = await _isManagedImagePath(path);
+        if (shouldDeleteManagedCopy) {
+          final imageFile = File(path);
+          if (await imageFile.exists()) {
+            try {
+              await imageFile.delete();
+            } catch (_) {
+              // Ignore file delete errors; DB deletion must still complete.
+            }
           }
         }
       }

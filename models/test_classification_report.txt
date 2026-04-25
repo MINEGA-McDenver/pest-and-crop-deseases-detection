@@ -1,36 +1,36 @@
 Independent Test Set Report
 Model: D:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\clean-repo\models\best_model.keras
-Loss: FocalLoss(gamma=2.0, alpha=0.25, ol_smoothing=0.1)
-other_leaf weight multiplier: ×3.0
+Loss: FocalLoss(gamma=2.0, alpha=0.25, ol_smoothing=0.15)
+other_leaf weight multiplier: ×1.0
 other_leaf MixUp alpha: 0.4
 
-Test accuracy:          0.9450
-Test top-3 accuracy:    0.9938
-Macro precision:        0.9360
-Macro recall:           0.9363
-Macro F1:               0.9352
-Weighted precision:     0.9479
-Weighted recall:        0.9450
-Weighted F1:            0.9456
+Test accuracy:          0.9344
+Test top-3 accuracy:    0.9939
+Macro precision:        0.9166
+Macro recall:           0.9083
+Macro F1:               0.9114
+Weighted precision:     0.9360
+Weighted recall:        0.9344
+Weighted F1:            0.9342
 
                             precision    recall  f1-score   support
 
-            banana_cordana     0.9818    0.8926    0.9351       121
-            banana_healthy     1.0000    0.9474    0.9730       114
-     banana_pestalotiopsis     0.8836    0.9773    0.9281       132
-           banana_sigatoka     0.9375    0.9434    0.9404       159
-   beans_angular_leaf_spot     0.9658    0.9262    0.9456       122
-             beans_healthy     0.9371    0.9640    0.9504       139
-                beans_rust     0.9788    0.9343    0.9561       198
-         maize_common_rust     0.9889    0.9780    0.9834       182
-      maize_gray_leaf_spot     0.7865    0.8642    0.8235        81
-             maize_healthy     0.9896    0.9948    0.9922       191
-maize_northern_leaf_blight     0.9178    0.8816    0.8993       152
-                other_leaf     0.8647    0.9829    0.9200       234
-       potato_early_blight     0.9954    0.9474    0.9708       228
-            potato_healthy     0.8333    0.8696    0.8511        46
-        potato_late_blight     0.9794    0.9406    0.9596       303
+            banana_cordana     0.9286    0.8864    0.9070        88
+            banana_healthy     1.0000    0.9355    0.9667        93
+     banana_pestalotiopsis     0.8837    0.9383    0.9102        81
+           banana_sigatoka     0.8049    0.8049    0.8049        41
+   beans_angular_leaf_spot     0.8684    0.9429    0.9041        35
+             beans_healthy     0.9362    0.8627    0.8980        51
+                beans_rust     0.9400    0.9307    0.9353       101
+         maize_common_rust     1.0000    0.9890    0.9945       182
+      maize_gray_leaf_spot     0.8261    0.7037    0.7600        81
+             maize_healthy     0.9947    0.9895    0.9921       191
+maize_northern_leaf_blight     0.8671    0.9013    0.8839       152
+                other_leaf     0.8650    0.9875    0.9222       240
+       potato_early_blight     0.9823    0.9737    0.9780       228
+            potato_healthy     0.8659    0.8353    0.8503        85
+        potato_late_blight     0.9862    0.9439    0.9646       303
 
-                  accuracy                         0.9450      2402
-                 macro avg     0.9360    0.9363    0.9352      2402
-              weighted avg     0.9479    0.9450    0.9456      2402
+                  accuracy                         0.9344      1952
+                 macro avg     0.9166    0.9083    0.9114      1952
+              weighted avg     0.9360    0.9344    0.9342      1952

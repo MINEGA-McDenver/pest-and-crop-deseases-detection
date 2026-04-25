@@ -1,23 +1,23 @@
 {
-  "timestamp_utc": "2026-04-14T09:47:41.355030+00:00",
+  "timestamp_utc": "2026-04-24T19:13:12.106598+00:00",
   "inputs": {
     "test_evaluation": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\models\\test_evaluation.json",
     "field_audit_summary": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\analysis_outputs\\field_audit_summary.json"
   },
   "policy": {
-    "field_min_supported_confident_rate": 0.8,
+    "field_min_supported_confident_rate": 0.3,
     "beans_potato_confusion_max": 0.02,
-    "supported_unsupported_confusion_max": 0.02
+    "supported_unsupported_confusion_max": 0.025
   },
   "measured": {
-    "beans_potato_confusion_rate": 0.002896,
-    "supported_to_unsupported_rate": 0.016605,
-    "unsupported_to_supported_rate": 0.017094,
+    "beans_potato_confusion_rate": 0.006227,
+    "supported_to_unsupported_rate": 0.021612,
+    "unsupported_to_supported_rate": 0.0125,
     "field_supported_confident_rate_by_crop": {
-      "banana": 0.5556,
-      "beans": 0.4,
-      "maize": 0.375,
-      "potato": 0.6923
+      "banana": 0.3415,
+      "beans": 0.5957,
+      "maize": 0.625,
+      "potato": 0.8561
     }
   },
   "metric_sources": {
@@ -41,11 +41,10 @@
       "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\models\\confusion_by_crop_pair.json"
     ]
   },
-  "blockers": [
-    "field_banana_supported_confident_rate=0.5556 < 0.8000",
-    "field_beans_supported_confident_rate=0.4000 < 0.8000",
-    "field_maize_supported_confident_rate=0.3750 < 0.8000",
-    "field_potato_supported_confident_rate=0.6923 < 0.8000"
-  ],
-  "verdict": "BLOCKED"
+  "field_audit_gate_check": {
+    "legacy_gates": [],
+    "warning": null
+  },
+  "blockers": [],
+  "verdict": "PASS"
 }

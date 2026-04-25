@@ -39,7 +39,7 @@ training:
   # IMP3: Label smoothing.
   # Replaces hard 0/1 targets with soft values — prevents overconfident softmax,
   # improves ECE calibration, regularises on noisy real-field photos.
-  label_smoothing: 0.1
+  label_smoothing: 0.15
 
 model:
   architecture: "MobileNetV2"
@@ -95,7 +95,7 @@ augmentation:
 evaluation:
   tta_passes: 5
   confidence_thresholds: [0.50, 0.60, 0.70, 0.80, 0.90]
-  default_app_threshold: 0.70
+  default_app_threshold: 0.55
   # FIX 7: Extended lower bound from 0.5 → 0.2.
   # Previous run returned temperature=0.50 (the search boundary), meaning
   # the true optimum was below 0.50 and was being clipped.  With

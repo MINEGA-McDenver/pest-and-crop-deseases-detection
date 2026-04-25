@@ -1,0 +1,33 @@
+{
+  "keras_model": {
+    "file": "best_model.keras",
+    "size_mb": 27.73,
+    "accuracy": 0.9498,
+    "params": 2589775
+  },
+  "tflite_models": {
+    "float32": {
+      "accuracy": 0.9518,
+      "size_mb": 9.72,
+      "total_inference_time_s": 49.5,
+      "avg_inference_ms": 25.3,
+      "file": "model_float32.tflite"
+    },
+    "dynamic_range": {
+      "accuracy": 0.9442,
+      "size_mb": 2.71,
+      "total_inference_time_s": 346.2,
+      "avg_inference_ms": 177.4,
+      "file": "model_dynamic_range.tflite"
+    },
+    "float16": {
+      "accuracy": 0.9518,
+      "size_mb": 4.89,
+      "total_inference_time_s": 38.6,
+      "avg_inference_ms": 19.8,
+      "file": "model_float16.tflite"
+    }
+  },
+  "recommended": "float16",
+  "recommendation_reason": "Float16 offers ~50% size reduction vs float32 with negligible accuracy loss. Best balance for mobile deployment."
+}

@@ -8,76 +8,76 @@
   ],
   "counts": {
     "banana": {
-      "banana": 522,
-      "beans": 0,
-      "maize": 2,
-      "other_leaf": 2,
+      "banana": 296,
+      "beans": 2,
+      "maize": 1,
+      "other_leaf": 4,
       "potato": 0
     },
     "beans": {
       "banana": 0,
-      "beans": 447,
-      "maize": 1,
-      "other_leaf": 9,
-      "potato": 2
+      "beans": 180,
+      "maize": 0,
+      "other_leaf": 4,
+      "potato": 3
     },
     "maize": {
-      "banana": 1,
-      "beans": 0,
-      "maize": 604,
-      "other_leaf": 1,
+      "banana": 2,
+      "beans": 1,
+      "maize": 596,
+      "other_leaf": 7,
       "potato": 0
     },
     "other_leaf": {
-      "banana": 1,
-      "beans": 1,
+      "banana": 0,
+      "beans": 0,
       "maize": 0,
-      "other_leaf": 230,
-      "potato": 2
+      "other_leaf": 237,
+      "potato": 3
     },
     "potato": {
       "banana": 0,
-      "beans": 1,
+      "beans": 2,
       "maize": 0,
-      "other_leaf": 24,
-      "potato": 552
+      "other_leaf": 22,
+      "potato": 592
     }
   },
   "rates": {
     "banana": {
-      "banana": 0.992395,
-      "beans": 0.0,
-      "maize": 0.003802,
-      "other_leaf": 0.003802,
+      "banana": 0.976898,
+      "beans": 0.006601,
+      "maize": 0.0033,
+      "other_leaf": 0.013201,
       "potato": 0.0
     },
     "beans": {
       "banana": 0.0,
-      "beans": 0.973856,
-      "maize": 0.002179,
-      "other_leaf": 0.019608,
-      "potato": 0.004357
+      "beans": 0.962567,
+      "maize": 0.0,
+      "other_leaf": 0.02139,
+      "potato": 0.016043
     },
     "maize": {
-      "banana": 0.00165,
-      "beans": 0.0,
-      "maize": 0.9967,
-      "other_leaf": 0.00165,
+      "banana": 0.0033,
+      "beans": 0.00165,
+      "maize": 0.983498,
+      "other_leaf": 0.011551,
       "potato": 0.0
     },
     "other_leaf": {
-      "banana": 0.004274,
-      "beans": 0.004274,
+      "banana": 0.0,
+      "beans": 0.0,
       "maize": 0.0,
-      "other_leaf": 0.982906,
-      "potato": 0.008547
+      "other_leaf": 0.9875,
+      "potato": 0.0125
     },
     "potato": {
       "banana": 0.0,
-      "beans": 0.001733,
+      "beans": 0.003247,
       "maize": 0.0,
-      "other_leaf": 0.041594,
-      "potato": 0.956672
+      "other_leaf": 0.035714,
+      "potato": 0.961039
     }
   }
 }

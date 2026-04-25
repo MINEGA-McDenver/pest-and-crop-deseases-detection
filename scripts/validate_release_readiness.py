@@ -16,6 +16,7 @@ Policy (strict):
 
 import json
 import os
+import sys
 from datetime import datetime, timezone
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,6 +30,7 @@ SUPPORTED_UNSUPPORTED_PATH = os.path.join(MODELS_DIR, "supported_vs_unsupported_
 CONFUSION_BY_CROP_PAIR_PATH = os.path.join(MODELS_DIR, "confusion_by_crop_pair.json")
 
 REQUIRED_CROPS = ["banana", "beans", "maize", "potato"]
+LEGACY_FIELD_AUDIT_GATE_PREFIX = "RESCUE_beans_potato_from_"
 
 
 def _load_json(path):
@@ -115,14 +117,16 @@ def _resolve_confusion_metrics(test_eval):
             "supported_to_unsupported_rate": ["supported_to_unsupported", "rate"],
             "unsupported_to_supported_rate": ["unsupported_to_supported", "rate"],
         }
-        for key, path in nested_map.items():
+        for key, key_path in nested_map.items():
             if resolved[key] is not None:
                 continue
-            raw = _safe_get(fallback, path, None)
+            raw = _safe_get(fallback, key_path, None)
             try:
                 if raw is not None:
                     resolved[key] = float(raw)
-                    metric_sources[key].append(path)
+                    metric_sources[key].append(
+                        f"{path}::{'.'.join(key_path)}"
+                    )
             except (TypeError, ValueError):
                 pass
 
@@ -204,7 +208,28 @@ def _missing_metric_message(metric_name, searched_paths):
     return f"missing {metric_name} after checking: {', '.join(sources)}"
 
 
-def main():
+def _resolve_field_audit_gate_drift(field_summary):
+    gate_counts = _safe_get(field_summary, ["gate_counts"], {})
+    if not isinstance(gate_counts, dict):
+        return {
+            "legacy_gates": [],
+            "warning": "field_audit_summary missing gate_counts; cannot verify gate-schema parity",
+        }
+
+    legacy = sorted(
+        g for g in gate_counts.keys()
+        if isinstance(g, str) and g.startswith(LEGACY_FIELD_AUDIT_GATE_PREFIX)
+    )
+    return {
+        "legacy_gates": legacy,
+        "warning": None,
+    }
+
+
+def main(argv=None):
+    argv = argv if argv is not None else sys.argv[1:]
+    allow_blocked = "--allow-blocked" in argv
+
     test_eval = _load_json(TEST_EVAL_PATH)
     field = _load_json(FIELD_AUDIT_PATH)
 
@@ -214,6 +239,7 @@ def main():
     supported_unsupported_max = float(policy.get("supported_unsupported_confusion_max", 0.02))
 
     resolved_confusion, metric_sources, searched_paths = _resolve_confusion_metrics(test_eval)
+    field_gate_drift = _resolve_field_audit_gate_drift(field)
     beans_potato_rate = resolved_confusion["beans_potato_confusion_rate"]
     supported_to_unsupported_rate = resolved_confusion["supported_to_unsupported_rate"]
     unsupported_to_supported_rate = resolved_confusion["unsupported_to_supported_rate"]
@@ -240,6 +266,15 @@ def main():
     elif unsupported_to_supported_rate > supported_unsupported_max:
         blockers.append(
             f"unsupported_to_supported_rate={unsupported_to_supported_rate:.4f} > {supported_unsupported_max:.4f}"
+        )
+
+    if field_gate_drift["warning"]:
+        blockers.append(field_gate_drift["warning"])
+    if field_gate_drift["legacy_gates"]:
+        blockers.append(
+            "field_audit_summary appears to come from legacy gate logic "
+            f"({', '.join(field_gate_drift['legacy_gates'])}); regenerate analysis_outputs/field_audit_summary.json "
+            "using scripts/audit_field_photos.py before release gating"
         )
 
     # Field-side strict checks.
@@ -276,6 +311,7 @@ def main():
         },
         "metric_sources": metric_sources,
         "searched_metric_sources": searched_paths,
+        "field_audit_gate_check": field_gate_drift,
         "blockers": blockers,
         "verdict": verdict,
     }
@@ -289,6 +325,11 @@ def main():
         print("Blockers:")
         for b in blockers:
             print(f"- {b}")
+
+    # Hard enforcement: BLOCKED must fail CI/deploy pipelines unless explicitly overridden.
+    if verdict == "BLOCKED" and not allow_blocked:
+        print("Release gate failed: verdict is BLOCKED. Use --allow-blocked only for exploratory runs.")
+        sys.exit(2)
 
 
 if __name__ == "__main__":

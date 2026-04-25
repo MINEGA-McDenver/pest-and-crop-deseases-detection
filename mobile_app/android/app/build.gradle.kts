@@ -56,3 +56,17 @@ flutter {
 dependencies {
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
 }
+
+tasks.register<Exec>("enforceReleaseGate") {
+    group = "verification"
+    description = "Fails release builds when model release gate is blocked."
+    workingDir = projectDir
+    val pythonCmd = System.getenv("PYTHON") ?: "python"
+    val gateScript = project.file("../../../scripts/check_release_gate.py")
+    commandLine(pythonCmd, gateScript.absolutePath)
+}
+
+tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
+    .configureEach {
+        dependsOn("enforceReleaseGate")
+    }

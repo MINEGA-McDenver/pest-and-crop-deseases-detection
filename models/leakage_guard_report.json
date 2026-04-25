@@ -1,0 +1,15 @@
+{
+  "enforced": true,
+  "max_allowed_stem_overlap_total": 0,
+  "max_allowed_hash_overlap_total": 0,
+  "observed": {
+    "stem_overlap_total": 0,
+    "hash_overlap_total": 0,
+    "train_val_stem_overlap": 0,
+    "train_test_stem_overlap": 0,
+    "val_test_stem_overlap": 0,
+    "train_val_hash_overlap": 0,
+    "train_test_hash_overlap": 0,
+    "val_test_hash_overlap": 0
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "temperatureScaling": 0.8,
+  "recommendedThresholds": {
+    "confidenceThreshold": 0.55,
+    "marginThreshold": 0.2,
+    "maxEntropyThreshold": 1.5,
+    "cropTotalThreshold": 0.84
+  },
+  "notes": [
+    "Update mobile_app runtime config to use this temperatureScaling.",
+    "Keep app gate thresholds aligned with these values after retrain."
+  ]
+}

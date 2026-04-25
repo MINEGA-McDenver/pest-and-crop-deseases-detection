@@ -1,83 +1,98 @@
 {
-  "images_dir": "datasets\\holdout_user_dirs",
-  "strict_real_photos": true,
-  "total_images": 58,
-  "known_label_images": 58,
-  "unknown_label_images": 0,
+  "images_dir": "datasets\\holdout_farmer_style",
+  "strict_real_photos": false,
+  "total_images": 637,
+  "known_label_images": 337,
+  "unknown_label_images": 300,
   "thresholds_used": {
-    "cropTotalThreshold": 0.8,
+    "cropTotalThreshold": 0.7,
     "otherLeafAbsoluteFloor": 0.14,
-    "beansPotatoCropTotalRelaxation": 0.12,
-    "beansPotatoOtherLeafFloorBoost": 0.12,
-    "beansPotatoUncertainGapThreshold": 0.1,
-    "beansPotatoSecondCropThreshold": 0.45,
-    "beansPotatoClassRatioThreshold": 0.52,
-    "beansPotatoClassConfidenceThreshold": 0.74
+    "beansPotatoCropTotalRelaxation": 0.19,
+    "beansPotatoOtherLeafFloorBoost": 0.25,
+    "beansPotatoUncertainGapThreshold": 0.04,
+    "beansPotatoSecondCropThreshold": 0.75,
+    "beansPotatoClassRatioThreshold": 0.4,
+    "beansPotatoClassConfidenceThreshold": 0.6,
+    "otherLeafVsCropRatioThreshold": 0.65
   },
   "result_counts": {
-    "disease": 10,
-    "healthy": 24,
-    "uncertain": 20,
-    "unsupported": 4
+    "other_leaf": 51,
+    "uncertain": 98,
+    "healthy": 280,
+    "disease": 201,
+    "unsupported": 7
   },
   "gate_counts": {
-    "G7g_confident": 34,
-    "G7c_class_ratio": 2,
-    "G7c_entropy": 4,
-    "G7d_class_confidence": 1,
-    "RESCUE_beans_potato_from_G5": 7,
-    "RESCUE_beans_potato_from_G5b": 2,
-    "RESCUE_beans_potato_from_G7a": 2,
-    "G7a_crop_total": 4,
-    "RESCUE_beans_potato_from_G7a_ratio": 1,
-    "G7d_class_confidence_healthy_candidate": 1
+    "G5b_other_leaf_floor": 48,
+    "G7c_entropy": 93,
+    "G5b_preserve_focus_crop": 28,
+    "G7e_healthy_safety": 4,
+    "G7g_confident": 350,
+    "G5_other_leaf_winner": 3,
+    "G5_preserve_focus_crop": 12,
+    "G7a_crop_total": 7,
+    "G7e_healthy_safety_focus_override": 72,
+    "G7d_class_confidence_focus_override": 9,
+    "G7a_crop_total_focus_rescue": 9,
+    "G7a_other_leaf_ratio_focus_rescue": 1,
+    "G7c_second_crop": 1
   },
   "source_counts": {
-    "raw_photo-like": 58
+    "raw_photo-like": 637
   },
   "per_crop_reliability": {
     "banana": {
-      "total": 9,
-      "supported_confident": 5,
-      "uncertain": 4,
-      "unsupported_or_other_leaf": 0,
-      "wrong_confident": 0,
-      "supported_confident_rate": 0.5556,
-      "uncertain_rate": 0.4444,
-      "unsupported_rate": 0.0
+      "total": 41,
+      "supported_confident": 14,
+      "uncertain": 3,
+      "unsupported_or_other_leaf": 16,
+      "wrong_confident": 8,
+      "supported_confident_rate": 0.3415,
+      "uncertain_rate": 0.0732,
+      "unsupported_rate": 0.3902
     },
     "beans": {
-      "total": 15,
-      "supported_confident": 6,
-      "uncertain": 8,
-      "unsupported_or_other_leaf": 0,
+      "total": 141,
+      "supported_confident": 84,
+      "uncertain": 55,
+      "unsupported_or_other_leaf": 1,
       "wrong_confident": 1,
-      "supported_confident_rate": 0.4,
-      "uncertain_rate": 0.5333,
-      "unsupported_rate": 0.0
+      "supported_confident_rate": 0.5957,
+      "uncertain_rate": 0.3901,
+      "unsupported_rate": 0.0071
     },
     "maize": {
-      "total": 8,
-      "supported_confident": 3,
-      "uncertain": 0,
-      "unsupported_or_other_leaf": 4,
-      "wrong_confident": 1,
-      "supported_confident_rate": 0.375,
-      "uncertain_rate": 0.0,
-      "unsupported_rate": 0.5
+      "total": 16,
+      "supported_confident": 10,
+      "uncertain": 2,
+      "unsupported_or_other_leaf": 2,
+      "wrong_confident": 2,
+      "supported_confident_rate": 0.625,
+      "uncertain_rate": 0.125,
+      "unsupported_rate": 0.125
     },
     "potato": {
-      "total": 26,
-      "supported_confident": 18,
-      "uncertain": 8,
-      "unsupported_or_other_leaf": 0,
+      "total": 139,
+      "supported_confident": 119,
+      "uncertain": 18,
+      "unsupported_or_other_leaf": 2,
       "wrong_confident": 0,
-      "supported_confident_rate": 0.6923,
-      "uncertain_rate": 0.3077,
-      "unsupported_rate": 0.0
+      "supported_confident_rate": 0.8561,
+      "uncertain_rate": 0.1295,
+      "unsupported_rate": 0.0144
     }
   },
   "unsupported_top1_top2": [
+    {
+      "top1": "banana_healthy",
+      "top2": "other_leaf",
+      "count": 44
+    },
+    {
+      "top1": "other_leaf",
+      "top2": "banana_healthy",
+      "count": 3
+    },
     {
       "top1": "maize_healthy",
       "top2": "banana_healthy",
@@ -86,16 +101,46 @@
     {
       "top1": "banana_healthy",
       "top2": "maize_healthy",
+      "count": 2
+    },
+    {
+      "top1": "banana_healthy",
+      "top2": "banana_sigatoka",
+      "count": 1
+    },
+    {
+      "top1": "banana_healthy",
+      "top2": "banana_pestalotiopsis",
+      "count": 1
+    },
+    {
+      "top1": "beans_healthy",
+      "top2": "potato_healthy",
+      "count": 1
+    },
+    {
+      "top1": "maize_healthy",
+      "top2": "other_leaf",
+      "count": 1
+    },
+    {
+      "top1": "other_leaf",
+      "top2": "potato_late_blight",
+      "count": 1
+    },
+    {
+      "top1": "other_leaf",
+      "top2": "beans_healthy",
       "count": 1
     }
   ],
   "pattern_counts": {
-    "top1_other_leaf_top2_beans": 0,
-    "top1_other_leaf_top2_potato": 0,
-    "expected_crop_appears_top2_unsupported_like": 1
+    "top1_other_leaf_top2_beans": 1,
+    "top1_other_leaf_top2_potato": 1,
+    "expected_crop_appears_top2_unsupported_like": 5
   },
   "acceptance": {
-    "reference_rate_banana_maize": 0.4653,
+    "reference_rate_banana_maize": 0.4833,
     "parity_gap_max": 0.12,
     "beans_pass": true,
     "potato_pass": true,

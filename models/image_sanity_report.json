@@ -1,7 +1,7 @@
 {
   "train": {
     "split": "train",
-    "total_images": 42774,
+    "total_images": 43162,
     "broken_count": 0,
     "non_rgb_count": 0,
     "broken_examples": [],
@@ -9,7 +9,7 @@
   },
   "val": {
     "split": "val",
-    "total_images": 2316,
+    "total_images": 1958,
     "broken_count": 0,
     "non_rgb_count": 0,
     "broken_examples": [],
@@ -17,7 +17,7 @@
   },
   "test": {
     "split": "test",
-    "total_images": 2402,
+    "total_images": 1952,
     "broken_count": 0,
     "non_rgb_count": 0,
     "broken_examples": [],

@@ -10,5 +10,5 @@
     "labels": "models/labels.txt",
     "training_config": "models/training_config.json"
   },
-  "notes": "Threshold calibration completed (2026-04-07), then pilot runtime hotfix selected as truth source for field test: cropTotalThreshold=0.84, otherLeafAbsoluteFloor=0.12 (kept to reduce false unsupported on beans/potato). Release APK built successfully on 2026-04-08 (mobile_app/build/app/outputs/flutter-apk/app-release.apk, 75.3MB). Final pilot install still requires device install verification and offline smoke tests."
+  "notes": "Threshold calibration completed (2026-04-07), then pilot runtime hotfix selected as truth source for field test: cropTotalThreshold=0.82, otherLeafAbsoluteFloor=0.12 (kept to reduce false unsupported on beans/potato). Release APK built successfully on 2026-04-08 (mobile_app/build/app/outputs/flutter-apk/app-release.apk, 75.3MB). Final pilot install still requires device install verification and offline smoke tests."
 }

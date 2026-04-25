@@ -37,7 +37,7 @@ except ImportError:
 # CONFIGURATION
 # ============================================================
 
-BASE_DIR = Path(r"d:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\pest-and-crop-deseases-detection")
+BASE_DIR = Path(__file__).resolve().parents[1]
 DATASETS_DIR = BASE_DIR / "datasets"
 OUTPUT_DIR = DATASETS_DIR / "processed"
 

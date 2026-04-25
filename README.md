@@ -154,6 +154,13 @@ python calibrate_thresholds.py
 python scripts/validate_release_readiness.py
 ```
 
+`scripts/validate_release_readiness.py` exits non-zero when verdict is `BLOCKED`,
+so treat it as a required gate in CI/build scripts before deployment.
+
+`scripts/check_release_gate.py` is the hard pre-build gate used by Android
+release builds (`assembleRelease`/`bundleRelease`) and fails fast when
+`models/test_evaluation.json` or `models/release_readiness.json` reports blocked.
+
 ### Mobile Build
 
 ```bash
