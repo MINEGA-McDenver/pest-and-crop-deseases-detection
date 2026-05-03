@@ -19,11 +19,11 @@
     "potato_late_blight"
   ],
   "crops": [
-    "banana",
-    "potato",
-    "other_leaf",
     "beans",
-    "maize"
+    "banana",
+    "other_leaf",
+    "maize",
+    "potato"
   ],
   "image_size": [
     224,
@@ -51,14 +51,14 @@
   "unfreeze_last_base_layers": 60,
   "fine_tune_from_layer": 80,
   "phase1_epochs": 15,
-  "phase2_epochs": 10,
-  "total_epochs": 25,
-  "phase1_time_min": 893.8,
-  "phase2_time_min": 385.9,
-  "total_time_min": 1279.7,
-  "best_val_accuracy": 0.951,
-  "phase1_best_val": 0.9311,
-  "phase2_best_val": 0.951,
+  "phase2_epochs": 26,
+  "total_epochs": 41,
+  "phase1_time_min": 621.9,
+  "phase2_time_min": 1255.2,
+  "total_time_min": 1877.1,
+  "best_val_accuracy": 0.954,
+  "phase1_best_val": 0.9259,
+  "phase2_best_val": 0.954,
   "best_model_path": "best_model.keras",
   "final_model_path": "final_model.keras",
   "phase2_lr_schedule": "cosine_annealing",
@@ -76,6 +76,17 @@
       "contrast": 0.2,
       "brightness": 0.2
     },
+    "maize": {
+      "flip": "horizontal",
+      "rotation": 0.08,
+      "zoom": 0.18,
+      "contrast": 0.25,
+      "brightness": 0.22,
+      "zoom_out_enabled": true,
+      "zoom_out_prob": 0.4,
+      "zoom_out_min_scale": 0.5,
+      "zoom_out_max_scale": 0.85
+    },
     "other_leaf": {
       "flip": "horizontal_and_vertical",
       "rotation": 0.1,
@@ -84,6 +95,12 @@
       "brightness": 0.25,
       "mixup_alpha": 0.4,
       "label_smoothing": 0.15
+    },
+    "beans_potato_cutmix": {
+      "enabled": true,
+      "prob": 0.3,
+      "min_area": 0.3,
+      "max_area": 0.7
     }
   }
 }

@@ -1,1255 +1,23 @@
 [
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\pv_14484ea5-9c34-427c-abe4-2743265aced0___RS_HL 4204.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.996919,
-    "margin": 0.995438,
-    "entropy": 0.035611,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.996919
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.001481
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.000891
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\bean_val_healthy_val.43.jpg",
-    "true_label": "beans_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.995885,
-    "margin": 0.992976,
-    "entropy": 0.042231,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.995885
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.002908
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.001195
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_fresh105.jpg",
-    "true_label": "banana_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.991784,
-    "margin": 0.983568,
-    "entropy": 0.068737,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.991784
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.008215
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 1e-06
-      }
-    ]
-  },
-  {
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_5.jpg",
     "true_label": "potato_early_blight",
     "pred_label": "other_leaf",
-    "pred_confidence": 0.988381,
-    "margin": 0.979694,
-    "entropy": 0.104297,
+    "pred_confidence": 0.999939,
+    "margin": 0.999885,
+    "entropy": 0.00098,
     "top3": [
       {
         "label": "other_leaf",
-        "prob": 0.988381
+        "prob": 0.999939
       },
       {
         "label": "potato_early_blight",
-        "prob": 0.008687
+        "prob": 5.4e-05
       },
       {
         "label": "potato_late_blight",
-        "prob": 0.001857
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_19.jpg",
-    "true_label": "potato_early_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.944361,
-    "margin": 0.91314,
-    "entropy": 0.384738,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.944361
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.031221
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.020759
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\pv_ec6e43d3-512d-4908-99f2-c9e2a0be54be___RS_HL 4202.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.939711,
-    "margin": 0.883856,
-    "entropy": 0.351461,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.939711
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.055855
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.004432
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt54.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.929999,
-    "margin": 0.899261,
-    "entropy": 0.498117,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.929999
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.030739
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.023501
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_112056_1.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.907118,
-    "margin": 0.814665,
-    "entropy": 0.449979,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.907118
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.092452
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.00043
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_111930.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.905697,
-    "margin": 0.811407,
-    "entropy": 0.450882,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.905697
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.09429
-      },
-      {
-        "label": "beans_angular_leaf_spot",
-        "prob": 9e-06
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_20260308_104530.jpg",
-    "true_label": "banana_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.888977,
-    "margin": 0.777958,
-    "entropy": 0.503076,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.888977
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.111019
-      },
-      {
-        "label": "maize_healthy",
         "prob": 5e-06
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_Earlyblt110.jpg",
-    "true_label": "potato_early_blight",
-    "pred_label": "potato_late_blight",
-    "pred_confidence": 0.862974,
-    "margin": 0.741989,
-    "entropy": 0.654848,
-    "top3": [
-      {
-        "label": "potato_late_blight",
-        "prob": 0.862974
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.120986
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.014573
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana76.jpg",
-    "true_label": "banana_cordana",
-    "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.857596,
-    "margin": 0.745649,
-    "entropy": 0.713828,
-    "top3": [
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.857596
-      },
-      {
-        "label": "banana_cordana",
-        "prob": 0.111947
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.02661
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\other_leaf\\0f7c2c46-49c8-4baa-9119-753194f4b03c___RS_HL 5731.JPG",
-    "true_label": "other_leaf",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.855768,
-    "margin": 0.711549,
-    "entropy": 0.595409,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.855768
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.144219
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 1.3e-05
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_fd1e7be2-d635-4d70-85ac-f5d68ce7c2d1___RS_GLSp 4450 copy.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.841297,
-    "margin": 0.741043,
-    "entropy": 0.800755,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.841297
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.100254
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.055926
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_e9cc84b7-fc38-4e65-a129-c7a63df76780___RS_LB 2705.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.839043,
-    "margin": 0.744601,
-    "entropy": 0.794084,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.839043
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.094442
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.066512
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_20260308_112410.jpg",
-    "true_label": "banana_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.829373,
-    "margin": 0.65875,
-    "entropy": 0.659207,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.829373
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.170623
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 3e-06
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\other_leaf\\gcpneo6xNavah08Pm-Xa3tXyE0T114--paoGBk7nW911v-cJyBXV74vdBpnRuv5vzhKel8lEqa2CFdSSaDEN-h1Nt3yaRHK_W-ejxPuUv-6i50-wY9E-sooH4Dt5EGfAl8gxl4uXg4mNBEgRfIhs7T_NpawOEyx8EJiq4eRRLB5R4aog6qCVlY4qxaO2xOVD.jpg",
-    "true_label": "other_leaf",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.829014,
-    "margin": 0.65925,
-    "entropy": 0.671728,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.829014
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.169763
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.000778
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_e20d6d7c-2508-4a75-9143-5c49d0c02d12___RS_NLB 3604 copy.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.828998,
-    "margin": 0.688603,
-    "entropy": 0.826735,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.828998
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.140395
-      },
-      {
-        "label": "maize_common_rust",
-        "prob": 0.016242
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\maize_nothern_leaf__bright_11.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.828083,
-    "margin": 0.680649,
-    "entropy": 0.793648,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.828083
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.147435
-      },
-      {
-        "label": "maize_healthy",
-        "prob": 0.015433
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana97.jpg",
-    "true_label": "banana_cordana",
-    "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.821477,
-    "margin": 0.715478,
-    "entropy": 0.933566,
-    "top3": [
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.821477
-      },
-      {
-        "label": "banana_cordana",
-        "prob": 0.105999
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.037174
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_b53702bb-dfd5-4791-a550-d691cdb8a822___RS_GLSp 4379.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.817403,
-    "margin": 0.647939,
-    "entropy": 0.753853,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.817403
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.169463
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.013134
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_d9817cc3-ef03-41e5-8892-1fddd27b7bcc___RS_LB 4878.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.808824,
-    "margin": 0.695649,
-    "entropy": 0.890739,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.808824
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.113174
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.077977
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\pv_799b10e8-ba67-4e08-9abe-748789572ad1___RS_HL 1881.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.805526,
-    "margin": 0.611064,
-    "entropy": 0.710933,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.805526
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.194462
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 1.3e-05
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_76df2cc6-af5f-4f86-9dd7-d637936f9572___RS_GLSp 4609.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.800054,
-    "margin": 0.614686,
-    "entropy": 0.797807,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.800054
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.185369
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.014505
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_1157b4eb-dfb3-41b7-a083-77b0ca2e7634___RS_GLSp 4460.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.780298,
-    "margin": 0.566283,
-    "entropy": 0.797737,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.780298
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.214015
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.005685
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana67.jpg",
-    "true_label": "banana_cordana",
-    "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.770724,
-    "margin": 0.66495,
-    "entropy": 1.123239,
-    "top3": [
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.770724
-      },
-      {
-        "label": "banana_cordana",
-        "prob": 0.105774
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.0794
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_112207.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.757497,
-    "margin": 0.51533,
-    "entropy": 0.803193,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.757497
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.242167
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.000252
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_206517f4-4d5f-4d16-abab-7e634fc78d0d___RS_GLSp 4412.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.756089,
-    "margin": 0.516444,
-    "entropy": 0.832496,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.756089
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.239645
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.004266
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_17cc72b5-9af2-4988-8b4d-f79a4054e26d___RS_NLB 3968.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.748879,
-    "margin": 0.500495,
-    "entropy": 0.83566,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.748879
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.248384
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.00259
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_2f80ba76-4fdc-41cd-9b6d-4b1255a29b83___RS_NLB 3687.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.74821,
-    "margin": 0.501682,
-    "entropy": 0.859452,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.74821
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.246529
-      },
-      {
-        "label": "maize_common_rust",
-        "prob": 0.002484
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_122.jpg",
-    "true_label": "banana_healthy",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.748144,
-    "margin": 0.616391,
-    "entropy": 1.230504,
-    "top3": [
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.748144
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.131752
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.070955
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_111105.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.737037,
-    "margin": 0.474111,
-    "entropy": 0.83174,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.737037
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.262927
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 2.5e-05
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_111931.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.735709,
-    "margin": 0.472218,
-    "entropy": 0.841218,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.735709
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.263491
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.000772
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka95.jpg",
-    "true_label": "banana_sigatoka",
-    "pred_label": "banana_cordana",
-    "pred_confidence": 0.735467,
-    "margin": 0.600197,
-    "entropy": 1.197231,
-    "top3": [
-      {
-        "label": "banana_cordana",
-        "prob": 0.735467
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.135269
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.104503
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_105957.jpg",
-    "true_label": "beans_healthy",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.732508,
-    "margin": 0.485602,
-    "entropy": 0.962344,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.732508
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.246907
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.015782
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_111101.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.716951,
-    "margin": 0.43429,
-    "entropy": 0.864335,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.716951
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.282661
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.000238
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_e8527ec9-d83a-49c6-b0ed-1833e6350e23___RS_NLB 3796.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.707421,
-    "margin": 0.419269,
-    "entropy": 0.906431,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.707421
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.288151
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.004245
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_1424a06a-f143-4ca4-bee1-dbbc1663b5d0___RS_GLSp 4681.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.706187,
-    "margin": 0.432849,
-    "entropy": 0.995663,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.706187
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.273338
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.016391
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_110623.jpg",
-    "true_label": "beans_healthy",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.705383,
-    "margin": 0.538086,
-    "entropy": 1.189385,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.705383
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.167297
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.12408
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_9103b8e5-919c-4d08-a282-25176874769c___RS_GLSp 4653.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.702013,
-    "margin": 0.40653,
-    "entropy": 0.899685,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.702013
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.295483
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.002504
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_be9a5e2b-5416-40de-bbb7-c5cbd2c488d2___RS_NLB 4066.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.700928,
-    "margin": 0.459133,
-    "entropy": 1.136096,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.700928
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.241795
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.048425
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_pestalotiopsis8.jpg",
-    "true_label": "banana_pestalotiopsis",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.699298,
-    "margin": 0.569016,
-    "entropy": 1.394162,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.699298
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.130283
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.111621
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\other_leaf\\0f4a4e05-6421-4976-aefc-b10d65a816a7___RS_HL 3272.JPG",
-    "true_label": "other_leaf",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.690866,
-    "margin": 0.382105,
-    "entropy": 0.896325,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.690866
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.308761
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.000373
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_2482a11a-46b1-4e06-9b5c-4af0089b3259___RS_LB 4087.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.684738,
-    "margin": 0.483919,
-    "entropy": 1.201147,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.684738
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.20082
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.11402
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\test_bean_rust_bean_rust_test.37.jpg",
-    "true_label": "beans_rust",
-    "pred_label": "beans_healthy",
-    "pred_confidence": 0.679698,
-    "margin": 0.535345,
-    "entropy": 1.40338,
-    "top3": [
-      {
-        "label": "beans_healthy",
-        "prob": 0.679698
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.144352
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.127514
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_common_rust\\maize_common_rust_23.jpg",
-    "true_label": "maize_common_rust",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.675558,
-    "margin": 0.418335,
-    "entropy": 1.233726,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.675558
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.257222
-      },
-      {
-        "label": "maize_common_rust",
-        "prob": 0.047059
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_111932.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.673118,
-    "margin": 0.346251,
-    "entropy": 0.91197,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.673118
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.326867
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 9e-06
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\pv_ff700844-68ad-4e99-8427-58a39c07f817___RS_HL 1860.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.673079,
-    "margin": 0.346264,
-    "entropy": 0.913136,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.673079
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.326815
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.000106
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\bean_train_healthy_train.174.jpg",
-    "true_label": "beans_healthy",
-    "pred_label": "beans_rust",
-    "pred_confidence": 0.669066,
-    "margin": 0.422334,
-    "entropy": 1.279436,
-    "top3": [
-      {
-        "label": "beans_rust",
-        "prob": 0.669066
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.246732
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.061496
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\train_healthy_healthy_train.174.jpg",
-    "true_label": "beans_healthy",
-    "pred_label": "beans_rust",
-    "pred_confidence": 0.669066,
-    "margin": 0.422334,
-    "entropy": 1.279436,
-    "top3": [
-      {
-        "label": "beans_rust",
-        "prob": 0.669066
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.246732
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.061496
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\potato_health_20260308_114946.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.66803,
-    "margin": 0.336277,
-    "entropy": 0.919806,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.66803
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.331753
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.000138
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_841a4e5a-7aa6-4b32-a2b2-436874a48fdb___RS_LB 4469.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "potato_early_blight",
-    "pred_confidence": 0.667204,
-    "margin": 0.53433,
-    "entropy": 1.425908,
-    "top3": [
-      {
-        "label": "potato_early_blight",
-        "prob": 0.667204
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.132874
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.131728
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_45e4a1ce-cd3d-4702-9b46-4e6fa1fd2c44___RS_NLB 3969.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.630645,
-    "margin": 0.263343,
-    "entropy": 0.968557,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.630645
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.367301
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.002051
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_27db0747-841a-454c-aff6-cb506689cca9___RS_GLSp 9347.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.627406,
-    "margin": 0.291589,
-    "entropy": 1.145159,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.627406
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.335817
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.033494
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_ca1f4a1f-eacf-4fa9-9649-32353c8cc164___RS_GLSp 7342.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.6246,
-    "margin": 0.252493,
-    "entropy": 0.982096,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.6246
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.372107
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.00328
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\beans_rust_12.jpg",
-    "true_label": "beans_rust",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.623194,
-    "margin": 0.465585,
-    "entropy": 1.695747,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.623194
-      },
-      {
-        "label": "beans_angular_leaf_spot",
-        "prob": 0.157608
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.093459
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_5ea8975f-1cb5-4452-b04b-1f63453d1e2f___RS_NLB 3803.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.61962,
-    "margin": 0.249184,
-    "entropy": 1.031466,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.61962
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.370436
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.008232
       }
     ]
   },
@@ -1257,21 +25,219 @@
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_f60dfedb-02f5-4c39-b66e-9c29a58d0ae4___RS_GLSp 4417 copy.jpg",
     "true_label": "maize_gray_leaf_spot",
     "pred_label": "other_leaf",
-    "pred_confidence": 0.612568,
-    "margin": 0.423266,
-    "entropy": 1.813673,
+    "pred_confidence": 0.975935,
+    "margin": 0.958608,
+    "entropy": 0.191509,
     "top3": [
       {
         "label": "other_leaf",
-        "prob": 0.612568
+        "prob": 0.975935
+      },
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.017327
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.004666
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\maize_nothern_leaf__bright_11.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.967542,
+    "margin": 0.951558,
+    "entropy": 0.275211,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.967542
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.015984
+      },
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.008806
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_105957.jpg",
+    "true_label": "beans_healthy",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.95296,
+    "margin": 0.907188,
+    "entropy": 0.282169,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.95296
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.045772
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.001261
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana76.jpg",
+    "true_label": "banana_cordana",
+    "pred_label": "banana_sigatoka",
+    "pred_confidence": 0.944112,
+    "margin": 0.893567,
+    "entropy": 0.336361,
+    "top3": [
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.944112
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.050545
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.005341
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_pestalotiopsis43.jpg",
+    "true_label": "banana_pestalotiopsis",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.936804,
+    "margin": 0.902309,
+    "entropy": 0.448018,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.936804
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.034495
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.021444
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\pv_ec6e43d3-512d-4908-99f2-c9e2a0be54be___RS_HL 4202.jpg",
+    "true_label": "potato_healthy",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.925032,
+    "margin": 0.850874,
+    "entropy": 0.39153,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.925032
+      },
+      {
+        "label": "potato_healthy",
+        "prob": 0.074158
       },
       {
         "label": "potato_late_blight",
-        "prob": 0.189302
+        "prob": 0.000421
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\other_leaf\\black_nightshade_3.jpg",
+    "true_label": "other_leaf",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.918428,
+    "margin": 0.836857,
+    "entropy": 0.407702,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.918428
       },
       {
-        "label": "potato_early_blight",
-        "prob": 0.071618
+        "label": "other_leaf",
+        "prob": 0.081571
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.0
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_122.jpg",
+    "true_label": "banana_healthy",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.916933,
+    "margin": 0.836807,
+    "entropy": 0.434598,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.916933
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.080126
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.002112
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_17cc72b5-9af2-4988-8b4d-f79a4054e26d___RS_NLB 3968.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.89481,
+    "margin": 0.790089,
+    "entropy": 0.489644,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.89481
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.104721
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.000459
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_45e4a1ce-cd3d-4702-9b46-4e6fa1fd2c44___RS_NLB 3969.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.8562,
+    "margin": 0.713939,
+    "entropy": 0.606464,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.8562
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.142261
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.001531
       }
     ]
   },
@@ -1279,1077 +245,175 @@
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka10.jpg",
     "true_label": "banana_sigatoka",
     "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.612549,
-    "margin": 0.44831,
-    "entropy": 1.570916,
+    "pred_confidence": 0.839758,
+    "margin": 0.713989,
+    "entropy": 0.789414,
     "top3": [
       {
         "label": "banana_pestalotiopsis",
-        "prob": 0.612549
+        "prob": 0.839758
       },
       {
         "label": "banana_sigatoka",
-        "prob": 0.164239
+        "prob": 0.125769
       },
       {
         "label": "banana_cordana",
-        "prob": 0.158449
+        "prob": 0.020001
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_0b3a35d8-25af-44ae-beed-398f591d5c1b___RS_NLB 0833.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_e20d6d7c-2508-4a75-9143-5c49d0c02d12___RS_NLB 3604 copy.jpg",
     "true_label": "maize_northern_leaf_blight",
     "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.608892,
-    "margin": 0.221961,
-    "entropy": 1.002094,
+    "pred_confidence": 0.839285,
+    "margin": 0.689156,
+    "entropy": 0.702889,
     "top3": [
       {
         "label": "maize_gray_leaf_spot",
-        "prob": 0.608892
+        "prob": 0.839285
       },
       {
         "label": "maize_northern_leaf_blight",
-        "prob": 0.386931
+        "prob": 0.150129
       },
       {
         "label": "other_leaf",
-        "prob": 0.003419
+        "prob": 0.005976
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_ef0479e0-c62b-4a8f-a5c6-1957d0a77c8f___RS_GLSp 4396.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.601909,
-    "margin": 0.222829,
-    "entropy": 1.082891,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.601909
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.37908
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.018617
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\20260418_112057.jpg",
-    "true_label": "potato_healthy",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka11.jpg",
+    "true_label": "banana_sigatoka",
     "pred_label": "other_leaf",
-    "pred_confidence": 0.601553,
-    "margin": 0.217003,
-    "entropy": 1.05838,
+    "pred_confidence": 0.823194,
+    "margin": 0.748184,
+    "entropy": 1.105424,
     "top3": [
       {
         "label": "other_leaf",
-        "prob": 0.601553
+        "prob": 0.823194
       },
       {
         "label": "potato_healthy",
-        "prob": 0.384549
+        "prob": 0.07501
       },
       {
-        "label": "beans_healthy",
-        "prob": 0.013738
+        "label": "potato_early_blight",
+        "prob": 0.042577
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_cf1a5200-6ba7-4b6f-af28-969e47db1c7e___RS_GLSp 4660.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.597305,
-    "margin": 0.198211,
-    "entropy": 1.00223,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.597305
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.399094
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.003597
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_a95a00bc-f6af-4006-beda-81f8629cf106___RS_GLSp 9308.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.59456,
-    "margin": 0.196351,
-    "entropy": 1.028971,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.59456
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.398208
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.006825
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_d4bf70c0-f7fe-4921-9944-a89717811183___RS_GLSp 4373.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.58128,
-    "margin": 0.170831,
-    "entropy": 1.039931,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.58128
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.410449
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.008226
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_105150.jpg",
-    "true_label": "beans_healthy",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_common_rust\\pv_RS_Rust 2626.jpg",
+    "true_label": "maize_common_rust",
     "pred_label": "other_leaf",
-    "pred_confidence": 0.578102,
-    "margin": 0.244422,
-    "entropy": 1.342784,
+    "pred_confidence": 0.803292,
+    "margin": 0.718151,
+    "entropy": 1.201204,
     "top3": [
       {
         "label": "other_leaf",
-        "prob": 0.578102
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.33368
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.079399
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_a9e08234-c1be-4519-a3e3-dd8d9456fab0___RS_GLSp 7336.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.577724,
-    "margin": 0.169635,
-    "entropy": 1.075846,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.577724
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.40809
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.013636
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_b7fb9cd4-1b3a-400d-8520-514e5dedc7f3___RS_GLSp 4632.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.560298,
-    "margin": 0.122295,
-    "entropy": 1.005611,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.560298
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.438003
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.001692
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_ceac7e26-3dbe-48a1-b111-3b4149cda69d___RS_GLSp 9316.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.556378,
-    "margin": 0.138242,
-    "entropy": 1.135513,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.556378
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.418136
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.025003
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_8829e413-5a7a-4680-b873-e71dfa9dbfe4___RS_LB 3974.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.54266,
-    "margin": 0.228003,
-    "entropy": 1.408506,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.54266
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.314656
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.142252
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_5.jpg",
-    "true_label": "banana_healthy",
-    "pred_label": "beans_angular_leaf_spot",
-    "pred_confidence": 0.541171,
-    "margin": 0.361146,
-    "entropy": 1.964912,
-    "top3": [
-      {
-        "label": "beans_angular_leaf_spot",
-        "prob": 0.541171
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.180025
-      },
-      {
-        "label": "beans_rust",
-        "prob": 0.172698
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_e0b458e7-cea5-4d65-9b14-2aa51ba38438___RS_NLB 3857.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.541072,
-    "margin": 0.08982,
-    "entropy": 1.055448,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.541072
+        "prob": 0.803292
       },
       {
         "label": "maize_northern_leaf_blight",
-        "prob": 0.451252
+        "prob": 0.085141
       },
       {
-        "label": "other_leaf",
-        "prob": 0.006771
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.032584
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_20260308_104637.jpg",
-    "true_label": "banana_healthy",
-    "pred_label": "maize_healthy",
-    "pred_confidence": 0.536264,
-    "margin": 0.130442,
-    "entropy": 1.249437,
-    "top3": [
-      {
-        "label": "maize_healthy",
-        "prob": 0.536264
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.405822
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.057802
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana5.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana97.jpg",
     "true_label": "banana_cordana",
     "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.529483,
-    "margin": 0.195589,
-    "entropy": 1.545927,
+    "pred_confidence": 0.799342,
+    "margin": 0.69922,
+    "entropy": 0.947672,
     "top3": [
       {
         "label": "banana_sigatoka",
-        "prob": 0.529483
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.333894
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.069011
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_ff8671f5-09be-49d7-8093-2707c3a32489___RS_GLSp 4620.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.528538,
-    "margin": 0.069947,
-    "entropy": 1.083108,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.528538
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.458591
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.012847
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_7565238f-ba56-4a1b-93b6-a978fbc19e6a___RS_GLSp 4309.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.527634,
-    "margin": 0.071933,
-    "entropy": 1.102848,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.527634
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.455701
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.016546
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka13.jpg",
-    "true_label": "banana_sigatoka",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.527539,
-    "margin": 0.206728,
-    "entropy": 1.66885,
-    "top3": [
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.527539
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.320812
+        "prob": 0.799342
       },
       {
         "label": "banana_cordana",
-        "prob": 0.092596
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_82e0f1d2-e996-427b-9216-6b46aedbc07f___RS_LB 4880.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "potato_healthy",
-    "pred_confidence": 0.524236,
-    "margin": 0.121127,
-    "entropy": 1.295186,
-    "top3": [
-      {
-        "label": "potato_healthy",
-        "prob": 0.524236
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.403109
+        "prob": 0.100122
       },
       {
         "label": "other_leaf",
-        "prob": 0.072262
+        "prob": 0.096644
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_Earlyblt122.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_Earlyblt110.jpg",
     "true_label": "potato_early_blight",
     "pred_label": "potato_late_blight",
-    "pred_confidence": 0.523074,
-    "margin": 0.122455,
-    "entropy": 1.345696,
+    "pred_confidence": 0.784198,
+    "margin": 0.628338,
+    "entropy": 0.93951,
     "top3": [
       {
         "label": "potato_late_blight",
-        "prob": 0.523074
+        "prob": 0.784198
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.15586
       },
       {
         "label": "potato_early_blight",
-        "prob": 0.400619
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.065608
+        "prob": 0.059593
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\pv_31d0ecc8-045d-4a4a-ac33-431556c83e4c___RS_Early.B 8692.jpg",
-    "true_label": "potato_early_blight",
-    "pred_label": "potato_late_blight",
-    "pred_confidence": 0.521997,
-    "margin": 0.192636,
-    "entropy": 1.42616,
-    "top3": [
-      {
-        "label": "potato_late_blight",
-        "prob": 0.521997
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.329361
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.148638
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_5df7a420-aeab-4eb0-959a-290e4bb2a944___RS_NLB 3514 copy 2.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.521216,
-    "margin": 0.063733,
-    "entropy": 1.144515,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.521216
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.457482
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.014618
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_15803dee-8071-49f1-81b6-fd3dedbc1c58___RS_NLB 4020 copy.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.517702,
-    "margin": 0.050574,
-    "entropy": 1.105507,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.517702
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.467128
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.013375
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_be702c5c-99be-4d1e-a16d-89995cb141dc___RS_GLSp 9293.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_76df2cc6-af5f-4f86-9dd7-d637936f9572___RS_GLSp 4609.jpg",
     "true_label": "maize_gray_leaf_spot",
     "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.510643,
-    "margin": 0.056045,
-    "entropy": 1.183464,
+    "pred_confidence": 0.782647,
+    "margin": 0.605002,
+    "entropy": 0.914674,
     "top3": [
       {
         "label": "maize_northern_leaf_blight",
-        "prob": 0.510643
+        "prob": 0.782647
       },
       {
         "label": "maize_gray_leaf_spot",
-        "prob": 0.454599
+        "prob": 0.177645
       },
       {
         "label": "other_leaf",
-        "prob": 0.03442
+        "prob": 0.038141
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\bean_val_bean_rust_val.42.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\bean_val_bean_rust_val.31.jpg",
     "true_label": "beans_rust",
-    "pred_label": "beans_angular_leaf_spot",
-    "pred_confidence": 0.508923,
-    "margin": 0.072057,
-    "entropy": 1.301742,
-    "top3": [
-      {
-        "label": "beans_angular_leaf_spot",
-        "prob": 0.508923
-      },
-      {
-        "label": "beans_rust",
-        "prob": 0.436866
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.034423
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\potato_health_20260308_141522.jpg",
-    "true_label": "potato_healthy",
-    "pred_label": "potato_late_blight",
-    "pred_confidence": 0.505722,
-    "margin": 0.155716,
-    "entropy": 1.593275,
-    "top3": [
-      {
-        "label": "potato_late_blight",
-        "prob": 0.505722
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.350006
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.106076
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_d752ca70-320b-4d33-970f-8f3eead9141e___RS_LB 3166.jpg",
-    "true_label": "potato_late_blight",
     "pred_label": "other_leaf",
-    "pred_confidence": 0.501541,
-    "margin": 0.092211,
-    "entropy": 1.383532,
+    "pred_confidence": 0.781378,
+    "margin": 0.569163,
+    "entropy": 0.808955,
     "top3": [
       {
         "label": "other_leaf",
-        "prob": 0.501541
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.40933
-      },
-      {
-        "label": "potato_healthy",
-        "prob": 0.078892
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_5d1486fa-750f-47ca-a973-abc45ea5b4fe___RS_LB 4281.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "potato_early_blight",
-    "pred_confidence": 0.501293,
-    "margin": 0.107349,
-    "entropy": 1.412746,
-    "top3": [
-      {
-        "label": "potato_early_blight",
-        "prob": 0.501293
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.393944
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.096167
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\bean_train_bean_rust_train.82.jpg",
-    "true_label": "beans_rust",
-    "pred_label": "beans_healthy",
-    "pred_confidence": 0.495738,
-    "margin": 0.075729,
-    "entropy": 1.379477,
-    "top3": [
-      {
-        "label": "beans_healthy",
-        "prob": 0.495738
+        "prob": 0.781378
       },
       {
         "label": "beans_rust",
-        "prob": 0.420009
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.074729
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\train_bean_rust_bean_rust_train.82.jpg",
-    "true_label": "beans_rust",
-    "pred_label": "beans_healthy",
-    "pred_confidence": 0.495738,
-    "margin": 0.075729,
-    "entropy": 1.379477,
-    "top3": [
-      {
-        "label": "beans_healthy",
-        "prob": 0.495738
-      },
-      {
-        "label": "beans_rust",
-        "prob": 0.420009
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.074729
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_1b3e0f15-bbfb-4629-840f-310c7bf2a17c___RS_GLSp 9335.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.494745,
-    "margin": 0.022931,
-    "entropy": 1.208135,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.494745
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.471813
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.027811
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_c37ac9c8-61ef-4b63-9475-766b6bfc3dfb___RS_NLB 3644.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.490287,
-    "margin": 0.012588,
-    "entropy": 1.194802,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.490287
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.477699
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.026255
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt53.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.487846,
-    "margin": 0.348045,
-    "entropy": 2.284607,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.487846
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.139801
+        "prob": 0.212215
       },
       {
         "label": "beans_healthy",
-        "prob": 0.108048
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_healthy\\maize_health_20260308_142051.jpg",
-    "true_label": "maize_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.475198,
-    "margin": 0.046745,
-    "entropy": 1.520842,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.475198
-      },
-      {
-        "label": "maize_healthy",
-        "prob": 0.428454
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.054474
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_6f4b40eb-6d14-4f30-9ef8-89f85bd841fd___RS_GLSp 4426.jpg",
-    "true_label": "maize_gray_leaf_spot",
-    "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.47437,
-    "margin": 0.109673,
-    "entropy": 1.562157,
-    "top3": [
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.47437
-      },
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.364697
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.137401
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_f3141371-5c55-4cf4-988a-6c322de0c6ec___RS_NLB 3486 copy 2.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "maize_gray_leaf_spot",
-    "pred_confidence": 0.469505,
-    "margin": 0.049076,
-    "entropy": 1.521948,
-    "top3": [
-      {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.469505
-      },
-      {
-        "label": "maize_northern_leaf_blight",
-        "prob": 0.420429
-      },
-      {
-        "label": "maize_common_rust",
-        "prob": 0.062938
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka67.jpg",
-    "true_label": "banana_sigatoka",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.468968,
-    "margin": 0.186391,
-    "entropy": 1.811522,
-    "top3": [
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.468968
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.282577
-      },
-      {
-        "label": "banana_cordana",
-        "prob": 0.185365
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\test_bean_rust_bean_rust_test.31.jpg",
-    "true_label": "beans_rust",
-    "pred_label": "beans_angular_leaf_spot",
-    "pred_confidence": 0.465707,
-    "margin": 0.035411,
-    "entropy": 1.445768,
-    "top3": [
-      {
-        "label": "beans_angular_leaf_spot",
-        "prob": 0.465707
-      },
-      {
-        "label": "beans_rust",
-        "prob": 0.430296
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.091245
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka56.jpg",
-    "true_label": "banana_sigatoka",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.461164,
-    "margin": 0.302909,
-    "entropy": 2.180533,
-    "top3": [
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.461164
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.158255
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.155168
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt57.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.443195,
-    "margin": 0.260318,
-    "entropy": 2.287642,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.443195
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.182877
-      },
-      {
-        "label": "beans_healthy",
-        "prob": 0.157565
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt58.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.440234,
-    "margin": 0.063731,
-    "entropy": 1.917507,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.440234
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.376502
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.050297
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana71.jpg",
-    "true_label": "banana_cordana",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.43721,
-    "margin": 0.06864,
-    "entropy": 1.659938,
-    "top3": [
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.43721
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.36857
-      },
-      {
-        "label": "banana_cordana",
-        "prob": 0.166582
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\rust_rust2375.jpg",
-    "true_label": "beans_rust",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.437206,
-    "margin": 0.027658,
-    "entropy": 1.567567,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.437206
-      },
-      {
-        "label": "beans_rust",
-        "prob": 0.409549
-      },
-      {
-        "label": "maize_common_rust",
-        "prob": 0.134486
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_12.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "beans_angular_leaf_spot",
-    "pred_confidence": 0.433203,
-    "margin": 0.001555,
-    "entropy": 1.61688,
-    "top3": [
-      {
-        "label": "beans_angular_leaf_spot",
-        "prob": 0.433203
-      },
-      {
-        "label": "beans_rust",
-        "prob": 0.431648
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.081496
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt73.jpg",
-    "true_label": "potato_late_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.432729,
-    "margin": 0.022875,
-    "entropy": 1.629168,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.432729
-      },
-      {
-        "label": "potato_late_blight",
-        "prob": 0.409855
-      },
-      {
-        "label": "potato_early_blight",
-        "prob": 0.130182
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_healthy\\maize_health_20260308_142113.jpg",
-    "true_label": "maize_healthy",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.432445,
-    "margin": 0.150085,
-    "entropy": 1.793633,
-    "top3": [
-      {
-        "label": "other_leaf",
-        "prob": 0.432445
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.28236
-      },
-      {
-        "label": "maize_healthy",
-        "prob": 0.243568
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\bana_aug_399_aug.jpg",
-    "true_label": "banana_pestalotiopsis",
-    "pred_label": "banana_cordana",
-    "pred_confidence": 0.424186,
-    "margin": 0.073109,
-    "entropy": 1.717534,
-    "top3": [
-      {
-        "label": "banana_cordana",
-        "prob": 0.424186
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.351077
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.180315
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka19.jpg",
-    "true_label": "banana_sigatoka",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.413095,
-    "margin": 0.18026,
-    "entropy": 2.285022,
-    "top3": [
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.413095
-      },
-      {
-        "label": "banana_cordana",
-        "prob": 0.232835
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.169705
+        "prob": 0.002818
       }
     ]
   },
@@ -2357,373 +421,1099 @@
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana34.jpg",
     "true_label": "banana_cordana",
     "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.409486,
-    "margin": 0.121964,
-    "entropy": 1.986362,
+    "pred_confidence": 0.773383,
+    "margin": 0.654877,
+    "entropy": 1.016617,
     "top3": [
       {
         "label": "banana_sigatoka",
-        "prob": 0.409486
+        "prob": 0.773383
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.118506
       },
       {
         "label": "banana_cordana",
-        "prob": 0.287522
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.211828
+        "prob": 0.105528
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_110750.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_common_rust\\maize_common_rust_23.jpg",
+    "true_label": "maize_common_rust",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.771724,
+    "margin": 0.61348,
+    "entropy": 1.113932,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.771724
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.158245
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.027329
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_5df7a420-aeab-4eb0-959a-290e4bb2a944___RS_NLB 3514 copy 2.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.76964,
+    "margin": 0.549989,
+    "entropy": 0.847117,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.76964
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.219651
+      },
+      {
+        "label": "maize_common_rust",
+        "prob": 0.009323
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_e0b458e7-cea5-4d65-9b14-2aa51ba38438___RS_NLB 3857.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.754402,
+    "margin": 0.510652,
+    "entropy": 0.821767,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.754402
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.24375
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.001029
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_105103.jpg",
     "true_label": "beans_healthy",
     "pred_label": "potato_healthy",
-    "pred_confidence": 0.409393,
-    "margin": 0.069167,
-    "entropy": 1.585811,
+    "pred_confidence": 0.745571,
+    "margin": 0.581291,
+    "entropy": 1.05789,
     "top3": [
       {
         "label": "potato_healthy",
-        "prob": 0.409393
+        "prob": 0.745571
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.16428
       },
       {
         "label": "beans_healthy",
-        "prob": 0.340227
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.24683
+        "prob": 0.090059
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana6.jpg",
-    "true_label": "banana_cordana",
-    "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.394006,
-    "margin": 0.200039,
-    "entropy": 2.563306,
-    "top3": [
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.394006
-      },
-      {
-        "label": "banana_cordana",
-        "prob": 0.193967
-      },
-      {
-        "label": "maize_healthy",
-        "prob": 0.101745
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_pestalotiopsis43.jpg",
-    "true_label": "banana_pestalotiopsis",
-    "pred_label": "banana_cordana",
-    "pred_confidence": 0.390869,
-    "margin": 0.108859,
-    "entropy": 1.872308,
-    "top3": [
-      {
-        "label": "banana_cordana",
-        "prob": 0.390869
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.282011
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.262692
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\maize_gray_leaf_spot_7.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_a95a00bc-f6af-4006-beda-81f8629cf106___RS_GLSp 9308.jpg",
     "true_label": "maize_gray_leaf_spot",
-    "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.386749,
-    "margin": 0.211763,
-    "entropy": 2.615907,
+    "pred_label": "maize_northern_leaf_blight",
+    "pred_confidence": 0.729064,
+    "margin": 0.476572,
+    "entropy": 0.953599,
     "top3": [
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.386749
-      },
       {
         "label": "maize_northern_leaf_blight",
-        "prob": 0.174986
+        "prob": 0.729064
       },
       {
         "label": "maize_gray_leaf_spot",
-        "prob": 0.138687
+        "prob": 0.252492
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.015194
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_3f2d7c62-8d58-4a40-9df4-0ab3497b13b9___RS_LB 4487.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt58.jpg",
     "true_label": "potato_late_blight",
-    "pred_label": "potato_early_blight",
-    "pred_confidence": 0.386611,
-    "margin": 0.037921,
-    "entropy": 1.567793,
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.720811,
+    "margin": 0.44203,
+    "entropy": 0.858799,
     "top3": [
       {
-        "label": "potato_early_blight",
-        "prob": 0.386611
+        "label": "other_leaf",
+        "prob": 0.720811
       },
       {
         "label": "potato_late_blight",
-        "prob": 0.34869
+        "prob": 0.278781
       },
       {
-        "label": "other_leaf",
-        "prob": 0.26469
+        "label": "potato_early_blight",
+        "prob": 0.000405
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_7f69942f-70ce-456b-b8cb-1ce937ea6389___RS_GLSp 4418.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_healthy\\pv_14484ea5-9c34-427c-abe4-2743265aced0___RS_HL 4204.jpg",
+    "true_label": "potato_healthy",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.709856,
+    "margin": 0.500257,
+    "entropy": 1.121091,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.709856
+      },
+      {
+        "label": "potato_healthy",
+        "prob": 0.209598
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.080011
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_1424a06a-f143-4ca4-bee1-dbbc1663b5d0___RS_GLSp 4681.jpg",
     "true_label": "maize_gray_leaf_spot",
     "pred_label": "maize_northern_leaf_blight",
-    "pred_confidence": 0.377536,
-    "margin": 0.006257,
-    "entropy": 1.639781,
+    "pred_confidence": 0.696198,
+    "margin": 0.395892,
+    "entropy": 0.914079,
     "top3": [
       {
         "label": "maize_northern_leaf_blight",
-        "prob": 0.377536
+        "prob": 0.696198
       },
       {
         "label": "maize_gray_leaf_spot",
-        "prob": 0.371279
+        "prob": 0.300306
       },
       {
         "label": "other_leaf",
-        "prob": 0.237819
+        "prob": 0.003399
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana53.jpg",
-    "true_label": "banana_cordana",
-    "pred_label": "beans_rust",
-    "pred_confidence": 0.375195,
-    "margin": 0.252491,
-    "entropy": 2.882033,
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_angular_leaf_spot\\bean_train_angular_leaf_spot_train.246.jpg",
+    "true_label": "beans_angular_leaf_spot",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.694519,
+    "margin": 0.536276,
+    "entropy": 1.389394,
     "top3": [
       {
-        "label": "beans_rust",
-        "prob": 0.375195
+        "label": "other_leaf",
+        "prob": 0.694519
       },
       {
-        "label": "maize_gray_leaf_spot",
-        "prob": 0.122704
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.158243
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.087011
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_angular_leaf_spot\\train_angular_leaf_spot_angular_leaf_spot_train.246.jpg",
+    "true_label": "beans_angular_leaf_spot",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.694519,
+    "margin": 0.536276,
+    "entropy": 1.389394,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.694519
+      },
+      {
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.158243
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.087011
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\bana_orig_171.jpg",
+    "true_label": "banana_pestalotiopsis",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.677378,
+    "margin": 0.390291,
+    "entropy": 1.080276,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.677378
       },
       {
         "label": "banana_pestalotiopsis",
-        "prob": 0.110662
+        "prob": 0.287087
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.033989
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_171.jpg",
+    "true_label": "banana_pestalotiopsis",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.677378,
+    "margin": 0.390291,
+    "entropy": 1.080276,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.677378
+      },
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.287087
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.033989
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_2a877980-8d25-4dbf-8b84-458094529054___RS_NLB 3970 copy 2.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.676913,
+    "margin": 0.362106,
+    "entropy": 0.973082,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.676913
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.314807
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.006135
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\other_leaf\\0f7c2c46-49c8-4baa-9119-753194f4b03c___RS_HL 5731.JPG",
+    "true_label": "other_leaf",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.671788,
+    "margin": 0.344639,
+    "entropy": 0.924409,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.671788
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.327149
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.000702
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_b53702bb-dfd5-4791-a550-d691cdb8a822___RS_GLSp 4379.jpg",
+    "true_label": "maize_gray_leaf_spot",
+    "pred_label": "maize_northern_leaf_blight",
+    "pred_confidence": 0.652546,
+    "margin": 0.344824,
+    "entropy": 1.115234,
+    "top3": [
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.652546
+      },
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.307722
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.03912
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_Earlyblt262.jpg",
+    "true_label": "potato_early_blight",
+    "pred_label": "potato_late_blight",
+    "pred_confidence": 0.650265,
+    "margin": 0.408752,
+    "entropy": 1.250909,
+    "top3": [
+      {
+        "label": "potato_late_blight",
+        "prob": 0.650265
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.241513
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.107682
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_e8527ec9-d83a-49c6-b0ed-1833e6350e23___RS_NLB 3796.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.649096,
+    "margin": 0.301997,
+    "entropy": 0.970004,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.649096
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.3471
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.002138
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_angular_leaf_spot\\bean_train_angular_leaf_spot_train.131.jpg",
+    "true_label": "beans_angular_leaf_spot",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.623816,
+    "margin": 0.329576,
+    "entropy": 1.367258,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.623816
+      },
+      {
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.29424
+      },
+      {
+        "label": "beans_rust",
+        "prob": 0.038687
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_angular_leaf_spot\\train_angular_leaf_spot_angular_leaf_spot_train.131.jpg",
+    "true_label": "beans_angular_leaf_spot",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.623816,
+    "margin": 0.329576,
+    "entropy": 1.367258,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.623816
+      },
+      {
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.29424
+      },
+      {
+        "label": "beans_rust",
+        "prob": 0.038687
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt57.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.618295,
+    "margin": 0.240664,
+    "entropy": 0.992279,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.618295
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.377631
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.004005
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\bean_val_bean_rust_val.42.jpg",
+    "true_label": "beans_rust",
+    "pred_label": "beans_angular_leaf_spot",
+    "pred_confidence": 0.617792,
+    "margin": 0.385644,
+    "entropy": 1.342916,
+    "top3": [
+      {
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.617792
+      },
+      {
+        "label": "beans_rust",
+        "prob": 0.232148
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.148631
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_common_rust\\maize_common_rust_3.jpg",
+    "true_label": "maize_common_rust",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.616385,
+    "margin": 0.430519,
+    "entropy": 1.76589,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.616385
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.185866
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.113712
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_9103b8e5-919c-4d08-a282-25176874769c___RS_GLSp 4653.jpg",
+    "true_label": "maize_gray_leaf_spot",
+    "pred_label": "maize_northern_leaf_blight",
+    "pred_confidence": 0.606953,
+    "margin": 0.22276,
+    "entropy": 1.029263,
+    "top3": [
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.606953
+      },
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.384194
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.00866
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\other_leaf\\0fa9a9df-dfb6-4171-a0c9-1356e4a6f011___RS_HL 5455.JPG",
+    "true_label": "other_leaf",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.606001,
+    "margin": 0.213507,
+    "entropy": 0.98169,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.606001
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.392494
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.001494
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt50.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.60033,
+    "margin": 0.202788,
+    "entropy": 0.989961,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.60033
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.397542
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.002121
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_f3141371-5c55-4cf4-988a-6c322de0c6ec___RS_NLB 3486 copy 2.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.599193,
+    "margin": 0.228455,
+    "entropy": 1.152081,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.599193
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.370738
+      },
+      {
+        "label": "maize_common_rust",
+        "prob": 0.022862
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_0b3a35d8-25af-44ae-beed-398f591d5c1b___RS_NLB 0833.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.596293,
+    "margin": 0.199762,
+    "entropy": 1.033658,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.596293
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.396531
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.00435
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_15803dee-8071-49f1-81b6-fd3dedbc1c58___RS_NLB 4020 copy.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.587473,
+    "margin": 0.189367,
+    "entropy": 1.080697,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.587473
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.398106
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.012106
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_d95f6c9c-1c62-47d6-a643-093cd3402162___RS_NLB 3942 copy 2.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.581875,
+    "margin": 0.169192,
+    "entropy": 1.023356,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.581875
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.412683
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.005324
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\beans_rust_12.jpg",
+    "true_label": "beans_rust",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.577988,
+    "margin": 0.371884,
+    "entropy": 1.776993,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.577988
+      },
+      {
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.206104
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.113772
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_common_rust\\pv_RS_Rust 1727.jpg",
+    "true_label": "maize_common_rust",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.576833,
+    "margin": 0.202938,
+    "entropy": 1.216673,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.576833
+      },
+      {
+        "label": "maize_common_rust",
+        "prob": 0.373895
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.04686
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_e9cc84b7-fc38-4e65-a129-c7a63df76780___RS_LB 2705.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.57181,
+    "margin": 0.325038,
+    "entropy": 1.422174,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.57181
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.246772
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.179509
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka67.jpg",
+    "true_label": "banana_sigatoka",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.571409,
+    "margin": 0.368434,
+    "entropy": 1.543613,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.571409
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.202975
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.19449
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_12.jpg",
+    "true_label": "potato_early_blight",
+    "pred_label": "potato_late_blight",
+    "pred_confidence": 0.570613,
+    "margin": 0.25298,
+    "entropy": 1.360156,
+    "top3": [
+      {
+        "label": "potato_late_blight",
+        "prob": 0.570613
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.317633
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.10937
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_aa89ced6-2f16-48c3-8cb6-d0782dca70ba___RS_NLB 3805.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.565967,
+    "margin": 0.132994,
+    "entropy": 0.998681,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.565967
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.432972
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.000949
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\pv_1157b4eb-dfb3-41b7-a083-77b0ca2e7634___RS_GLSp 4460.jpg",
+    "true_label": "maize_gray_leaf_spot",
+    "pred_label": "maize_northern_leaf_blight",
+    "pred_confidence": 0.561406,
+    "margin": 0.135707,
+    "entropy": 1.074607,
+    "top3": [
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.561406
+      },
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.4257
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.012715
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_eb3708a1-b2b4-4e03-b8ae-59c14ef89e67___RS_NLB 3818 copy.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.557583,
+    "margin": 0.117657,
+    "entropy": 1.014076,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.557583
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.439926
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.002164
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_12.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "beans_rust",
+    "pred_confidence": 0.55344,
+    "margin": 0.399848,
+    "entropy": 1.961895,
+    "top3": [
+      {
+        "label": "beans_rust",
+        "prob": 0.55344
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.153592
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.108995
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_110623.jpg",
+    "true_label": "beans_healthy",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.549618,
+    "margin": 0.269987,
+    "entropy": 1.426235,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.549618
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.279631
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.17058
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\test_bean_rust_bean_rust_test.37.jpg",
+    "true_label": "beans_rust",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.543491,
+    "margin": 0.360335,
+    "entropy": 1.734545,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.543491
+      },
+      {
+        "label": "beans_rust",
+        "prob": 0.183156
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.160266
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_10b05173-08e7-4470-a581-a64898a6af88___RS_NLB 3799.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.532462,
+    "margin": 0.071936,
+    "entropy": 1.053104,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.532462
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.460526
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.006217
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\other_leaf\\1fa569d8-45ba-4633-b66d-3fdb07ed523e___RS_HL 0533.JPG",
+    "true_label": "other_leaf",
+    "pred_label": "potato_late_blight",
+    "pred_confidence": 0.53215,
+    "margin": 0.071267,
+    "entropy": 1.05645,
+    "top3": [
+      {
+        "label": "potato_late_blight",
+        "prob": 0.53215
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.460883
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.003479
       }
     ]
   },
   {
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana50.jpg",
     "true_label": "banana_cordana",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.352254,
-    "margin": 0.089195,
-    "entropy": 2.163246,
+    "pred_label": "banana_sigatoka",
+    "pred_confidence": 0.530858,
+    "margin": 0.222202,
+    "entropy": 1.569667,
     "top3": [
       {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.352254
-      },
-      {
         "label": "banana_sigatoka",
-        "prob": 0.263059
+        "prob": 0.530858
       },
       {
-        "label": "banana_healthy",
-        "prob": 0.189249
+        "label": "banana_pestalotiopsis",
+        "prob": 0.308656
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.120951
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_Earlyblt276.jpg",
+    "true_label": "potato_early_blight",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.512644,
+    "margin": 0.037537,
+    "entropy": 1.082085,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.512644
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.475107
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.012248
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_8bd5dce4-b65c-456f-95b1-a86ff17f4f94___RS_NLB 3894.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.506102,
+    "margin": 0.016333,
+    "entropy": 1.034789,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.506102
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.489769
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.004076
       }
     ]
   },
   {
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_angular_leaf_spot\\bean_train_angular_leaf_spot_train.19.jpg",
     "true_label": "beans_angular_leaf_spot",
-    "pred_label": "beans_rust",
-    "pred_confidence": 0.352161,
-    "margin": 0.045147,
-    "entropy": 1.906872,
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.504814,
+    "margin": 0.268553,
+    "entropy": 1.628548,
     "top3": [
       {
-        "label": "beans_rust",
-        "prob": 0.352161
+        "label": "other_leaf",
+        "prob": 0.504814
       },
       {
         "label": "beans_angular_leaf_spot",
-        "prob": 0.307014
+        "prob": 0.236261
       },
       {
         "label": "beans_healthy",
-        "prob": 0.214579
+        "prob": 0.229044
       }
     ]
   },
   {
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_angular_leaf_spot\\train_angular_leaf_spot_angular_leaf_spot_train.19.jpg",
     "true_label": "beans_angular_leaf_spot",
-    "pred_label": "beans_rust",
-    "pred_confidence": 0.352161,
-    "margin": 0.045147,
-    "entropy": 1.906872,
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.504814,
+    "margin": 0.268553,
+    "entropy": 1.628548,
     "top3": [
       {
-        "label": "beans_rust",
-        "prob": 0.352161
+        "label": "other_leaf",
+        "prob": 0.504814
       },
       {
         "label": "beans_angular_leaf_spot",
-        "prob": 0.307014
+        "prob": 0.236261
       },
       {
         "label": "beans_healthy",
-        "prob": 0.214579
+        "prob": 0.229044
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_30920583-57a6-4cc2-81d6-84879ec3af46___RS_LB 4930.jpg",
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt723.jpg",
     "true_label": "potato_late_blight",
-    "pred_label": "potato_early_blight",
-    "pred_confidence": 0.348024,
-    "margin": 0.07444,
-    "entropy": 1.943422,
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.503833,
+    "margin": 0.009289,
+    "entropy": 1.015698,
     "top3": [
       {
-        "label": "potato_early_blight",
-        "prob": 0.348024
-      },
-      {
         "label": "other_leaf",
-        "prob": 0.273583
+        "prob": 0.503833
       },
       {
         "label": "potato_late_blight",
-        "prob": 0.222157
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka14.jpg",
-    "true_label": "banana_sigatoka",
-    "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.336411,
-    "margin": 0.074917,
-    "entropy": 2.276683,
-    "top3": [
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.336411
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.261494
-      },
-      {
-        "label": "banana_healthy",
-        "prob": 0.161318
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_pestalotiopsis7.jpg",
-    "true_label": "banana_pestalotiopsis",
-    "pred_label": "banana_cordana",
-    "pred_confidence": 0.332083,
-    "margin": 0.021079,
-    "entropy": 2.110732,
-    "top3": [
-      {
-        "label": "banana_cordana",
-        "prob": 0.332083
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.311003
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.225416
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_pestalotiopsis117.jpg",
-    "true_label": "banana_pestalotiopsis",
-    "pred_label": "banana_cordana",
-    "pred_confidence": 0.31697,
-    "margin": 0.081314,
-    "entropy": 2.811652,
-    "top3": [
-      {
-        "label": "banana_cordana",
-        "prob": 0.31697
-      },
-      {
-        "label": "banana_pestalotiopsis",
-        "prob": 0.235657
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.130984
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka88.jpg",
-    "true_label": "banana_sigatoka",
-    "pred_label": "banana_cordana",
-    "pred_confidence": 0.313291,
-    "margin": 0.047677,
-    "entropy": 2.148957,
-    "top3": [
-      {
-        "label": "banana_cordana",
-        "prob": 0.313291
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.265614
-      },
-      {
-        "label": "banana_sigatoka",
-        "prob": 0.21155
-      }
-    ]
-  },
-  {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_early_blight\\potato_early_bright_7.jpg",
-    "true_label": "potato_early_blight",
-    "pred_label": "beans_angular_leaf_spot",
-    "pred_confidence": 0.306181,
-    "margin": 0.014773,
-    "entropy": 2.240734,
-    "top3": [
-      {
-        "label": "beans_angular_leaf_spot",
-        "prob": 0.306181
-      },
-      {
-        "label": "other_leaf",
-        "prob": 0.291408
+        "prob": 0.494544
       },
       {
         "label": "potato_early_blight",
-        "prob": 0.227683
+        "prob": 0.001623
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\bean_val_bean_rust_val.36.jpg",
+    "true_label": "beans_rust",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.502994,
+    "margin": 0.057247,
+    "entropy": 1.273195,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.502994
+      },
+      {
+        "label": "beans_rust",
+        "prob": 0.445746
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.0443
       }
     ]
   },
@@ -2731,87 +1521,659 @@
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana8.jpg",
     "true_label": "banana_cordana",
     "pred_label": "banana_pestalotiopsis",
-    "pred_confidence": 0.290189,
-    "margin": 0.000472,
-    "entropy": 2.342119,
+    "pred_confidence": 0.50215,
+    "margin": 0.210185,
+    "entropy": 1.776697,
     "top3": [
       {
         "label": "banana_pestalotiopsis",
-        "prob": 0.290189
+        "prob": 0.50215
       },
       {
         "label": "banana_cordana",
-        "prob": 0.289717
+        "prob": 0.291965
       },
       {
         "label": "banana_sigatoka",
-        "prob": 0.207395
+        "prob": 0.118772
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_common_rust\\maize_common_rust_3.jpg",
-    "true_label": "maize_common_rust",
-    "pred_label": "beans_rust",
-    "pred_confidence": 0.288738,
-    "margin": 0.09049,
-    "entropy": 2.978647,
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_Lateblt966.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "potato_early_blight",
+    "pred_confidence": 0.501651,
+    "margin": 0.229195,
+    "entropy": 1.585341,
     "top3": [
       {
-        "label": "beans_rust",
-        "prob": 0.288738
+        "label": "potato_early_blight",
+        "prob": 0.501651
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.272456
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.208296
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_9ce41fa1-3d14-4b66-9a13-da488a8727d7___RS_NLB 3997.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.499675,
+    "margin": 0.013639,
+    "entropy": 1.104016,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.499675
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.486036
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.012023
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana10.jpg",
+    "true_label": "banana_cordana",
+    "pred_label": "banana_sigatoka",
+    "pred_confidence": 0.48761,
+    "margin": 0.049604,
+    "entropy": 1.318624,
+    "top3": [
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.48761
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.438006
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.072473
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_pestalotiopsis31.jpg",
+    "true_label": "banana_pestalotiopsis",
+    "pred_label": "banana_cordana",
+    "pred_confidence": 0.486455,
+    "margin": 0.158906,
+    "entropy": 1.668731,
+    "top3": [
+      {
+        "label": "banana_cordana",
+        "prob": 0.486455
       },
       {
         "label": "banana_pestalotiopsis",
-        "prob": 0.198247
+        "prob": 0.327548
       },
       {
-        "label": "banana_sigatoka",
-        "prob": 0.188525
+        "label": "other_leaf",
+        "prob": 0.104583
       }
     ]
   },
   {
-    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\maize_nothern_leaf__bright_21.jpg",
-    "true_label": "maize_northern_leaf_blight",
-    "pred_label": "banana_sigatoka",
-    "pred_confidence": 0.287074,
-    "margin": 0.046602,
-    "entropy": 2.573731,
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_110243.jpg",
+    "true_label": "beans_healthy",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.47407,
+    "margin": 0.128585,
+    "entropy": 1.490427,
     "top3": [
       {
-        "label": "banana_sigatoka",
-        "prob": 0.287074
+        "label": "potato_healthy",
+        "prob": 0.47407
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.345485
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.180018
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_5.jpg",
+    "true_label": "banana_healthy",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.470851,
+    "margin": 0.312382,
+    "entropy": 2.287992,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.470851
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.158469
+      },
+      {
+        "label": "banana_healthy",
+        "prob": 0.154383
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\maize_nothern_leaf__bright_3.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.456677,
+    "margin": 0.176261,
+    "entropy": 1.583213,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.456677
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.280416
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.256469
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_gray_leaf_spot\\maize_gray_leaf_spot_23.jpg",
+    "true_label": "maize_gray_leaf_spot",
+    "pred_label": "maize_healthy",
+    "pred_confidence": 0.454403,
+    "margin": 0.258507,
+    "entropy": 1.9907,
+    "top3": [
+      {
+        "label": "maize_healthy",
+        "prob": 0.454403
       },
       {
         "label": "maize_gray_leaf_spot",
-        "prob": 0.240472
+        "prob": 0.195896
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.19218
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana89.jpg",
+    "true_label": "banana_cordana",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.453727,
+    "margin": 0.158163,
+    "entropy": 1.661521,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.453727
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.295563
       },
       {
         "label": "banana_cordana",
-        "prob": 0.220125
+        "prob": 0.231934
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_82e0f1d2-e996-427b-9216-6b46aedbc07f___RS_LB 4880.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.453326,
+    "margin": 0.05726,
+    "entropy": 1.487797,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.453326
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.396066
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.146049
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_pestalotiopsis\\banana_pestalotiopsis_pestalotiopsis89.jpg",
+    "true_label": "banana_pestalotiopsis",
+    "pred_label": "banana_healthy",
+    "pred_confidence": 0.45051,
+    "margin": 0.032286,
+    "entropy": 1.626686,
+    "top3": [
+      {
+        "label": "banana_healthy",
+        "prob": 0.45051
+      },
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.418224
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.064969
       }
     ]
   },
   {
     "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\potato_late_bright_2.jpg",
     "true_label": "potato_late_blight",
-    "pred_label": "other_leaf",
-    "pred_confidence": 0.286599,
-    "margin": 0.098349,
-    "entropy": 2.568851,
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.447013,
+    "margin": 0.021671,
+    "entropy": 1.618505,
     "top3": [
       {
+        "label": "potato_healthy",
+        "prob": 0.447013
+      },
+      {
         "label": "other_leaf",
-        "prob": 0.286599
+        "prob": 0.425342
+      },
+      {
+        "label": "potato_early_blight",
+        "prob": 0.075639
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_rust\\test_bean_rust_bean_rust_test.15.jpg",
+    "true_label": "beans_rust",
+    "pred_label": "beans_angular_leaf_spot",
+    "pred_confidence": 0.435729,
+    "margin": 0.058807,
+    "entropy": 1.650783,
+    "top3": [
+      {
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.435729
+      },
+      {
+        "label": "beans_rust",
+        "prob": 0.376921
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.162745
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana5.jpg",
+    "true_label": "banana_cordana",
+    "pred_label": "banana_sigatoka",
+    "pred_confidence": 0.435679,
+    "margin": 0.073106,
+    "entropy": 1.70309,
+    "top3": [
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.435679
+      },
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.362573
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.138917
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_2482a11a-46b1-4e06-9b5c-4af0089b3259___RS_LB 4087.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.435187,
+    "margin": 0.09979,
+    "entropy": 1.541922,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.435187
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.335397
       },
       {
         "label": "potato_late_blight",
-        "prob": 0.18825
+        "prob": 0.22908
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_cordana71.jpg",
+    "true_label": "banana_cordana",
+    "pred_label": "banana_sigatoka",
+    "pred_confidence": 0.433783,
+    "margin": 0.010187,
+    "entropy": 1.522956,
+    "top3": [
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.433783
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.423595
+      },
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.126075
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\maize_northern_leaf_blight\\pv_be9a5e2b-5416-40de-bbb7-c5cbd2c488d2___RS_NLB 4066.jpg",
+    "true_label": "maize_northern_leaf_blight",
+    "pred_label": "maize_gray_leaf_spot",
+    "pred_confidence": 0.421402,
+    "margin": 0.034058,
+    "entropy": 1.651589,
+    "top3": [
+      {
+        "label": "maize_gray_leaf_spot",
+        "prob": 0.421402
+      },
+      {
+        "label": "maize_northern_leaf_blight",
+        "prob": 0.387344
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.168537
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka19.jpg",
+    "true_label": "banana_sigatoka",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.417726,
+    "margin": 0.044922,
+    "entropy": 1.77639,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.417726
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.372805
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.112669
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_105150.jpg",
+    "true_label": "beans_healthy",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.416181,
+    "margin": 0.112544,
+    "entropy": 1.596485,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.416181
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.303638
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.276344
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\potato_late_blight\\pv_d9817cc3-ef03-41e5-8892-1fddd27b7bcc___RS_LB 4878.jpg",
+    "true_label": "potato_late_blight",
+    "pred_label": "potato_healthy",
+    "pred_confidence": 0.403307,
+    "margin": 0.039113,
+    "entropy": 1.563934,
+    "top3": [
+      {
+        "label": "potato_healthy",
+        "prob": 0.403307
+      },
+      {
+        "label": "potato_late_blight",
+        "prob": 0.364194
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.230687
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka56.jpg",
+    "true_label": "banana_sigatoka",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.385459,
+    "margin": 0.013547,
+    "entropy": 1.841831,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.385459
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.371912
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.16646
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_105435.jpg",
+    "true_label": "beans_healthy",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.377933,
+    "margin": 0.009938,
+    "entropy": 1.569292,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.377933
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.367996
       },
       {
         "label": "potato_healthy",
-        "prob": 0.166931
+        "prob": 0.253543
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka57.jpg",
+    "true_label": "banana_sigatoka",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.367767,
+    "margin": 0.005885,
+    "entropy": 1.814786,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.367767
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.361882
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.192763
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_sigatoka\\banana_sigatoka_leaf_image_sigatoka95.jpg",
+    "true_label": "banana_sigatoka",
+    "pred_label": "banana_cordana",
+    "pred_confidence": 0.366954,
+    "margin": 0.120034,
+    "entropy": 1.945499,
+    "top3": [
+      {
+        "label": "banana_cordana",
+        "prob": 0.366954
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.24692
+      },
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.195412
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_healthy\\beans_health_20260308_105446.jpg",
+    "true_label": "beans_healthy",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.34419,
+    "margin": 0.010407,
+    "entropy": 1.58984,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.34419
+      },
+      {
+        "label": "potato_healthy",
+        "prob": 0.333784
+      },
+      {
+        "label": "beans_healthy",
+        "prob": 0.321544
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\beans_angular_leaf_spot\\beans_angular_leaf_spot_13.jpg",
+    "true_label": "beans_angular_leaf_spot",
+    "pred_label": "other_leaf",
+    "pred_confidence": 0.341423,
+    "margin": 0.095742,
+    "entropy": 2.301073,
+    "top3": [
+      {
+        "label": "other_leaf",
+        "prob": 0.341423
+      },
+      {
+        "label": "beans_angular_leaf_spot",
+        "prob": 0.245681
+      },
+      {
+        "label": "beans_rust",
+        "prob": 0.192155
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_healthy\\banana_health_leaf_6.jpg",
+    "true_label": "banana_healthy",
+    "pred_label": "banana_cordana",
+    "pred_confidence": 0.276168,
+    "margin": 0.008735,
+    "entropy": 2.235268,
+    "top3": [
+      {
+        "label": "banana_cordana",
+        "prob": 0.276168
+      },
+      {
+        "label": "banana_healthy",
+        "prob": 0.267433
+      },
+      {
+        "label": "other_leaf",
+        "prob": 0.249081
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\bana_orig_130.jpg",
+    "true_label": "banana_cordana",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.251574,
+    "margin": 0.014883,
+    "entropy": 2.453328,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.251574
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.236691
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.209819
+      }
+    ]
+  },
+  {
+    "file": "D:\\ALL MY DOCUMENTS\\YEAR 4\\FINAL YEAR PROJECT\\clean-repo\\datasets\\model_ready\\test\\banana_cordana\\banana_cardana_leaf_spot_130.jpg",
+    "true_label": "banana_cordana",
+    "pred_label": "banana_pestalotiopsis",
+    "pred_confidence": 0.251574,
+    "margin": 0.014883,
+    "entropy": 2.453328,
+    "top3": [
+      {
+        "label": "banana_pestalotiopsis",
+        "prob": 0.251574
+      },
+      {
+        "label": "banana_sigatoka",
+        "prob": 0.236691
+      },
+      {
+        "label": "banana_cordana",
+        "prob": 0.209819
       }
     ]
   }

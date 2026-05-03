@@ -134,9 +134,9 @@ class AppStrings {
     'imageNotReliable':
         'The image could not be analyzed reliably. Please take a new photo following the tips below.',
     'unsupportedIntro':
-        'This image does not appear to match any of the crops supported by this app. Currently we support:',
+        'The app doesn\'t work on this crop. We currently only support:',
     'unsupportedRetryHint':
-        'If this is one of these crops, try taking a clearer photo of a single leaf in good lighting.',
+        'If your plant is one of these supported crops, please retake another image. Ensure it is a clear photo of a single leaf in good lighting for the model to process.',
     'cropDetected': '{crop} Detected',
     'cropDetectionConfidence': 'Crop Detection Confidence',
     'yourCropUnhealthy': 'Your {crop} appears to be unhealthy',
@@ -335,9 +335,9 @@ class AppStrings {
     'imageNotReliable':
         'Iyi foto ntiyashoboye gusesengurwa neza. Fata indi foto ukurikije inama zikurikira.',
     'unsupportedIntro':
-        'Iyi foto isa n\'idahuye n\'ibihingwa porogaramu yacu ishyigikira. Ubu dushyigikiye:',
+        'Porogaramu ntikora kuri iki gihingwa. Ubu dushyigikiye gusa:',
     'unsupportedRetryHint':
-        'Niba ari kimwe muri ibi bihingwa, ongera ufate ifoto isobanutse y\'ikibabi kimwe ahari urumuri rwiza.',
+        'Niba igihingwa cyawe ari kimwe muri ibi bihingwa bishyigikiwe, ongera ufate indi foto. Fata ifoto isobanutse neza y\'ikibabi kimwe ahari urumuri rwiza kugira ngo isesengurwe neza.',
     'cropDetected': '{crop} cyamenyekanye',
     'cropDetectionConfidence': 'Icyizere mu kumenya igihingwa',
     'yourCropUnhealthy': '{crop} cyawe gisa n\'ikidafite ubuzima bwiza',

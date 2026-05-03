@@ -203,6 +203,7 @@ class _ResultScreenState extends State<ResultScreen> {
       case 'unknown_disease':
         return Colors.deepOrange;
       case 'unsupported':
+      case 'other_leaf':
         return Colors.blueGrey;
       case 'poor_quality':
         return Colors.red.shade700;
@@ -264,6 +265,7 @@ class _ResultScreenState extends State<ResultScreen> {
       case 'poor_quality':
         return '⚠️ ${AppStrings.tr(context, 'poorQualityHeader')}';
       case 'unsupported':
+      case 'other_leaf':
         return '❓ ${AppStrings.tr(context, 'unsupportedHeader')}';
       case 'uncertain':
         return '🤔 ${AppStrings.tr(context, 'uncertainHeader')}';
@@ -283,6 +285,7 @@ class _ResultScreenState extends State<ResultScreen> {
       case 'poor_quality':
         return _buildPoorQualityCard();
       case 'unsupported':
+      case 'other_leaf':
         return _buildUnsupportedCard();
       case 'uncertain':
         return _buildUncertainCard();

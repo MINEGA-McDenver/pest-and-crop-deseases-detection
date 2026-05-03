@@ -3,7 +3,7 @@
     "cropTotalThreshold": 0.84,
     "otherLeafThreshold": 0.4,
     "otherLeafVsCropRatioThreshold": 0.65,
-    "otherLeafAbsoluteFloor": 0.25,
+    "otherLeafAbsoluteFloor": 0.14,
     "uncertainGapThreshold": 0.3,
     "secondCropAmbiguityThreshold": 0.15,
     "maxEntropyThreshold": 1.5,
@@ -38,29 +38,26 @@
   "summary": {
     "total": 1952,
     "gate_counts": {
-      "G7g_confident": 1526,
-      "G7c_entropy": 24,
-      "RESCUE_beans_potato": 28,
-      "G7a_crop_total": 5,
-      "FORCED_beans_potato_fallback": 12,
-      "G7e_healthy_safety": 6,
-      "G7c_class_ratio": 32,
-      "G5b_other_leaf_floor": 4,
-      "G5_other_leaf_winner": 184,
-      "G5b_preserve_focus_crop": 2,
-      "G7d_class_confidence_focus_override": 22,
-      "G7e_healthy_safety_focus_override": 12,
-      "G5_preserve_focus_crop": 95
+      "G7g_confident": 1455,
+      "G5b_other_leaf_floor": 138,
+      "G5b_preserve_focus_crop": 10,
+      "G7c_class_ratio": 20,
+      "G7c_entropy": 12,
+      "G5_preserve_focus_crop": 103,
+      "G5_other_leaf_winner": 173,
+      "FORCED_beans_potato_fallback": 2,
+      "RESCUE_beans_potato": 24,
+      "G7e_healthy_safety_focus_override": 10,
+      "G7d_class_confidence_focus_override": 5
     },
     "result_type_counts": {
-      "disease": 1240,
-      "uncertain": 62,
-      "unsupported": 5,
-      "healthy": 457,
-      "other_leaf": 188
+      "disease": 1196,
+      "other_leaf": 311,
+      "uncertain": 32,
+      "healthy": 413
     },
-    "supported_confident_rate": 0.9363,
-    "supported_false_unsupported_rate": 0.0123,
-    "unsupported_reject_rate": 0.7167
+    "supported_confident_rate": 0.8849,
+    "supported_false_unsupported_rate": 0.0847,
+    "unsupported_reject_rate": 0.6917
   }
 }

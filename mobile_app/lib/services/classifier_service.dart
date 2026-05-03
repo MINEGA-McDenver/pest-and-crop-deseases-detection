@@ -1340,6 +1340,12 @@ class ClassifierService {
 
   bool _isBeansOrPotato(String crop) => crop == 'beans' || crop == 'potato';
 
+  // FIX G2: Include maize as a focus crop for identity preservation.
+  // Maize gets lighter protection than beans/potato — only preserve-identity,
+  // not the forced-fallback or last-chance rescue paths.
+  bool _isFocusCrop(String crop) =>
+      crop == 'beans' || crop == 'potato' || crop == 'maize';
+
   double _effectiveCropTotalThreshold(String crop) {
     if (_isBeansOrPotato(crop)) {
       return max(0.0, _cropTotalThreshold - _beansPotatoCropTotalRelaxation);
@@ -1397,9 +1403,19 @@ class ClassifierService {
     required double candidateCropTotal,
     required Map<String, double> allProbs,
   }) {
-    if (!_isBeansOrPotato(candidateCrop)) return false;
-    final topClassProb = _topClassProbForCrop(candidateCrop, allProbs);
-    return candidateCropTotal >= 0.001 || topClassProb >= 0.001;
+    // FIX G2: Extend to maize with a slightly higher evidence bar
+    // to avoid false-accepting non-maize plants.
+    if (_isBeansOrPotato(candidateCrop)) {
+      final topClassProb = _topClassProbForCrop(candidateCrop, allProbs);
+      return candidateCropTotal >= 0.001 || topClassProb >= 0.001;
+    }
+    if (candidateCrop == 'maize') {
+      final topClassProb = _topClassProbForCrop('maize', allProbs);
+      // Require stronger maize signal before preserving identity:
+      // at least 10% crop total or 8% top-class probability.
+      return candidateCropTotal >= 0.10 || topClassProb >= 0.08;
+    }
+    return false;
   }
 
   ScanResult _buildFocusCropUncertainResult({
@@ -1414,7 +1430,11 @@ class ClassifierService {
     final cropName = _formatCropName(crop);
     final bestClassLabel =
         _topClassLabelForCrop(crop, allProbs) ??
-        (crop == 'beans' ? 'beans_healthy' : 'potato_healthy');
+        (crop == 'beans'
+            ? 'beans_healthy'
+            : crop == 'maize'
+                ? 'maize_healthy'
+                : 'potato_healthy');
     final bestClassProb = allProbs[bestClassLabel] ?? 0.0;
     final isHealthy = bestClassLabel.contains('healthy');
     final diseaseExists = DiseaseInfo.all.containsKey(bestClassLabel);

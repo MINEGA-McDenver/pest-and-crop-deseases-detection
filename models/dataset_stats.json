@@ -9,7 +9,7 @@
     "beans_rust": 3108,
     "maize_common_rust": 2770,
     "maize_gray_leaf_spot": 2771,
-    "maize_healthy": 2834,
+    "maize_healthy": 2855,
     "maize_northern_leaf_blight": 2772,
     "other_leaf": 3399,
     "potato_early_blight": 3122,
@@ -52,7 +52,7 @@
     "potato_late_blight": 303
   },
   "totals": {
-    "train": 43162,
+    "train": 43183,
     "val": 1958,
     "test": 1952
   },

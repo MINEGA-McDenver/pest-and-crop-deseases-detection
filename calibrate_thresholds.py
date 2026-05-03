@@ -79,6 +79,14 @@ RUNTIME_THRESHOLDS_PATH = os.path.join(
     "thresholds.json",
 )
 
+MOBILE_RUNTIME_RECO_PATH = os.path.join(
+    BASE,
+    "mobile_app",
+    "assets",
+    "config",
+    "mobile_runtime_recommendations.json",
+)
+
 
 def _load_runtime_thresholds():
     try:
@@ -160,22 +168,40 @@ def _load_runtime_thresholds():
     return cfg
 
 
-def _load_temperature_from_artifacts(default_temperature: float) -> float:
-    """Prefer learned temperature from latest evaluation artifacts."""
-    if not os.path.isfile(TEST_EVAL_PATH):
-        return float(default_temperature)
+def _load_temperature_from_mobile_runtime(default_temperature: float):
+    if not os.path.isfile(MOBILE_RUNTIME_RECO_PATH):
+        return None
 
     try:
-        with open(TEST_EVAL_PATH, "r", encoding="utf-8") as f:
+        with open(MOBILE_RUNTIME_RECO_PATH, "r", encoding="utf-8") as f:
             payload = json.load(f)
-        temp_block = payload.get("temperature_scaling", {})
-        learned = temp_block.get("best_temperature")
+        learned = payload.get("temperatureScaling") if isinstance(payload, dict) else None
         if isinstance(learned, (int, float)) and learned > 0:
             return float(learned)
     except Exception:
-        return float(default_temperature)
+        return None
 
-    return float(default_temperature)
+    return None
+
+
+def _load_temperature_from_artifacts(default_temperature: float):
+    """Return (temperature, source_path) with preference for runtime config."""
+    runtime_temp = _load_temperature_from_mobile_runtime(default_temperature)
+    if runtime_temp is not None:
+        return float(runtime_temp), MOBILE_RUNTIME_RECO_PATH
+
+    if os.path.isfile(TEST_EVAL_PATH):
+        try:
+            with open(TEST_EVAL_PATH, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+            temp_block = payload.get("temperature_scaling", {})
+            learned = temp_block.get("best_temperature")
+            if isinstance(learned, (int, float)) and learned > 0:
+                return float(learned), TEST_EVAL_PATH
+        except Exception:
+            pass
+
+    return float(default_temperature), ""
 
 
 # ── Load model and labels ─────────────────────────────────────────────
@@ -228,15 +254,15 @@ if val_class_names != class_names:
 
 runtime_thresholds = _load_runtime_thresholds()
 print(f"Loaded runtime thresholds from {RUNTIME_THRESHOLDS_PATH}", flush=True)
-effective_temperature = _load_temperature_from_artifacts(TEMPERATURE)
-if os.path.isfile(TEST_EVAL_PATH):
+effective_temperature, temperature_source = _load_temperature_from_artifacts(TEMPERATURE)
+if temperature_source:
     print(
-        f"Loaded learned temperature from {TEST_EVAL_PATH}: T={effective_temperature}",
+        f"Loaded temperature from {temperature_source}: T={effective_temperature}",
         flush=True,
     )
 else:
     print(
-        f"Using fallback temperature (no test_evaluation.json found): T={effective_temperature}",
+        f"Using fallback temperature (no runtime recommendation or test_evaluation.json found): T={effective_temperature}",
         flush=True,
     )
 
