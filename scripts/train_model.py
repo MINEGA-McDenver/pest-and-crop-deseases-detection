@@ -3,23 +3,22 @@
 Train MobileNetV2 model for 4-crop disease detection (15 classes).
 Crops: Banana, Beans, Maize, Potato  +  other_leaf (rejection class)
 
-Changes vs previous version (Fix E — crop-favoring tuning):
+Changes vs previous version (Fix D — retrain improvements):
   1. FocalLoss replaces sparse_categorical_crossentropy — forces the model
      to focus on hard lookalike cases instead of easy correct ones.
-  2. Reduced class weighting: other_leaf boost lowered ×3.0 → ×1.0 so the
-       model is less aggressive at rejecting ambiguous cases.
-  3. Class-aware augmentation: other_leaf augmentation dialled back
-     (rotation 0.15→0.10, zoom 0.15→0.12, contrast 0.40→0.30, brightness
-     0.30→0.25) to reduce over-generalisation of rejection.
+  2. Moderate class weighting: other_leaf remains boosted for rejection,
+      and beans/potato receive a smaller focus boost to reduce under-confident
+      supported-crop outcomes.
+  3. Class-aware augmentation: other_leaf images get heavier augmentation
+     (stronger rotation, zoom, contrast, brightness) to improve generalisation
+     across unseen plant types that were never in training.
   4. MixUp-style interpolation is optional (enabled by default in this
       config, can be disabled for stability-first retrains).
-  5. Label smoothing for other_leaf increased ε=0.10 → ε=0.15. Makes
-     the model less confident about rejection, shifting borderline cases
-     toward crops.
-  6. Focus crop weighting extended from beans/potato only to ALL four
-     supported crops (banana, beans, maize, potato) at ×1.15.
-  7. Threshold defaults shifted crop-favouring: other_leaf threshold
-     0.30→0.40, ratio 0.50→0.65, floor 0.12→0.18, confidence 0.60→0.55.
+  5. NEW — Per-class label smoothing for other_leaf inside FocalLoss.
+     Instead of pushing other_leaf probability to a hard 1.0 target, we
+     use 0.9 (smoothing ε=0.1). This prevents the model from becoming
+     overconfident about the specific other_leaf training images, making
+     the learned boundary more robust to unseen plant types.
 
 Run: python -u -X utf8 scripts/train_model.py
 """
@@ -79,28 +78,9 @@ ENABLE_OL_MIXUP = True
 ENABLE_OL_LABEL_SMOOTHING = True
 ENABLE_FOCUS_CROP_WEIGHTING = True
 
-# FIX G1: Beans/Potato CutMix — forces the model to learn discriminative
-# features between beans and potato leaves. Without this, the model
-# confuses beans_healthy with potato_healthy on field-taken photos
-# because both leaves look visually similar at certain angles.
-ENABLE_BEANS_POTATO_CUTMIX = True
-BEANS_POTATO_CUTMIX_PROB = 0.3        # 30% of beans/potato samples get CutMix
-BEANS_POTATO_CUTMIX_MIN_AREA = 0.3    # Minimum area ratio for the cut region
-BEANS_POTATO_CUTMIX_MAX_AREA = 0.7    # Maximum area ratio for the cut region
-
-# FIX G2: Maize zoom-out augmentation — trains the model to recognize
-# maize even when the leaf doesn't fill the entire frame. Without this,
-# images with visible background/soil around the maize leaf are rejected
-# as other_leaf because training data was all tightly-cropped close-ups.
-ENABLE_MAIZE_ZOOM_OUT = True
-MAIZE_ZOOM_OUT_PROB = 0.4             # 40% of maize samples get zoom-out
-MAIZE_ZOOM_OUT_MIN_SCALE = 0.50       # Minimum scale (50% = half the frame)
-MAIZE_ZOOM_OUT_MAX_SCALE = 0.85       # Maximum scale (85% = slight border)
-MAIZE_ZOOM_OUT_PAD_VALUE = 0.0        # Pad with black (post-preprocessing value)
-
 # Keep other_leaf strong enough for rejection, but avoid over-penalising
 # supported crops into uncertain/unsupported outcomes.
-OTHER_LEAF_WEIGHT_MULTIPLIER = 1.0
+OTHER_LEAF_WEIGHT_MULTIPLIER = 3.0
 
 # Boost beans/potato class gradients to reduce under-confident supported
 # predictions on focus crops without changing architecture.
@@ -117,21 +97,12 @@ AUG_ZOOM       = 0.10
 AUG_CONTRAST   = 0.20
 AUG_BRIGHTNESS = 0.20
 
-# Lighter augmentation profile for other_leaf (dialled back from the
-# previous aggressive values to reduce over-generalisation — the model
-# was rejecting borderline crop cases too aggressively).
-OL_AUG_ROTATION   = 0.10
-OL_AUG_ZOOM       = 0.12
-OL_AUG_CONTRAST   = 0.30
-OL_AUG_BRIGHTNESS = 0.25
-
-# FIX G2: Slightly stronger augmentation for maize to improve robustness
-# to partial-frame images. The zoom range is wider than standard to teach
-# the model that maize can appear at various scales in the frame.
-MAIZE_AUG_ROTATION   = 0.08
-MAIZE_AUG_ZOOM       = 0.18
-MAIZE_AUG_CONTRAST   = 0.25
-MAIZE_AUG_BRIGHTNESS = 0.22
+# Heavier augmentation profile for other_leaf only (slightly reduced to
+# avoid unrealistic synthetic leaves).
+OL_AUG_ROTATION   = 0.15
+OL_AUG_ZOOM       = 0.15
+OL_AUG_CONTRAST   = 0.40
+OL_AUG_BRIGHTNESS = 0.30
 
 # FIX D4 — MixUp parameters for other_leaf
 # alpha controls the Beta distribution used to sample the mix ratio λ.
@@ -141,13 +112,14 @@ MAIZE_AUG_BRIGHTNESS = 0.22
 # Lower alpha (e.g. 0.2) → blends closer to the originals (weaker effect).
 OL_MIXUP_ALPHA = 0.4
 
-# FIX E5 — Label smoothing for other_leaf inside FocalLoss
+# FIX D5 — Label smoothing for other_leaf inside FocalLoss
 # Instead of a hard target of 1.0 for other_leaf, we use (1 - ε).
 # The remaining ε is spread uniformly across all classes.
-# Increased from ε=0.10 → ε=0.15 to make the model less confident about
-# rejection. This shifts borderline cases toward crops rather than
-# other_leaf, reducing false unsupported verdicts.
-OL_LABEL_SMOOTHING = 0.15
+# ε=0.1 is the standard value (Szegedy et al., "Rethinking the Inception
+# Architecture"). This prevents the model from becoming overconfident on
+# the specific other_leaf training images — the learned boundary generalises
+# better to unseen lookalike plants.
+OL_LABEL_SMOOTHING = 0.10
 
 # Data quality and analysis extras
 ENABLE_IMAGE_SANITY_CHECK = True
@@ -169,8 +141,8 @@ ENFORCE_LEAKAGE_GUARD = True
 MAX_ALLOWED_STEM_OVERLAP_TOTAL = 0
 MAX_ALLOWED_HASH_OVERLAP_TOTAL = 0
 
-CONFIDENCE_THRESHOLDS = [0.45, 0.50, 0.55, 0.60, 0.70, 0.80]
-DEFAULT_APP_CONFIDENCE_THRESHOLD = 0.55
+CONFIDENCE_THRESHOLDS = [0.50, 0.60, 0.70, 0.80]
+DEFAULT_APP_CONFIDENCE_THRESHOLD = 0.60
 DEFAULT_APP_MARGIN_THRESHOLD = 0.20
 DEFAULT_APP_MAX_ENTROPY = 1.50
 DEFAULT_APP_CROP_TOTAL_THRESHOLD = 0.82
@@ -178,20 +150,12 @@ DEFAULT_HEALTHY_MIN_CONFIDENCE = 0.80
 DEFAULT_POTATO_HEALTHY_MIN_CONFIDENCE_PILOT = 0.72
 CROP_TOTAL_THRESHOLDS = [0.70, 0.74, 0.78, 0.80, 0.82, 0.84, 0.86, 0.88, 0.90]
 
-# Temperature scaling sweep for post-hoc calibration.
-# Some checkpoints can be under-confident and prefer T < 1.0.
-TEMPERATURE_SWEEP_MIN = 0.20
-TEMPERATURE_SWEEP_MAX = 3.00
-TEMPERATURE_SWEEP_COARSE_STEP = 0.05
-TEMPERATURE_SWEEP_FINE_STEP = 0.01
-TEMPERATURE_SWEEP_FINE_RADIUS = 0.10
-
 THRESHOLDS_CONFIG_PATH = os.path.join(BASE, "mobile_app", "assets", "config", "thresholds.json")
 MOBILE_RUNTIME_RECO_PATH = os.path.join(BASE, "mobile_app", "assets", "config", "mobile_runtime_recommendations.json")
 
-DEFAULT_OTHER_LEAF_THRESHOLD = 0.40
-DEFAULT_OTHER_LEAF_VS_CROP_RATIO_THRESHOLD = 0.65
-DEFAULT_OTHER_LEAF_ABSOLUTE_FLOOR = 0.18
+DEFAULT_OTHER_LEAF_THRESHOLD = 0.30
+DEFAULT_OTHER_LEAF_VS_CROP_RATIO_THRESHOLD = 0.50
+DEFAULT_OTHER_LEAF_ABSOLUTE_FLOOR = 0.12
 DEFAULT_UNCERTAIN_GAP_THRESHOLD = 0.30
 DEFAULT_SECOND_CROP_AMBIGUITY_THRESHOLD = 0.15
 DEFAULT_NON_FOCUS_CROP_TOTAL_RELAXATION = 0.05
@@ -400,43 +364,18 @@ def nll_from_probs(probs, labels):
 
 
 def fit_temperature_from_probs(val_probs, val_labels):
-    # NOTE: We only have softmax probs at this stage, so we apply temperature in
-    # log-prob space (same trick used in the mobile runtime). Some checkpoints
-    # are slightly under-confident and can prefer T < 1.0.
-    t_min = float(TEMPERATURE_SWEEP_MIN)
-    t_max = float(TEMPERATURE_SWEEP_MAX)
-    coarse_step = float(TEMPERATURE_SWEEP_COARSE_STEP)
-    fine_step = float(TEMPERATURE_SWEEP_FINE_STEP)
-    fine_radius = float(TEMPERATURE_SWEEP_FINE_RADIUS)
-
-    if t_min <= 0 or t_max <= 0 or t_max <= t_min:
-        raise ValueError(f"Invalid temperature sweep range: min={t_min}, max={t_max}")
-
-    temps = np.arange(t_min, t_max + 1e-9, coarse_step)
+    temps = np.arange(0.8, 3.01, 0.1)
     best_t = 1.0
     best_nll = nll_from_probs(val_probs, val_labels)
 
     for t in temps:
-        scaled = temperature_scale_probs(val_probs, float(t))
+        scaled = temperature_scale_probs(val_probs, t)
         nll = nll_from_probs(scaled, val_labels)
         if nll < best_nll:
             best_nll = nll
-            best_t = float(t)
+            best_t = float(round(t, 2))
 
-    # Refine locally around the best coarse temperature.
-    refine_min = max(t_min, best_t - fine_radius)
-    refine_max = min(t_max, best_t + fine_radius)
-    fine_temps = np.arange(refine_min, refine_max + 1e-9, fine_step)
-    for t in fine_temps:
-        scaled = temperature_scale_probs(val_probs, float(t))
-        nll = nll_from_probs(scaled, val_labels)
-        if nll < best_nll:
-            best_nll = nll
-            best_t = float(t)
-
-    # Keep a stable decimal representation for logs/JSON.
-    best_t = float(round(best_t, 4))
-    return best_t, float(best_nll)
+    return best_t, best_nll
 
 
 def label_to_crop(label_name):
@@ -1394,16 +1333,6 @@ if "other_leaf" not in class_names:
 OTHER_LEAF_IDX = class_names.index("other_leaf")
 print(f"other_leaf class index: {OTHER_LEAF_IDX}", flush=True)
 
-# FIX G1/G2: Collect class indices for beans, potato, and maize crops.
-# These are needed by the CutMix and zoom-out augmentation functions.
-BEANS_CLASS_INDICES = [i for i, n in enumerate(class_names) if n.startswith("beans_")]
-POTATO_CLASS_INDICES = [i for i, n in enumerate(class_names) if n.startswith("potato_")]
-MAIZE_CLASS_INDICES = [i for i, n in enumerate(class_names) if n.startswith("maize_")]
-BEANS_POTATO_INDICES = BEANS_CLASS_INDICES + POTATO_CLASS_INDICES
-print(f"Beans class indices:  {BEANS_CLASS_INDICES} ({[class_names[i] for i in BEANS_CLASS_INDICES]})", flush=True)
-print(f"Potato class indices: {POTATO_CLASS_INDICES} ({[class_names[i] for i in POTATO_CLASS_INDICES]})", flush=True)
-print(f"Maize class indices:  {MAIZE_CLASS_INDICES} ({[class_names[i] for i in MAIZE_CLASS_INDICES]})", flush=True)
-
 
 def collect_split_stems(split_dir, cls_name):
     cls_dir = os.path.join(split_dir, cls_name)
@@ -1442,7 +1371,7 @@ with open(os.path.join(MODEL_DIR, "class_index.json"), 'w') as f:
     json.dump(class_index, f, indent=2)
 
 
-# ── FIX E2: Class weights — other_leaf boosted ×2, all crops ×1.15 ──
+# ── FIX D2: Class weights — other_leaf boosted ×3 ──────────────────
 print("Computing class weights ...", flush=True)
 class_counts = {}
 for cname in class_names:
@@ -1583,7 +1512,6 @@ for i, cname in enumerate(class_names):
         boost_label = f"  ← BOOSTED ×{OTHER_LEAF_WEIGHT_MULTIPLIER}"
     elif ENABLE_FOCUS_CROP_WEIGHTING and (
         cname.startswith("beans_") or cname.startswith("potato_")
-        or cname.startswith("maize_") or cname.startswith("banana_")
     ):
         w *= FOCUS_CROP_WEIGHT_MULTIPLIER
         boost_label = f"  ← FOCUS BOOST ×{FOCUS_CROP_WEIGHT_MULTIPLIER}"
@@ -1617,226 +1545,23 @@ other_leaf_augmentation = tf.keras.Sequential([
     tf.keras.layers.RandomBrightness(OL_AUG_BRIGHTNESS, value_range=(-1, 1)),
 ], name="other_leaf_augmentation")
 
-# FIX G2: Maize-specific augmentation with wider zoom range.
-maize_augmentation = tf.keras.Sequential([
-    tf.keras.layers.RandomFlip("horizontal"),
-    tf.keras.layers.RandomRotation(MAIZE_AUG_ROTATION),
-    tf.keras.layers.RandomZoom(MAIZE_AUG_ZOOM),
-    tf.keras.layers.RandomContrast(MAIZE_AUG_CONTRAST, value_range=(-1, 1)),
-    tf.keras.layers.RandomBrightness(MAIZE_AUG_BRIGHTNESS, value_range=(-1, 1)),
-], name="maize_augmentation")
-
-# Convert lists to TF constant tensors for tf.data graph compatibility.
-_MAIZE_INDICES_TENSOR = tf.constant(MAIZE_CLASS_INDICES, dtype=tf.int32)
-_BEANS_INDICES_TENSOR = tf.constant(BEANS_CLASS_INDICES, dtype=tf.int32)
-_POTATO_INDICES_TENSOR = tf.constant(POTATO_CLASS_INDICES, dtype=tf.int32)
-_BEANS_POTATO_INDICES_TENSOR = tf.constant(BEANS_POTATO_INDICES, dtype=tf.int32)
-
-
-def _is_in_set(labels, index_tensor):
-    """Check if each label is in the given set of class indices."""
-    # labels shape: (batch,)  index_tensor shape: (N,)
-    expanded = tf.expand_dims(labels, axis=1)  # (batch, 1)
-    matches = tf.equal(expanded, tf.expand_dims(index_tensor, axis=0))  # (batch, N)
-    return tf.reduce_any(matches, axis=1)  # (batch,)
-
 
 def augment_class_aware(images, labels):
     """
-    Apply class-specific augmentation within the same batch:
-    - other_leaf: heavier augmentation (flips, rotation, zoom, contrast)
-    - maize: slightly stronger augmentation with wider zoom (FIX G2)
-    - all other crops: standard augmentation
-    Uses tf.where to select per-sample without a Python loop.
+    Apply standard augmentation to crop images and heavier augmentation
+    to other_leaf images within the same batch.
+    Uses tf.where to select per-sample without a Python loop so it runs
+    inside a tf.data pipeline without breaking graph execution.
     """
     std_aug   = standard_augmentation(images,   training=True)
     other_aug = other_leaf_augmentation(images, training=True)
-    maize_aug = maize_augmentation(images,      training=True)
 
     is_other = tf.equal(labels, OTHER_LEAF_IDX)
-    is_maize = _is_in_set(labels, _MAIZE_INDICES_TENSOR)
+    mask = tf.reshape(is_other, [-1, 1, 1, 1])
+    mask = tf.broadcast_to(mask, tf.shape(images))
 
-    # Start with standard, overlay maize, then overlay other_leaf
-    other_mask = tf.reshape(is_other, [-1, 1, 1, 1])
-    other_mask = tf.broadcast_to(other_mask, tf.shape(images))
-    maize_mask = tf.reshape(is_maize, [-1, 1, 1, 1])
-    maize_mask = tf.broadcast_to(maize_mask, tf.shape(images))
-
-    augmented = tf.where(maize_mask, maize_aug, std_aug)
-    augmented = tf.where(other_mask, other_aug, augmented)
+    augmented = tf.where(mask, other_aug, std_aug)
     return augmented, labels
-
-
-# ── FIX G2: Maize zoom-out augmentation ──────────────────────────────
-# Randomly scales down maize images and pads them so the leaf doesn't
-# fill the frame. This teaches the model that maize can appear at various
-# distances/framings, preventing rejection as other_leaf when the leaf
-# doesn't dominate the 224×224 input.
-def zoom_out_maize(images, labels):
-    """
-    For maize samples in the batch, randomly zoom out (scale down + pad)
-    with probability MAIZE_ZOOM_OUT_PROB. Other crops are unchanged.
-    """
-    if not ENABLE_MAIZE_ZOOM_OUT:
-        return images, labels
-
-    is_maize = _is_in_set(labels, _MAIZE_INDICES_TENSOR)
-
-    def _zoom_out():
-        batch_size = tf.shape(images)[0]
-        img_h = tf.shape(images)[1]
-        img_w = tf.shape(images)[2]
-
-        # Decide which samples get zoom-out (per-sample random)
-        do_zoom = tf.random.uniform([batch_size]) < MAIZE_ZOOM_OUT_PROB
-        apply_mask = tf.logical_and(is_maize, do_zoom)
-
-        # Random scale per sample
-        scales = tf.random.uniform(
-            [batch_size],
-            minval=MAIZE_ZOOM_OUT_MIN_SCALE,
-            maxval=MAIZE_ZOOM_OUT_MAX_SCALE,
-        )
-
-        # Process each image individually (required for per-sample resize)
-        def _process_single(args):
-            img, scale, should_apply = args
-            def _apply_zoom():
-                new_h = tf.cast(tf.cast(img_h, tf.float32) * scale, tf.int32)
-                new_w = tf.cast(tf.cast(img_w, tf.float32) * scale, tf.int32)
-                # Resize down
-                resized = tf.image.resize(
-                    tf.expand_dims(img, 0), [new_h, new_w],
-                    method=tf.image.ResizeMethod.BILINEAR,
-                )[0]
-                # Random offset for padding (so leaf isn't always centered)
-                max_pad_h = img_h - new_h
-                max_pad_w = img_w - new_w
-                offset_h = tf.random.uniform([], 0, max_pad_h + 1, dtype=tf.int32)
-                offset_w = tf.random.uniform([], 0, max_pad_w + 1, dtype=tf.int32)
-                # Pad back to original size
-                padded = tf.pad(
-                    resized,
-                    [
-                        [offset_h, max_pad_h - offset_h],
-                        [offset_w, max_pad_w - offset_w],
-                        [0, 0],
-                    ],
-                    constant_values=MAIZE_ZOOM_OUT_PAD_VALUE,
-                )
-                padded = tf.ensure_shape(padded, [None, None, 3])
-                return padded
-            return tf.cond(should_apply, _apply_zoom, lambda: img)
-
-        result = tf.map_fn(
-            _process_single,
-            (images, scales, apply_mask),
-            fn_output_signature=tf.float32,
-        )
-        # Restore dynamic shape info
-        result.set_shape(images.shape)
-        return result
-
-    zoomed = tf.cond(
-        tf.reduce_any(is_maize),
-        true_fn=_zoom_out,
-        false_fn=lambda: images,
-    )
-    return zoomed, labels
-
-
-# ── FIX G1: CutMix between beans and potato ──────────────────────────
-# For beans/potato samples in the batch, randomly replace a rectangular
-# region of the image with pixels from the OTHER crop (beans↔potato).
-# The label stays the same (the dominant crop). This forces the model to
-# learn fine-grained differences between beans and potato leaf textures
-# instead of relying on coarse features that happen to overlap.
-#
-# Unlike full-image MixUp, CutMix preserves local structure in both the
-# source and target regions, which is more effective for teaching spatial
-# feature discrimination.
-def cutmix_beans_potato(images, labels):
-    """
-    For beans/potato samples, randomly paste a rectangle from a potato/beans
-    partner image. Labels are NOT changed — the original class is kept.
-    """
-    if not ENABLE_BEANS_POTATO_CUTMIX:
-        return images, labels
-
-    is_beans = _is_in_set(labels, _BEANS_INDICES_TENSOR)
-    is_potato = _is_in_set(labels, _POTATO_INDICES_TENSOR)
-    is_beans_or_potato = tf.logical_or(is_beans, is_potato)
-
-    def _cutmix():
-        batch_size = tf.shape(images)[0]
-        img_h = tf.cast(tf.shape(images)[1], tf.float32)
-        img_w = tf.cast(tf.shape(images)[2], tf.float32)
-
-        # Decide which samples get CutMix (per-sample random)
-        do_cut = tf.random.uniform([batch_size]) < BEANS_POTATO_CUTMIX_PROB
-        apply_mask = tf.logical_and(is_beans_or_potato, do_cut)
-
-        # Find partner images: for beans samples use potato partners and vice versa.
-        # Shuffle the batch to get random partners, then swap beans↔potato.
-        shuffled_indices = tf.random.shuffle(tf.range(batch_size))
-        partner_images = tf.gather(images, shuffled_indices)
-
-        # Random cut region per sample
-        area_ratios = tf.random.uniform(
-            [batch_size],
-            minval=BEANS_POTATO_CUTMIX_MIN_AREA,
-            maxval=BEANS_POTATO_CUTMIX_MAX_AREA,
-        )
-        # Cut dimensions: sqrt(area) for roughly square cuts
-        cut_h = tf.cast(img_h * tf.sqrt(area_ratios), tf.int32)
-        cut_w = tf.cast(img_w * tf.sqrt(area_ratios), tf.int32)
-
-        # Random position for the cut
-        max_y = tf.cast(img_h, tf.int32) - cut_h
-        max_x = tf.cast(img_w, tf.int32) - cut_w
-        offset_y = tf.cast(
-            tf.random.uniform([batch_size]) * tf.cast(tf.maximum(max_y, 1), tf.float32),
-            tf.int32,
-        )
-        offset_x = tf.cast(
-            tf.random.uniform([batch_size]) * tf.cast(tf.maximum(max_x, 1), tf.float32),
-            tf.int32,
-        )
-
-        # Build per-pixel mask for the cut region
-        def _build_mask(args):
-            oy, ox, ch, cw, should_apply = args
-            def _make():
-                # Create a mask of shape (H, W, 1) where the cut region is 1
-                rows = tf.range(tf.cast(img_h, tf.int32))
-                cols = tf.range(tf.cast(img_w, tf.int32))
-                row_mask = tf.logical_and(rows >= oy, rows < oy + ch)
-                col_mask = tf.logical_and(cols >= ox, cols < ox + cw)
-                mask_2d = tf.logical_and(
-                    tf.expand_dims(row_mask, 1),
-                    tf.expand_dims(col_mask, 0),
-                )
-                return tf.expand_dims(tf.cast(mask_2d, tf.float32), -1)
-            def _zeros():
-                return tf.zeros([tf.cast(img_h, tf.int32), tf.cast(img_w, tf.int32), 1])
-            return tf.cond(should_apply, _make, _zeros)
-
-        cut_masks = tf.map_fn(
-            _build_mask,
-            (offset_y, offset_x, cut_h, cut_w, apply_mask),
-            fn_output_signature=tf.float32,
-        )
-        # cut_masks shape: (batch, H, W, 1) — broadcast over channels
-        result = images * (1.0 - cut_masks) + partner_images * cut_masks
-        result.set_shape(images.shape)
-        return result
-
-    mixed = tf.cond(
-        tf.reduce_any(is_beans_or_potato),
-        true_fn=_cutmix,
-        false_fn=lambda: images,
-    )
-    return mixed, labels
 
 
 # ── FIX D4: MixUp for other_leaf images only ─────────────────────────
@@ -1900,19 +1625,12 @@ def mixup_other_leaf(images, labels):
 
 
 # ── Build tf.data pipeline ────────────────────────────────────────────
-# Order: preprocess → class-aware augment → maize zoom-out → beans/potato CutMix → MixUp (other_leaf)
+# Order: preprocess → class-aware augment → MixUp (other_leaf only)
 # Val and test sets: preprocessing only (no augmentation — consistent eval)
 train_ds = train_ds.map(preprocess, num_parallel_calls=MAP_PARALLEL_CALLS)
 train_ds = train_ds.map(augment_class_aware, num_parallel_calls=MAP_PARALLEL_CALLS)
-if ENABLE_MAIZE_ZOOM_OUT:
-    train_ds = train_ds.map(zoom_out_maize, num_parallel_calls=MAP_PARALLEL_CALLS)
-    print("  [pipeline] Maize zoom-out augmentation: ENABLED", flush=True)
-if ENABLE_BEANS_POTATO_CUTMIX:
-    train_ds = train_ds.map(cutmix_beans_potato, num_parallel_calls=MAP_PARALLEL_CALLS)
-    print("  [pipeline] Beans/Potato CutMix augmentation: ENABLED", flush=True)
 if ENABLE_OL_MIXUP:
     train_ds = train_ds.map(mixup_other_leaf, num_parallel_calls=MAP_PARALLEL_CALLS)
-    print("  [pipeline] Other-leaf MixUp augmentation: ENABLED", flush=True)
 train_ds = train_ds.prefetch(PREFETCH_SIZE)
 val_ds  = val_ds.map(preprocess,  num_parallel_calls=MAP_PARALLEL_CALLS).prefetch(PREFETCH_SIZE)
 test_ds = test_ds.map(preprocess, num_parallel_calls=MAP_PARALLEL_CALLS).prefetch(PREFETCH_SIZE)
@@ -2076,16 +1794,6 @@ print(
 )
 if ENABLE_OL_MIXUP:
     print(f"  MixUp alpha:           {OL_MIXUP_ALPHA}", flush=True)
-print(
-    f"  Beans/Potato CutMix:   {'enabled' if ENABLE_BEANS_POTATO_CUTMIX else 'disabled'}"
-    f" (prob={BEANS_POTATO_CUTMIX_PROB}, area={BEANS_POTATO_CUTMIX_MIN_AREA}-{BEANS_POTATO_CUTMIX_MAX_AREA})",
-    flush=True,
-)
-print(
-    f"  Maize zoom-out:        {'enabled' if ENABLE_MAIZE_ZOOM_OUT else 'disabled'}"
-    f" (prob={MAIZE_ZOOM_OUT_PROB}, scale={MAIZE_ZOOM_OUT_MIN_SCALE}-{MAIZE_ZOOM_OUT_MAX_SCALE})",
-    flush=True,
-)
 print(f"  Class weight cap:      {MAX_CLASS_WEIGHT}", flush=True)
 print(f"{'='*60}", flush=True)
 
@@ -2245,17 +1953,6 @@ config = {
             "contrast":   AUG_CONTRAST,
             "brightness": AUG_BRIGHTNESS,
         },
-        "maize": {
-            "flip":       "horizontal",
-            "rotation":   MAIZE_AUG_ROTATION,
-            "zoom":       MAIZE_AUG_ZOOM,
-            "contrast":   MAIZE_AUG_CONTRAST,
-            "brightness": MAIZE_AUG_BRIGHTNESS,
-            "zoom_out_enabled": ENABLE_MAIZE_ZOOM_OUT,
-            "zoom_out_prob": MAIZE_ZOOM_OUT_PROB,
-            "zoom_out_min_scale": MAIZE_ZOOM_OUT_MIN_SCALE,
-            "zoom_out_max_scale": MAIZE_ZOOM_OUT_MAX_SCALE,
-        },
         "other_leaf": {
             "flip":       "horizontal_and_vertical",
             "rotation":   OL_AUG_ROTATION,
@@ -2264,12 +1961,6 @@ config = {
             "brightness": OL_AUG_BRIGHTNESS,
             "mixup_alpha": OL_MIXUP_ALPHA,
             "label_smoothing": OL_LABEL_SMOOTHING,
-        },
-        "beans_potato_cutmix": {
-            "enabled": ENABLE_BEANS_POTATO_CUTMIX,
-            "prob": BEANS_POTATO_CUTMIX_PROB,
-            "min_area": BEANS_POTATO_CUTMIX_MIN_AREA,
-            "max_area": BEANS_POTATO_CUTMIX_MAX_AREA,
         },
     },
 }
@@ -2351,15 +2042,9 @@ best_temperature, calibrated_val_nll = fit_temperature_from_probs(
     all_val_labels,
 )
 raw_val_nll = nll_from_probs(all_val_probs, all_val_labels)
-if abs(best_temperature - TEMPERATURE_SWEEP_MIN) < 1e-6:
+if best_temperature == 0.8:
     print(
-        f"WARNING: best temperature is at lower search boundary ({TEMPERATURE_SWEEP_MIN}); "
-        "consider extending the sweep range.",
-        flush=True,
-    )
-elif abs(best_temperature - TEMPERATURE_SWEEP_MAX) < 1e-6:
-    print(
-        f"WARNING: best temperature is at upper search boundary ({TEMPERATURE_SWEEP_MAX}); "
+        "WARNING: best temperature is at lower search boundary (0.8); "
         "consider extending the sweep range.",
         flush=True,
     )

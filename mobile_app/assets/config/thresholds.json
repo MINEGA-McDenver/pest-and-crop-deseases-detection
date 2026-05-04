@@ -1,33 +1,33 @@
 {
-  "version": 1,
-  "model_date": "2026-04-12",
-  "threshold_source": "balanced_mode_runtime",
-  "threshold_source_note": "Balanced mode: reduce false unsupported/uncertain on beans and potato while preserving safety gates for true unsupported crops.",
-  "thresholds": {
-    "cropTotalThreshold": 0.9,
-    "otherLeafAbsoluteFloor": 0.14,
-    "otherLeafVsCropRatioThreshold": 0.65,
-    "beansPotatoCropTotalRelaxation": 0.19,
-    "beansPotatoOtherLeafFloorBoost": 0.25,
-    "beansPotatoUncertainGapThreshold": 0.04,
-    "beansPotatoSecondCropThreshold": 0.75,
-    "beansPotatoClassRatioThreshold": 0.4,
-    "beansPotatoClassConfidenceThreshold": 0.6,
-    "beansPotatoRescueMinCropTotal": 0.06,
-    "beansPotatoRescueMaxGapFromBest": 0.95,
-    "beansPotatoRescueMaxOtherLeaf": 0.95
-  },
-  "acceptance_targets": {
-    "min_supported_confident_rate_beans": 0.75,
-    "min_supported_confident_rate_potato": 0.75,
-    "max_unsupported_rate_beans": 0.2,
-    "max_unsupported_rate_potato": 0.2,
-    "parity_gap_max_vs_banana_maize": 0.12
-  },
-  "release_controls": {
-    "decision_logging_required": true,
-    "post_release_drift_monitoring_required": true,
-    "allowed_threshold_hotfix_windows": 1,
-    "hotfix_scope": "thresholds_only"
-  }
+    "version":  1,
+    "model_date":  "2026-04-12",
+    "threshold_source":  "balanced_mode_runtime",
+    "threshold_source_note":  "Balanced mode: reduce false unsupported/uncertain on beans and potato while preserving safety gates for true unsupported crops.",
+    "thresholds":  {
+                       "cropTotalThreshold":  0.84,
+                       "otherLeafAbsoluteFloor":  0.22,
+                       "otherLeafVsCropRatioThreshold":  0.30,
+                       "beansPotatoCropTotalRelaxation":  0.19,
+                       "beansPotatoOtherLeafFloorBoost":  0.25,
+                       "beansPotatoUncertainGapThreshold":  0.04,
+                       "beansPotatoSecondCropThreshold":  0.75,
+                       "beansPotatoClassRatioThreshold":  0.4,
+                       "beansPotatoClassConfidenceThreshold":  0.6,
+                       "beansPotatoRescueMinCropTotal":  0.06,
+                       "beansPotatoRescueMaxGapFromBest":  0.95,
+                       "beansPotatoRescueMaxOtherLeaf":  0.95
+                   },
+    "acceptance_targets":  {
+                               "min_supported_confident_rate_beans":  0.75,
+                               "min_supported_confident_rate_potato":  0.75,
+                               "max_unsupported_rate_beans":  0.2,
+                               "max_unsupported_rate_potato":  0.2,
+                               "parity_gap_max_vs_banana_maize":  0.12
+                           },
+    "release_controls":  {
+                             "decision_logging_required":  true,
+                             "post_release_drift_monitoring_required":  true,
+                             "allowed_threshold_hotfix_windows":  1,
+                             "hotfix_scope":  "thresholds_only"
+                         }
 }

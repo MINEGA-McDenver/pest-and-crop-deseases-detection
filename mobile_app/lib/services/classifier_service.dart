@@ -36,14 +36,13 @@ class ClassifierService {
 
   // Ratio guard: if other_leaf probability is this large relative to the
   // winning crop total the image is suspicious.
-  // Raised from 0.30 to 0.65: OL must be much closer to the crop total
-  // before triggering rejection, giving crops more chance.
-  static const double otherLeafVsCropRatioThreshold = 0.65;
+  // Field hotfix: relaxed from 0.18 to reduce false unsupported rejections.
+  static const double otherLeafVsCropRatioThreshold = 0.30;
 
   // Absolute other_leaf floor: reject if other_leaf exceeds this value
   // anywhere in the pipeline, even if it did not win the softmax.
-  // Raised from 0.22 to 0.25 to let weak OL signals not override crops.
-  static const double defaultOtherLeafAbsoluteFloor = 0.25;
+  // Field hotfix: aligned with runtime thresholds config.
+  static const double defaultOtherLeafAbsoluteFloor = 0.22;
 
   // Balanced mode (beans/potato): reduce false unsupported while preserving
   // strong unknown-crop protection through other_leaf winner + ratio checks.
@@ -57,7 +56,7 @@ class ClassifierService {
   static const double nonFocusOtherLeafFloorBoost = 0.01;
   static const double nonFocusClassRatioThreshold = 0.60;
   static const double nonFocusMaxEntropyThreshold = 1.5;
-  static const double nonFocusClassConfidenceThreshold = 0.55;
+  static const double nonFocusClassConfidenceThreshold = 0.60;
   static const double defaultBeansPotatoRescueMinCropTotal = 0.18;
   static const double defaultBeansPotatoRescueMaxGapFromBest = 0.30;
   static const double defaultBeansPotatoRescueMaxOtherLeaf = 0.38;
@@ -109,9 +108,9 @@ class ClassifierService {
     'potato': 'potato_healthy',
   };
 
-  // Raised 0.30 → 0.40: the model now only rejects when other_leaf is
-  // genuinely strong, giving crops more chance to be accepted.
-  static const double otherLeafThreshold = 0.40;
+  // Lowered 0.50 → 0.30: temperature scaling deflates probabilities so
+  // genuine other_leaf images rarely scored above 0.50 after scaling.
+  static const double otherLeafThreshold = 0.30;
 
   double _cropTotalThreshold = defaultCropTotalThreshold;
   double _temperatureScaling = defaultTemperatureScaling;
@@ -626,8 +625,8 @@ class ClassifierService {
     );
 
     // ── Step 5: Early exit — other_leaf direct softmax winner ──
-    // Threshold raised 0.30 → 0.40 to give crops more chance; the model
-    // now only rejects when other_leaf is genuinely strong.
+    // Threshold lowered 0.50 → 0.30 because temperature scaling deflates
+    // probabilities; genuine other_leaf images rarely scored above 0.50.
     if (otherLeafProb >= otherLeafThreshold) {
       final preserveCrop = secondaryFocusCandidate?.key ?? bestCandidateCrop;
       final preserveCropTotal =
@@ -1340,12 +1339,6 @@ class ClassifierService {
 
   bool _isBeansOrPotato(String crop) => crop == 'beans' || crop == 'potato';
 
-  // FIX G2: Include maize as a focus crop for identity preservation.
-  // Maize gets lighter protection than beans/potato — only preserve-identity,
-  // not the forced-fallback or last-chance rescue paths.
-  bool _isFocusCrop(String crop) =>
-      crop == 'beans' || crop == 'potato' || crop == 'maize';
-
   double _effectiveCropTotalThreshold(String crop) {
     if (_isBeansOrPotato(crop)) {
       return max(0.0, _cropTotalThreshold - _beansPotatoCropTotalRelaxation);
@@ -1403,19 +1396,9 @@ class ClassifierService {
     required double candidateCropTotal,
     required Map<String, double> allProbs,
   }) {
-    // FIX G2: Extend to maize with a slightly higher evidence bar
-    // to avoid false-accepting non-maize plants.
-    if (_isBeansOrPotato(candidateCrop)) {
-      final topClassProb = _topClassProbForCrop(candidateCrop, allProbs);
-      return candidateCropTotal >= 0.001 || topClassProb >= 0.001;
-    }
-    if (candidateCrop == 'maize') {
-      final topClassProb = _topClassProbForCrop('maize', allProbs);
-      // Require stronger maize signal before preserving identity:
-      // at least 10% crop total or 8% top-class probability.
-      return candidateCropTotal >= 0.10 || topClassProb >= 0.08;
-    }
-    return false;
+    if (!_isBeansOrPotato(candidateCrop)) return false;
+    final topClassProb = _topClassProbForCrop(candidateCrop, allProbs);
+    return candidateCropTotal >= 0.001 || topClassProb >= 0.001;
   }
 
   ScanResult _buildFocusCropUncertainResult({
@@ -1430,11 +1413,7 @@ class ClassifierService {
     final cropName = _formatCropName(crop);
     final bestClassLabel =
         _topClassLabelForCrop(crop, allProbs) ??
-        (crop == 'beans'
-            ? 'beans_healthy'
-            : crop == 'maize'
-                ? 'maize_healthy'
-                : 'potato_healthy');
+        (crop == 'beans' ? 'beans_healthy' : 'potato_healthy');
     final bestClassProb = allProbs[bestClassLabel] ?? 0.0;
     final isHealthy = bestClassLabel.contains('healthy');
     final diseaseExists = DiseaseInfo.all.containsKey(bestClassLabel);
