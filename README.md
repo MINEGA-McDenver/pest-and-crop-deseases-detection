@@ -378,8 +378,4 @@ pip install tensorflow numpy pillow scikit-learn matplotlib
 
 On Windows, prefer `scripts\run_py.cmd` to force UTF-8 output.
 
-## Release Rule
 
-Do not deploy to farmers until `models/release_readiness.json` reports `PASS` and
-the steps in `DEPLOY_CHECKLIST.md` have been completed for the exact model +
-threshold config you are shipping.
