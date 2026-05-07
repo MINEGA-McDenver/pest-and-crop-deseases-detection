@@ -34,6 +34,15 @@ class AppStrings {
         'Use your phone camera for practical first-level guidance.',
     'chooseLanguage': 'Choose Language',
     'gettingStarted': 'Getting Started',
+    'authUnlockTitle': 'Unlock CropDoc',
+    'authUnlockSubtitle':
+        'Authenticate by using biometric or phone PIN to continue.',
+    'authUnlockButton': 'Unlock',
+    'authReasonApp': 'Authenticate to open CropDoc.',
+    'authReasonHistory': 'Authenticate to view scan history.',
+    'authUnavailable':
+        'Screen lock is not set up on this phone. Please add a PIN/pattern or biometric in Settings.',
+    'authFailed': 'Authentication failed. Try again.',
     'scanHistory': 'Scan History',
     'recentTab': 'Recent ({count})',
     'savedTab': 'Saved ({count})',
@@ -231,6 +240,16 @@ class AppStrings {
         'Koresha camera ya telefoni ubone ubujyanama bw\'ibanze bufatika.',
     'chooseLanguage': 'Hitamo Ururimi',
     'gettingStarted': 'Tangira',
+    'authUnlockTitle': 'Fungura CropDoc',
+    'authUnlockSubtitle':
+        'Emeza umwirondoro ukoresheje biometric cyangwa PIN ya telefoni kugira ngo ukomeze.',
+    'authUnlockButton': 'Fungura',
+    'authReasonApp': 'Emeza umwirondoro kugira ngo ufungure CropDoc.',
+    'authReasonHistory':
+        'Emeza umwirondoro kugira ngo ubone amateka y\'isesengura.',
+    'authUnavailable':
+        'Nta kurinda telefoni (PIN cyangwa biometric) byashyizweho. Shyiraho PIN cyangwa biometric muri Settings.',
+    'authFailed': 'Kwemeza umwirondoro byananiranye. Ongera ugerageze.',
     'scanHistory': 'Amateka y\'Isesengura',
     'recentTab': 'Ibya vuba ({count})',
     'savedTab': 'Byabitswe ({count})',

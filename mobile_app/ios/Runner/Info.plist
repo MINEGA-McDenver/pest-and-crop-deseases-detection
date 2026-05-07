@@ -50,5 +50,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Authenticate to access CropDoc scan history.</string>
 </dict>
 </plist>

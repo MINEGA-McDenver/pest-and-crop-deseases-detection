@@ -7,11 +7,13 @@ import 'home_screen.dart';
 class LanguageGateScreen extends StatefulWidget {
   final Locale currentLocale;
   final Future<void> Function(Locale locale) onLocaleConfirmed;
+  final bool popOnContinue;
 
   const LanguageGateScreen({
     super.key,
     required this.currentLocale,
     required this.onLocaleConfirmed,
+    this.popOnContinue = false,
   });
 
   @override
@@ -331,9 +333,13 @@ class _LanguageGateScreenState extends State<LanguageGateScreen> {
     try {
       await widget.onLocaleConfirmed(Locale(_selectedCode));
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      if (widget.popOnContinue) {
+        Navigator.of(context).pop();
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

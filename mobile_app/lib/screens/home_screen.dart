@@ -4,9 +4,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import '../services/classifier_service.dart';
 import '../services/storage_service.dart';
+import '../services/auth_service.dart';
+import '../services/session_guard_service.dart';
 import '../l10n/app_strings.dart';
+import '../l10n/app_locale_scope.dart';
 import 'result_screen.dart';
 import 'history_screen.dart';
+import 'language_gate_screen.dart';
 
 enum _SupportedCrop { banana, beans, maize, potato }
 
@@ -32,6 +36,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ClassifierService _classifier = ClassifierService();
   final StorageService _storage = StorageService();
+  final AuthService _auth = AuthService();
   final ImagePicker _picker = ImagePicker();
   static const bool _enableLocaleDebugLogs = true;
   bool _isInitialized = false;
@@ -148,12 +153,18 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    final XFile? image = await _picker.pickImage(
-      source: source,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 85,
-    );
+    XFile? image;
+    SessionGuardService.instance.beginExternalOperation();
+    try {
+      image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+    } finally {
+      SessionGuardService.instance.endExternalOperation();
+    }
 
     if (image == null) return;
 
@@ -191,6 +202,48 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  Future<void> _openHistory() async {
+    final attempt = await _auth.authenticate(
+      reason: AppStrings.tr(context, 'authReasonHistory'),
+    );
+
+    if (!attempt.authenticated) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppStrings.tr(
+              context,
+              attempt.errorCode != null ? 'authUnavailable' : 'authFailed',
+            ),
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+    );
+  }
+
+  void _openLanguageSelection() {
+    final localeState = AppLocaleScope.of(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LanguageGateScreen(
+          currentLocale: localeState.locale,
+          onLocaleConfirmed: localeState.setLocale,
+          popOnContinue: true,
+        ),
+      ),
+    );
   }
 
   void _showCropInfo(_SupportedCrop crop) {
@@ -335,10 +388,15 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         actions: [
           IconButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const HistoryScreen()),
+            onPressed: _openLanguageSelection,
+            tooltip: AppStrings.tr(context, 'language'),
+            icon: Icon(
+              Icons.translate,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
+          ),
+          IconButton(
+            onPressed: _openHistory,
             tooltip: AppStrings.tr(context, 'scanHistory'),
             icon: Icon(
               Icons.history,

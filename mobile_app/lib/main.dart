@@ -4,10 +4,13 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'screens/auth_gate_screen.dart';
+import 'screens/reauth_screen.dart';
 import 'screens/language_gate_screen.dart';
 import 'l10n/app_strings.dart';
 import 'l10n/app_locale_scope.dart';
 import 'services/language_preferences_service.dart';
+import 'services/session_guard_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,12 +48,20 @@ class CropDoctorApp extends StatefulWidget {
   State<CropDoctorApp> createState() => _CropDoctorAppState();
 }
 
-class _CropDoctorAppState extends State<CropDoctorApp> {
+class _CropDoctorAppState extends State<CropDoctorApp>
+  with WidgetsBindingObserver {
   final LanguagePreferencesService _languagePrefs =
       LanguagePreferencesService();
   static const bool _enableLocaleDebugLogs = true;
+  static const Duration _languageResetAfter = Duration(seconds: 30);
+
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
   Locale _locale = const Locale('rw');
   bool _loadedPreference = false;
+
+  DateTime? _backgroundedAt;
+  bool _resumeGateInProgress = false;
 
   void _debugLocale(String stage, {String? value}) {
     if (!_enableLocaleDebugLogs) return;
@@ -62,7 +73,85 @@ class _CropDoctorAppState extends State<CropDoctorApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadLocalePreference();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _onLifecycleState(state);
+  }
+
+  void _onLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleResumeGate();
+        });
+        return;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        _backgroundedAt ??= DateTime.now();
+        return;
+      case AppLifecycleState.inactive:
+        // Ignore transient inactive states (e.g., permission dialogs).
+        return;
+    }
+  }
+
+  Future<void> _handleResumeGate() async {
+    if (_resumeGateInProgress) return;
+    if (SessionGuardService.instance.isInExternalOperation) {
+      _backgroundedAt = null;
+      return;
+    }
+
+    final leftAt = _backgroundedAt;
+    if (leftAt == null) return;
+
+    _resumeGateInProgress = true;
+    _backgroundedAt = null;
+
+    try {
+      final elapsed = DateTime.now().difference(leftAt);
+      final navigator = _navigatorKey.currentState;
+      if (navigator == null) return;
+
+      if (elapsed > _languageResetAfter) {
+        navigator.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => _buildAuthThenLanguageGate()),
+          (route) => false,
+        );
+        return;
+      }
+
+      await navigator.push<bool>(
+        MaterialPageRoute(
+          builder: (_) => ReauthScreen(
+            languageCode: _locale.languageCode.toLowerCase(),
+          ),
+        ),
+      );
+    } finally {
+      _resumeGateInProgress = false;
+    }
+  }
+
+  Widget _buildAuthThenLanguageGate() {
+    return AuthGateScreen(
+      languageCode: _locale.languageCode.toLowerCase(),
+      child: LanguageGateScreen(
+        currentLocale: _locale,
+        onLocaleConfirmed: _setLocale,
+      ),
+    );
   }
 
   Future<void> _loadLocalePreference() async {
@@ -114,6 +203,7 @@ class _CropDoctorAppState extends State<CropDoctorApp> {
       locale: _locale,
       setLocale: _setLocale,
       child: MaterialApp(
+        navigatorKey: _navigatorKey,
         locale: const Locale('en'),
         onGenerateTitle: (context) => AppStrings.tr(context, 'appTitle'),
         debugShowCheckedModeBanner: false,
@@ -135,10 +225,7 @@ class _CropDoctorAppState extends State<CropDoctorApp> {
             ),
           ),
         ),
-        home: LanguageGateScreen(
-          currentLocale: _locale,
-          onLocaleConfirmed: _setLocale,
-        ),
+        home: _buildAuthThenLanguageGate(),
       ),
     );
   }

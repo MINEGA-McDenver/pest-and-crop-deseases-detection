@@ -24,10 +24,12 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = ROOT / "models" / "crop_disease_model.tflite"
 LABELS_PATH = ROOT / "models" / "labels.txt"
 THRESHOLDS_PATH = ROOT / "mobile_app" / "assets" / "config" / "thresholds.json"
+MODELS_RUNTIME_RECO_PATH = ROOT / "models" / "mobile_runtime_recommendations.json"
+APP_RUNTIME_RECO_PATH = ROOT / "mobile_app" / "assets" / "config" / "mobile_runtime_recommendations.json"
 OUT_DIR = ROOT / "analysis_outputs"
 
 INPUT_SIZE = 224
-TEMPERATURE = 1.8
+DEFAULT_TEMPERATURE_SCALING = 1.8
 
 DEFAULT_CROP_TOTAL_THRESHOLD = 0.82
 DEFAULT_OTHER_LEAF_ABSOLUTE_FLOOR = 0.12
@@ -86,14 +88,14 @@ def is_beans_or_potato(crop: str) -> bool:
 
 
 def infer_expected_crop(path: Path) -> str:
-    name = path.name.lower()
-    if "bean" in name:
+    text = str(path).lower()
+    if "bean" in text or "beans" in text:
         return "beans"
-    if "potato" in name:
+    if "potato" in text:
         return "potato"
-    if "banana" in name:
+    if "banana" in text or "bana" in text:
         return "banana"
-    if "maize" in name or "corn" in name:
+    if "maize" in text or "corn" in text:
         return "maize"
     return "unknown"
 
@@ -118,8 +120,9 @@ def preprocess(path: Path) -> np.ndarray:
     return np.expand_dims(arr, axis=0)
 
 
-def temperature_scale(probs: np.ndarray) -> np.ndarray:
-    lp = np.log(np.maximum(probs, 1e-10)) / TEMPERATURE
+def temperature_scale(probs: np.ndarray, temperature: float) -> np.ndarray:
+    t = max(float(temperature), 1e-6)
+    lp = np.log(np.maximum(probs, 1e-10)) / t
     exps = np.exp(lp - np.max(lp))
     return exps / np.sum(exps)
 
@@ -153,12 +156,48 @@ def load_thresholds():
         "beansPotatoClassRatioThreshold": DEFAULT_BEANS_POTATO_CLASS_RATIO_THRESHOLD,
         "beansPotatoClassConfidenceThreshold": DEFAULT_BEANS_POTATO_CLASS_CONFIDENCE_THRESHOLD,
         "otherLeafVsCropRatioThreshold": DEFAULT_OTHER_LEAF_VS_CROP_RATIO_THRESHOLD,
+        "temperatureScaling": DEFAULT_TEMPERATURE_SCALING,
+        "nonFocusClassConfidenceThreshold": NON_FOCUS_CLASS_CONFIDENCE_THRESHOLD,
+        "nonFocusMaxEntropyThreshold": NON_FOCUS_MAX_ENTROPY_THRESHOLD,
     }
     if THRESHOLDS_PATH.exists():
         data = json.loads(THRESHOLDS_PATH.read_text(encoding="utf-8"))
         for k, v in data.get("thresholds", {}).items():
             if k in cfg and isinstance(v, (int, float)):
                 cfg[k] = float(v)
+
+    # Prefer model-side runtime recommendations (fresh after retrain), then app-side.
+    runtime_payload = None
+    for path in (MODELS_RUNTIME_RECO_PATH, APP_RUNTIME_RECO_PATH):
+        if not path.exists():
+            continue
+        try:
+            candidate = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(candidate, dict):
+                runtime_payload = candidate
+                break
+        except Exception:
+            continue
+
+    if isinstance(runtime_payload, dict):
+        temperature = runtime_payload.get("temperatureScaling")
+        if isinstance(temperature, (int, float)) and float(temperature) > 0:
+            cfg["temperatureScaling"] = float(temperature)
+
+        reco = runtime_payload.get("recommendedThresholds")
+        if isinstance(reco, dict):
+            crop_total = reco.get("cropTotalThreshold")
+            if isinstance(crop_total, (int, float)) and 0 < float(crop_total) < 1:
+                cfg["cropTotalThreshold"] = float(crop_total)
+
+            conf = reco.get("confidenceThreshold")
+            if isinstance(conf, (int, float)) and 0 < float(conf) < 1:
+                cfg["nonFocusClassConfidenceThreshold"] = float(conf)
+
+            max_entropy = reco.get("maxEntropyThreshold")
+            if isinstance(max_entropy, (int, float)) and 0 < float(max_entropy) < 10:
+                cfg["nonFocusMaxEntropyThreshold"] = float(max_entropy)
+
     return cfg
 
 
@@ -333,7 +372,7 @@ def classify_with_gates(path: Path, interpreter, in_idx, out_idx, labels, cfg):
     interpreter.invoke()
     raw = interpreter.get_tensor(out_idx)[0].astype(np.float64)
 
-    probs = temperature_scale(raw)
+    probs = temperature_scale(raw, cfg.get("temperatureScaling", DEFAULT_TEMPERATURE_SCALING))
     prob_map = {labels[i]: float(probs[i]) for i in range(min(len(labels), len(probs)))}
     top = sorted(prob_map.items(), key=lambda kv: kv[1], reverse=True)
 
@@ -441,8 +480,8 @@ def classify_with_gates(path: Path, interpreter, in_idx, out_idx, labels, cfg):
     effective_gap = UNCERTAIN_GAP_THRESHOLD
     effective_second_crop = SECOND_CROP_AMBIGUITY_THRESHOLD
     effective_class_ratio = 0.60
-    effective_class_confidence = NON_FOCUS_CLASS_CONFIDENCE_THRESHOLD
-    effective_entropy_threshold = MAX_ENTROPY_THRESHOLD
+    effective_class_confidence = float(cfg.get("nonFocusClassConfidenceThreshold", NON_FOCUS_CLASS_CONFIDENCE_THRESHOLD))
+    effective_entropy_threshold = float(cfg.get("nonFocusMaxEntropyThreshold", NON_FOCUS_MAX_ENTROPY_THRESHOLD))
     if is_beans_or_potato(best_crop):
         effective_crop_total = max(0.0, cfg["cropTotalThreshold"] - cfg["beansPotatoCropTotalRelaxation"])
         effective_gap = cfg["beansPotatoUncertainGapThreshold"]
@@ -451,8 +490,8 @@ def classify_with_gates(path: Path, interpreter, in_idx, out_idx, labels, cfg):
         effective_class_confidence = cfg["beansPotatoClassConfidenceThreshold"]
     else:
         effective_crop_total = max(0.0, cfg["cropTotalThreshold"] - NON_FOCUS_CROP_TOTAL_RELAXATION)
-        effective_class_confidence = NON_FOCUS_CLASS_CONFIDENCE_THRESHOLD
-        effective_entropy_threshold = NON_FOCUS_MAX_ENTROPY_THRESHOLD
+        effective_class_confidence = float(cfg.get("nonFocusClassConfidenceThreshold", NON_FOCUS_CLASS_CONFIDENCE_THRESHOLD))
+        effective_entropy_threshold = float(cfg.get("nonFocusMaxEntropyThreshold", NON_FOCUS_MAX_ENTROPY_THRESHOLD))
 
     if best_crop_total < effective_crop_total:
         if (

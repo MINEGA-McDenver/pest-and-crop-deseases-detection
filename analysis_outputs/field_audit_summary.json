@@ -28,12 +28,12 @@
   "gate_counts": {
     "G7g_confident": 550,
     "G7a_crop_total": 3,
-    "G5b_other_leaf_floor": 25,
-    "G5_preserve_focus_crop": 23,
-    "G7a_crop_total_focus_rescue": 24,
+    "G5b_other_leaf_floor": 24,
+    "G5_other_leaf_winner": 1,
+    "G5_preserve_focus_crop": 39,
     "G7e_healthy_safety_focus_override": 9,
-    "G7c_entropy": 2,
-    "G5b_preserve_focus_crop": 1
+    "G7a_crop_total_focus_rescue": 9,
+    "G7c_entropy": 2
   },
   "source_counts": {
     "raw_photo-like": 637

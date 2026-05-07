@@ -16,11 +16,11 @@ class ClassifierService {
   bool _isInitialized = false;
 
   static const int inputSize = 224;
-  static const double defaultTemperatureScaling = 1.8;
+  static const double defaultTemperatureScaling = 0.8;
 
   // ─── Thresholds ─────────────────────────────────────────────
   // Keep fallback aligned with training-time simulator defaults.
-  static const double defaultCropTotalThreshold = 0.84;
+  static const double defaultCropTotalThreshold = 0.9;
 
   static const double uncertainGapThreshold = 0.30;
   static const double maxEntropyThreshold = 1.5;
@@ -36,30 +36,30 @@ class ClassifierService {
 
   // Ratio guard: if other_leaf probability is this large relative to the
   // winning crop total the image is suspicious.
-  // Field hotfix: relaxed from 0.18 to reduce false unsupported rejections.
-  static const double otherLeafVsCropRatioThreshold = 0.30;
+  // Aligned with shipped runtime thresholds.
+  static const double otherLeafVsCropRatioThreshold = 0.65;
 
   // Absolute other_leaf floor: reject if other_leaf exceeds this value
   // anywhere in the pipeline, even if it did not win the softmax.
-  // Field hotfix: aligned with runtime thresholds config.
-  static const double defaultOtherLeafAbsoluteFloor = 0.22;
+  // Aligned with shipped runtime thresholds.
+  static const double defaultOtherLeafAbsoluteFloor = 0.14;
 
   // Balanced mode (beans/potato): reduce false unsupported while preserving
   // strong unknown-crop protection through other_leaf winner + ratio checks.
-  static const double defaultBeansPotatoCropTotalRelaxation = 0.05;
-  static const double defaultBeansPotatoOtherLeafFloorBoost = 0.03;
-  static const double defaultBeansPotatoUncertainGapThreshold = 0.08;
-  static const double defaultBeansPotatoSecondCropThreshold = 0.55;
-  static const double defaultBeansPotatoClassRatioThreshold = 0.45;
-  static const double defaultBeansPotatoClassConfidenceThreshold = 0.68;
+  static const double defaultBeansPotatoCropTotalRelaxation = 0.19;
+  static const double defaultBeansPotatoOtherLeafFloorBoost = 0.25;
+  static const double defaultBeansPotatoUncertainGapThreshold = 0.04;
+  static const double defaultBeansPotatoSecondCropThreshold = 0.75;
+  static const double defaultBeansPotatoClassRatioThreshold = 0.4;
+  static const double defaultBeansPotatoClassConfidenceThreshold = 0.6;
   static const double nonFocusCropTotalRelaxation = 0.05;
   static const double nonFocusOtherLeafFloorBoost = 0.01;
   static const double nonFocusClassRatioThreshold = 0.60;
   static const double nonFocusMaxEntropyThreshold = 1.5;
-  static const double nonFocusClassConfidenceThreshold = 0.60;
-  static const double defaultBeansPotatoRescueMinCropTotal = 0.18;
-  static const double defaultBeansPotatoRescueMaxGapFromBest = 0.30;
-  static const double defaultBeansPotatoRescueMaxOtherLeaf = 0.38;
+  static const double nonFocusClassConfidenceThreshold = 0.55;
+  static const double defaultBeansPotatoRescueMinCropTotal = 0.06;
+  static const double defaultBeansPotatoRescueMaxGapFromBest = 0.95;
+  static const double defaultBeansPotatoRescueMaxOtherLeaf = 0.95;
   static const double rescueFocusSwapGuardCropGap = 0.08;
   static const double rescueFocusSwapGuardTopClassMargin = 0.05;
   static const bool forceBeansPotatoNeverUnsupported = true;

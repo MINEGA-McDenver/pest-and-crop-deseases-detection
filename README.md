@@ -239,9 +239,9 @@ Current app config values:
 
 - Temperature: **T=0.8**
 - `cropTotalThreshold`: **0.90**
-- `otherLeafAbsoluteFloor`: **0.22**
+- `otherLeafAbsoluteFloor`: **0.14**
 - `otherLeafThreshold` (winner gate): **0.30**
-- `otherLeafVsCropRatioThreshold`: **0.30**
+- `otherLeafVsCropRatioThreshold`: **0.65**
 - `maxEntropyThreshold`: **1.5**
 - `nonFocusClassConfidenceThreshold`: **0.55**
 - `nonFocusClassRatioThreshold`: **0.60**

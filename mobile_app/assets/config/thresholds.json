@@ -4,9 +4,9 @@
     "threshold_source":  "balanced_mode_runtime",
     "threshold_source_note":  "Balanced mode: reduce false unsupported/uncertain on beans and potato while preserving safety gates for true unsupported crops.",
     "thresholds":  {
-                       "cropTotalThreshold":  0.84,
-                       "otherLeafAbsoluteFloor":  0.22,
-                       "otherLeafVsCropRatioThreshold":  0.30,
+                       "cropTotalThreshold":  0.9,
+                       "otherLeafAbsoluteFloor":  0.14,
+                       "otherLeafVsCropRatioThreshold":  0.65,
                        "beansPotatoCropTotalRelaxation":  0.19,
                        "beansPotatoOtherLeafFloorBoost":  0.25,
                        "beansPotatoUncertainGapThreshold":  0.04,
