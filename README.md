@@ -5,11 +5,46 @@ The app is designed for offline use on Android devices and targets banana, beans
 maize, and potato. A 15th class (`other_leaf`) is included to represent unsupported
 leaves / out-of-distribution inputs.
 
+## App Workflow (User Interaction)
+
+This is the end-to-end flow a user follows inside the **Crop Doctor** mobile app.
+
+1) **Open and unlock the app**
+  - On launch, the app asks the user to unlock using the phone’s device authentication
+    (biometric / screen-lock depending on what the device supports).
+
+2) **Choose a language (first screen)**
+  - Select **English** or **Kinyarwanda**, then continue to the Home screen.
+  - Language can be changed later from Home (translate icon).
+
+3) **Scan a leaf photo (offline)**
+  - From Home, the user taps **Take Photo** (camera) or **Upload from Gallery**.
+  - The model runs fully **on-device** (no internet required).
+  - The scan is stored locally so it appears in **Scan History**.
+
+4) **Review the result and guidance**
+  - If the model is confident, the app shows the detected **crop** and either a
+    **disease** label or **healthy**, plus short guidance.
+  - If the input is not reliable/supported, the app shows one of:
+    **Poor image quality**, **Unsupported / other leaf**, **Uncertain**, or
+    **Unknown condition** (crop detected, but disease not in the supported list),
+    and prompts the user to retake a clearer photo.
+
+5) **Save and revisit past scans**
+  - The user can bookmark/save a useful result (bookmark icon on the Result screen).
+  - From Home, **Scan History** (history icon) shows **Recent** vs **Saved** scans.
+  - Opening Scan History requires re-authentication.
+
+6) **Resume behavior (security)**
+  - If the app is backgrounded, it prompts the user to re-authenticate on return.
+  - If backgrounded for more than ~30 seconds, it returns to the unlock + language gate.
+
 ## Current Status (Release Gate)
 
 Release readiness is **PASS** based on the latest saved gate artifacts:
 
 - Verdict: `models/release_readiness.json` -> `PASS` (`timestamp_utc`: 2026-05-02)
+- Verdict: `models/release_readiness.json` -> `PASS` (`timestamp_utc`: 2026-05-05T06:56:39.639431+00:00)
 - Lab/test evaluation (15-class): `models/test_evaluation.json`
   - `test_accuracy`: **0.9493**
   - `macro_f1`: **0.9289**
@@ -377,5 +412,47 @@ pip install tensorflow numpy pillow scikit-learn matplotlib
 ```
 
 On Windows, prefer `scripts\run_py.cmd` to force UTF-8 output.
+
+## Quickstart — Run & Build
+
+- **Prepare Python environment**: create a venv and install core deps.
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install tensorflow numpy pillow scikit-learn matplotlib
+```
+
+- **Run audit / calibration scripts** (use `run_py.cmd` on Windows):
+
+```bash
+scripts\run_py.cmd scripts\recalibrate_runtime.py
+scripts\run_py.cmd calibrate_thresholds.py
+scripts\run_py.cmd scripts\audit_field_photos.py --images-dir "datasets\holdout_farmer_style"
+```
+
+- **Build mobile app (Flutter)**:
+
+```bash
+cd mobile_app
+flutter pub get
+flutter build apk --release
+```
+
+## Where key files live
+
+- Model artifacts: [models](models)
+- Mobile assets (deployed model + thresholds): [mobile_app/assets/models](mobile_app/assets/models) and [mobile_app/assets/config](mobile_app/assets/config)
+- Runtime gate simulator & evaluation: [models/test_evaluation.json](models/test_evaluation.json) and [models/runtime_gate_validation.json](models/runtime_gate_validation.json)
+- Field audit outputs: [analysis_outputs/field_audit_summary.json](analysis_outputs/field_audit_summary.json)
+
+## Updating runtime thresholds used by the app
+
+- Edit `mobile_app/assets/config/thresholds.json` (or regenerate via `scripts/recalibrate_runtime.py`).
+- After updating assets, rebuild the Flutter app so the new thresholds are embedded in `assets/`.
+
+---
+
+If you want, I can also: (a) add a minimal `requirements.txt`, (b) update `DEPLOY_CHECKLIST.md` with these build steps, or (c) draft short user-facing text for the app store listing. Which should I do next?
 
 
