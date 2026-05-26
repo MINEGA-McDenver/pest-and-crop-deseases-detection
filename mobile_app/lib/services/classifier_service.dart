@@ -20,7 +20,7 @@ class ClassifierService {
 
   // ─── Thresholds ─────────────────────────────────────────────
   // Keep fallback aligned with training-time simulator defaults.
-  static const double defaultCropTotalThreshold = 0.9;
+  static const double defaultCropTotalThreshold = 0.78;
 
   static const double uncertainGapThreshold = 0.30;
   static const double maxEntropyThreshold = 1.5;
@@ -44,35 +44,40 @@ class ClassifierService {
   // Aligned with shipped runtime thresholds.
   static const double defaultOtherLeafAbsoluteFloor = 0.14;
 
-  // Balanced mode (beans/potato): reduce false unsupported while preserving
-  // strong unknown-crop protection through other_leaf winner + ratio checks.
-  static const double defaultBeansPotatoCropTotalRelaxation = 0.19;
-  static const double defaultBeansPotatoOtherLeafFloorBoost = 0.25;
-  static const double defaultBeansPotatoUncertainGapThreshold = 0.04;
-  static const double defaultBeansPotatoSecondCropThreshold = 0.75;
-  static const double defaultBeansPotatoClassRatioThreshold = 0.4;
-  static const double defaultBeansPotatoClassConfidenceThreshold = 0.6;
-  static const double nonFocusCropTotalRelaxation = 0.05;
-  static const double nonFocusOtherLeafFloorBoost = 0.01;
-  static const double nonFocusClassRatioThreshold = 0.60;
+  // Uniform supported-crop relaxation: all 4 crops (banana, beans, maize,
+  // potato) get the same treatment. This fixes the previous asymmetry where
+  // beans/potato had massively relaxed thresholds while banana/maize were
+  // rejected at much stricter thresholds.
+  static const double defaultBeansPotatoCropTotalRelaxation = 0.08;
+  static const double defaultBeansPotatoOtherLeafFloorBoost = 0.08;
+  static const double defaultBeansPotatoUncertainGapThreshold = 0.12;
+  static const double defaultBeansPotatoSecondCropThreshold = 0.30;
+  static const double defaultBeansPotatoClassRatioThreshold = 0.45;
+  static const double defaultBeansPotatoClassConfidenceThreshold = 0.50;
+  static const double nonFocusCropTotalRelaxation = 0.08;
+  static const double nonFocusOtherLeafFloorBoost = 0.08;
+  static const double nonFocusClassRatioThreshold = 0.45;
   static const double nonFocusMaxEntropyThreshold = 1.5;
-  static const double nonFocusClassConfidenceThreshold = 0.55;
-  static const double defaultBeansPotatoRescueMinCropTotal = 0.06;
-  static const double defaultBeansPotatoRescueMaxGapFromBest = 0.95;
-  static const double defaultBeansPotatoRescueMaxOtherLeaf = 0.95;
+  static const double nonFocusClassConfidenceThreshold = 0.50;
+  static const double defaultBeansPotatoRescueMinCropTotal = 0.15;
+  static const double defaultBeansPotatoRescueMaxGapFromBest = 0.30;
+  static const double defaultBeansPotatoRescueMaxOtherLeaf = 0.45;
   static const double rescueFocusSwapGuardCropGap = 0.08;
   static const double rescueFocusSwapGuardTopClassMargin = 0.05;
-  static const bool forceBeansPotatoNeverUnsupported = true;
-  static const double forceBeansPotatoMinCropTotal = 0.001;
-  static const double forceBeansPotatoMinTopClassProb = 0.001;
-  static const double lastChanceFocusMinCropTotal = 0.001;
-  static const double lastChanceFocusMinTopClassProb = 0.001;
-  static const double secondaryFocusMinCropTotal = 0.001;
-  static const double secondaryFocusMinTopClassProb = 0.001;
-  static const double secondaryFocusMaxGapFromBest = 1.00;
-  static const bool preferBeansPotatoWhenCompetitive = true;
-  static const double focusCropSwitchMaxGap = 0.18;
-  static const double focusCropSwitchMinTotal = 0.20;
+  // Disabled: was forcing beans/potato identity on non-beans/potato images.
+  // All 4 supported crops now get equal rescue treatment.
+  static const bool forceBeansPotatoNeverUnsupported = false;
+  static const double forceBeansPotatoMinCropTotal = 0.15;
+  static const double forceBeansPotatoMinTopClassProb = 0.15;
+  static const double lastChanceFocusMinCropTotal = 0.15;
+  static const double lastChanceFocusMinTopClassProb = 0.15;
+  static const double secondaryFocusMinCropTotal = 0.25;
+  static const double secondaryFocusMinTopClassProb = 0.25;
+  static const double secondaryFocusMaxGapFromBest = 0.15;
+  // Disabled: was overriding legitimate maize/banana winners.
+  static const bool preferBeansPotatoWhenCompetitive = false;
+  static const double focusCropSwitchMaxGap = 0.10;
+  static const double focusCropSwitchMinTotal = 0.30;
 
   // RELAXED 0.10 → 0.15 (Fix from external analysis):
   // A second crop at 9% is clear dominance by the first crop and should not
@@ -821,21 +826,11 @@ class ClassifierService {
     var bestCrop = sortedCrops[0].key;
     var bestCropTotal = sortedCrops[0].value;
 
-    if (secondaryFocusCandidate != null && !_isBeansOrPotato(bestCrop)) {
-      bestCrop = secondaryFocusCandidate.key;
-      bestCropTotal = secondaryFocusCandidate.value;
-    }
-
-    final preferredFocusCrop = _selectPreferredBeansPotatoCrop(
-      cropProbs,
-      allProbs,
-      currentBestCrop: bestCrop,
-      currentBestCropTotal: bestCropTotal,
-    );
-    if (preferredFocusCrop != null) {
-      bestCrop = preferredFocusCrop.key;
-      bestCropTotal = preferredFocusCrop.value;
-    }
+    // REMOVED: secondary focus candidate swap and preferred focus crop swap.
+    // These were overriding legitimate maize/banana winners with beans/potato
+    // based on near-zero thresholds (0.001), causing maize→beans/potato and
+    // banana→beans/potato (→unsupported) misclassifications. The model's
+    // actual best crop prediction is now respected.
 
     final secondCropTotal = _secondBestCropTotalExcluding(cropProbs, bestCrop);
     final cropGap = bestCropTotal - secondCropTotal;
@@ -1012,7 +1007,7 @@ class ClassifierService {
     final effectiveGapThreshold = _effectiveUncertainGapThreshold(bestCrop);
 
     if (cropGap < effectiveGapThreshold) {
-      if (_isBeansOrPotato(bestCrop)) {
+      if (_isSupportedCrop(bestCrop)) {
         return _buildFocusCropUncertainResult(
           imagePath: imagePath,
           allProbs: allProbs,
@@ -1056,7 +1051,7 @@ class ClassifierService {
     );
 
     if (secondCropTotal > effectiveSecondCropThreshold) {
-      if (_isBeansOrPotato(bestCrop)) {
+      if (_isSupportedCrop(bestCrop)) {
         return _buildFocusCropUncertainResult(
           imagePath: imagePath,
           allProbs: allProbs,
@@ -1104,7 +1099,7 @@ class ClassifierService {
       );
       if (rescue != null) return rescue;
 
-      if (_isBeansOrPotato(bestCrop)) {
+      if (_isSupportedCrop(bestCrop)) {
         return _buildFocusCropUncertainResult(
           imagePath: imagePath,
           allProbs: allProbs,
@@ -1155,7 +1150,7 @@ class ClassifierService {
       );
       if (rescue != null) return rescue;
 
-      if (_isBeansOrPotato(bestCrop)) {
+      if (_isSupportedCrop(bestCrop)) {
         return _buildFocusCropUncertainResult(
           imagePath: imagePath,
           allProbs: allProbs,
@@ -1193,7 +1188,7 @@ class ClassifierService {
     final effectiveClassConfidenceThreshold =
         _effectiveClassConfidenceThreshold(bestCrop);
     if (bestClassProb < effectiveClassConfidenceThreshold) {
-      if (_isBeansOrPotato(bestCrop)) {
+      if (_isSupportedCrop(bestCrop)) {
         return _buildFocusCropUncertainResult(
           imagePath: imagePath,
           allProbs: allProbs,
@@ -1258,7 +1253,7 @@ class ClassifierService {
         : healthyMinConfidence;
 
     if (isHealthy && bestClassProb < healthyConfidenceThreshold) {
-      if (_isBeansOrPotato(bestCrop)) {
+      if (_isSupportedCrop(bestCrop)) {
         return _buildFocusCropUncertainResult(
           imagePath: imagePath,
           allProbs: allProbs,
@@ -1339,53 +1334,60 @@ class ClassifierService {
 
   bool _isBeansOrPotato(String crop) => crop == 'beans' || crop == 'potato';
 
+  /// Returns true for any of the 4 supported crops.
+  /// Used for rescue/preservation logic so all crops get equal treatment.
+  bool _isSupportedCrop(String crop) =>
+      crop == 'banana' || crop == 'beans' || crop == 'maize' || crop == 'potato';
+
   double _effectiveCropTotalThreshold(String crop) {
-    if (_isBeansOrPotato(crop)) {
+    // All supported crops get the same relaxation — no asymmetry.
+    if (_isSupportedCrop(crop)) {
       return max(0.0, _cropTotalThreshold - _beansPotatoCropTotalRelaxation);
     }
-    return max(0.0, _cropTotalThreshold - nonFocusCropTotalRelaxation);
+    return _cropTotalThreshold;
   }
 
   double _effectiveOtherLeafAbsoluteFloor(String crop) {
-    if (_isBeansOrPotato(crop)) {
+    // All supported crops get the same other_leaf floor boost.
+    if (_isSupportedCrop(crop)) {
       return min(
         0.95,
         _otherLeafAbsoluteFloor + _beansPotatoOtherLeafFloorBoost,
       );
     }
-    return min(0.95, _otherLeafAbsoluteFloor + nonFocusOtherLeafFloorBoost);
+    return _otherLeafAbsoluteFloor;
   }
 
   double _effectiveUncertainGapThreshold(String crop) {
-    if (_isBeansOrPotato(crop)) {
+    if (_isSupportedCrop(crop)) {
       return _beansPotatoUncertainGapThreshold;
     }
     return uncertainGapThreshold;
   }
 
   double _effectiveSecondCropAmbiguityThreshold(String crop) {
-    if (_isBeansOrPotato(crop)) {
+    if (_isSupportedCrop(crop)) {
       return _beansPotatoSecondCropThreshold;
     }
     return secondCropAmbiguityThreshold;
   }
 
   double _effectiveClassRatioThreshold(String crop) {
-    if (_isBeansOrPotato(crop)) {
+    if (_isSupportedCrop(crop)) {
       return _beansPotatoClassRatioThreshold;
     }
     return _nonFocusClassRatioThreshold;
   }
 
   double _effectiveClassConfidenceThreshold(String crop) {
-    if (_isBeansOrPotato(crop)) {
+    if (_isSupportedCrop(crop)) {
       return _beansPotatoClassConfidenceThreshold;
     }
     return _nonFocusClassConfidenceThreshold;
   }
 
   double _effectiveMaxEntropyThreshold(String crop) {
-    if (_isBeansOrPotato(crop)) {
+    if (_isSupportedCrop(crop)) {
       return maxEntropyThreshold;
     }
     return _nonFocusMaxEntropyThreshold;
@@ -1396,9 +1398,11 @@ class ClassifierService {
     required double candidateCropTotal,
     required Map<String, double> allProbs,
   }) {
-    if (!_isBeansOrPotato(candidateCrop)) return false;
+    // Now protects ALL 4 supported crops equally (was beans/potato only).
+    if (!_isSupportedCrop(candidateCrop)) return false;
     final topClassProb = _topClassProbForCrop(candidateCrop, allProbs);
-    return candidateCropTotal >= 0.001 || topClassProb >= 0.001;
+    // Raised from 0.001 to 0.15: require meaningful evidence, not noise.
+    return candidateCropTotal >= 0.15 || topClassProb >= 0.15;
   }
 
   ScanResult _buildFocusCropUncertainResult({
@@ -1411,9 +1415,10 @@ class ClassifierService {
     required String note,
   }) {
     final cropName = _formatCropName(crop);
+    // Generalized: use healthyLabels map for any crop, not just beans/potato.
     final bestClassLabel =
         _topClassLabelForCrop(crop, allProbs) ??
-        (crop == 'beans' ? 'beans_healthy' : 'potato_healthy');
+        (healthyLabels[crop] ?? '${crop}_healthy');
     final bestClassProb = allProbs[bestClassLabel] ?? 0.0;
     final isHealthy = bestClassLabel.contains('healthy');
     final diseaseExists = DiseaseInfo.all.containsKey(bestClassLabel);

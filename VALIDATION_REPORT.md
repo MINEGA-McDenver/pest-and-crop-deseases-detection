@@ -13,9 +13,9 @@ The `train_model.py` script and all supporting files have been **comprehensively
 ### Key Findings
 - ✅ Python syntax: Valid (1048 lines)
 - ✅ Configuration system: Fully functional with YAML fallback
-- ✅ Dataset structure: Complete (41,085 train, 2,410 val, 2,462 test images)
+- ✅ Dataset structure: Complete (43,183 train, 1,958 val, 1,952 test images)
 - ✅ All dependencies: Available and verified
-- ✅ Critical modules: Grad-CAM, matplotlib, sklearn all linked correctly
+- ✅ Critical modules: matplotlib, sklearn, PIL all linked correctly
 - ✅ All 6 Session C improvements: Properly integrated and compatible
 
 ---
@@ -32,8 +32,8 @@ The `train_model.py` script and all supporting files have been **comprehensively
 | YAML syntax valid | ✅ YES |
 | All 8 required sections | ✅ PRESENT |
 | Config paths valid | ✅ YES |
-| Performance settings | ✅ AUTOTUNE enabled |
-| Explainability config | ✅ Grad-CAM linked |
+| Performance settings | ✅ Explicit limits (AUTOTUNE disabled) |
+| Explainability config | ✅ Grad-CAM disabled (trimmed workflow) |
 
 **Sections Verified:**
 ```yaml
@@ -43,8 +43,8 @@ The `train_model.py` script and all supporting files have been **comprehensively
 ✓ model (architecture: MobileNetV2, fine-tune-from: layer 80)
 ✓ augmentation (5 transforms with proper ranges)
 ✓ evaluation (TTA, thresholds, calibration)
-✓ performance (AUTOTUNE for parallel_calls & prefetch)
-✓ explainability (Grad-CAM script path)
+✓ performance (fixed parallel_calls/prefetch)
+✓ explainability (Grad-CAM disabled)
 ```
 
 ### 2. Dataset Structure ✅
@@ -53,9 +53,9 @@ The `train_model.py` script and all supporting files have been **comprehensively
 
 | Split | Classes | Images | Status |
 |-------|---------|--------|--------|
-| train | 15 | 41,085 | ✅ |
-| val | 15 | 2,410 | ✅ |
-| test | 15 | 2,462 | ✅ |
+| train | 15 | 43,183 | ✅ |
+| val | 15 | 1,958 | ✅ |
+| test | 15 | 1,952 | ✅ |
 
 **Data Integrity Checks:**
 - ✅ All class folders present
@@ -128,22 +128,14 @@ The `train_model.py` script and all supporting files have been **comprehensively
 ✅ Reflects real app scenario
 ```
 
-#### Improvement #6: Grad-CAM Metadata Linking (Line 921-936)
-```python
-✅ correct_mask computed from calibrated_preds
-✅ metadata.json created with model path & prediction counts
-✅ Passed to Grad-CAM script as argument
-✅ Links explainability to model performance
-```
+#### Improvement #6: Grad-CAM Export (Disabled)
+
+Grad-CAM export is disabled in the trimmed workflow, so no external Grad-CAM script is required.
 
 ### 6. Supporting Scripts ✅
 
-| Script | Status | Connection |
-|--------|--------|-----------|
-| explain_predictions_gradcam.py | ✅ | Called by train_model.py (line 933) |
-| validate_images.py | ✅ | Available (not called, but data validated in train_model.py) |
-| evaluate_model.py | ✅ | Available (independent evaluation) |
-| augment_negative_samples.py | ✅ | Already integrated (410 field images included) |
+Trimmed workflow keeps only core training and release scripts. Optional helpers
+(Grad-CAM export, standalone evaluation, dataset curation) were removed.
 
 ### 7. Error Handling ✅
 
@@ -153,7 +145,6 @@ The `train_model.py` script and all supporting files have been **comprehensively
 ✅ Line 144: Duplicate images → sys.exit(1)
 ✅ Line 169: Missing dataset splits → sys.exit(1)
 ✅ Line 354-358: Graphics failures → try/except (non-fatal)
-✅ Line 935-950: Grad-CAM failure → logged but doesn't stop training
 ```
 
 **Fallback Mechanisms:**
@@ -175,7 +166,6 @@ The `train_model.py` script and all supporting files have been **comprehensively
 | `CosineAnnealingScheduler` | 432 | ✅ | LR scheduling for Phase 2 |
 | `softmax()` | 752 | ✅ | Temperature calibration |
 | `compute_ece()` | 759 | ✅ | Expected Calibration Error |
-| `GradCAM.compute_heatmap()` | In gradcam script | ✅ | Via subprocess call |
 
 ---
 
@@ -198,10 +188,9 @@ The `train_model.py` script and all supporting files have been **comprehensively
    - Mechanism: Adaptive batch size from config
    - Garbage collection: `gc.collect()` after phases
 
-4. **Grad-CAM timeout**
-   - Status: ✅ Safe
-   - Timeout: 300 seconds (5 min, reasonable)
-   - Failure mode: Graceful logging without stopping training
+4. **Grad-CAM export disabled**
+  - Status: ✅ Expected
+  - Reason: Trimmed workflow removes optional Grad-CAM generation
 
 5. **Long-running operations**
    - Status: ✅ Expected
@@ -216,9 +205,8 @@ The `train_model.py` script and all supporting files have been **comprehensively
 | File A | File B | Dependency | Status |
 |--------|--------|------------|--------|
 | train_model.py | config.yaml | Config loading (line 30) | ✅ Works |
-| train_model.py | explain_predictions_gradcam.py | Subprocess call (line 933) | ✅ Works |
 | config.yaml | paths.datasets | References train/val/test | ✅ Valid |
-| config.yaml | explainability.gradcam_script | Points to correct script | ✅ Valid |
+| config.yaml | explainability.gradcam_enabled | Disabled for trimmed workflow | ✅ Valid |
 | train_model.py | PIL.Image | Image validation (line 103) | ✅ Works |
 | train_model.py | sklearn.metrics | Classification report (line 18) | ✅ Works |
 | train_model.py | matplotlib | Visualization (line 862) | ✅ Works |
@@ -255,8 +243,6 @@ Apply calibration to test predictions
   ↓
 Analyze confidence thresholds
   ↓
-Generate Grad-CAM explanations
-  ↓
 Output final reports & models
 ✅ All transitions valid
 ```
@@ -283,9 +269,8 @@ Phase 2 (fine-tuning):      ~20-25 minutes
 Dataset validation:         ~2-3 minutes
 TTA evaluation (5 passes):  ~5-8 minutes
 Calibration & metrics:      ~1-2 minutes
-Grad-CAM generation:        ~3-5 minutes
 ─────────────────────────────────────────
-TOTAL EXPECTED TIME:        45-60 minutes
+TOTAL EXPECTED TIME:        40-55 minutes
 ```
 
 ### Memory Usage
@@ -316,7 +301,7 @@ Before running `python -u -X utf8 scripts/train_model.py`:
 
 ### Standard execution:
 ```bash
-cd d:\ALL_MY_DOCUMENTS\YEAR_4\FINAL_YEAR_PROJECT\pest-and-crop-deseases-detection
+cd d:\ALL MY DOCUMENTS\YEAR 4\FINAL YEAR PROJECT\clean-repo
 python -u -X utf8 scripts/train_model.py
 ```
 
@@ -338,12 +323,12 @@ TEST 1: Config YAML Loading
 ✓ All 8 required sections present
 
 TEST 2: Dataset Directories
-✓ train: 15 classes, 41085 images
-✓ val  : 15 classes,  2410 images
-✓ test : 15 classes,  2462 images
+✓ train: 15 classes, 43183 images
+✓ val  : 15 classes,  1958 images
+✓ test : 15 classes,  1952 images
 
 Validating image integrity and checking for duplicates ...
-✓ No corrupted images detected (checked 45,957 files)
+✓ No corrupted images detected (checked 47,093 files)
 ✓ No duplicate images detected
 
 Computing class weights ...
@@ -352,8 +337,7 @@ Class weights (sqrt-scaled) ← IMPROVEMENT #2
   beans_rust: 1.89
   ...
 
-Data pipeline: parallel_calls=<tf.data.AUTOTUNE>, prefetch=<tf.data.AUTOTUNE>
-  ↓ IMPROVEMENT #7 (AUTOTUNE optimization)
+Data pipeline: parallel_calls=2, prefetch=2  ← CPU-safe limits
 
 ============================================================
 PHASE 1: Training top layers (15 epochs max)
@@ -370,10 +354,10 @@ Phase 2 optimizer: AdamW with weight_decay=1e-4  ← IMPROVEMENT #3
 Phase 2 done: 22 epochs, 21.7 min, best val_acc=0.9534
 
 Evaluating best model on independent test set ...
-Test metrics: loss=0.1245 acc=0.9534 top3=0.9876
+Test metrics: acc=0.9626 top3=0.9969
 
 Step 1: Collecting validation predictions for temperature tuning ...
-✓ Collected 2410 validation predictions
+✓ Collected 1958 validation predictions
 
 Step 2: Applying mild Test-Time Augmentation (5-pass average) ...
 Using MILD augmentation only: horizontal flip + small crop  ← IMPROVEMENT #1
@@ -388,16 +372,10 @@ Temperature tuned on: VALIDATION set (NOT test set - no leakage)
 Analyzing confidence thresholds on calibrated predictions ...  ← IMPROVEMENT #5
 [Threshold analysis output]
 
-generating Grad-CAM explanations ...  ← IMPROVEMENT #6
-✓ Grad-CAM explanations generated successfully
-  Analyzed 1542 correct + 78 incorrect predictions
-  ↓ Metadata-linked for analysis
-
 --- DEPLOYMENT METRICS (at 0.60 threshold) ---  ← IMPROVEMENT #5 KEY OUTPUT
-Accuracy: 0.9623
-Macro F1: 0.9487
-Coverage: 94.32% of test set
-Samples: 2326 / 2462
+Accuracy: 0.9802
+Coverage: 95.95% of test set
+Samples: 1873 / 1952
 
 Models saved (with timestamp versioning):
   best_model_20260320_141523.keras (versioned)
@@ -413,14 +391,14 @@ TRAINING COMPLETE (IMPROVED SCRIPT)
   • TTA preprocessing normalization ← IMPROVEMENT #1 (BUG FIX)
   • AdamW weight decay (1e-4) ← IMPROVEMENT #3
   • Confidence threshold tracking ← IMPROVEMENT #5  
-  • Grad-CAM metadata linking ← IMPROVEMENT #6
+  • Grad-CAM export disabled (trimmed workflow)
 
 DONE!
 ```
 
 ---
 
-## Summary Table: All 6 Improvements Status
+## Summary Table: Key Improvements Status
 
 | # | Improvement | Line(s) | Status | Quality |
 |---|------------|---------|--------|---------|
@@ -429,9 +407,9 @@ DONE!
 | 3 | AdamW with weight_decay | 491 | ✅ Works | High |
 | 4 | Image Corruption Detection | 103-110 | ✅ Works | High |
 | 5 | Confidence Threshold Tracking | 761-774 | ✅ Works | High |
-| 6 | Grad-CAM Metadata Linking | 921-936 | ✅ Works | High |
+| 6 | Grad-CAM export (disabled) | 921-936 | ✅ Disabled | Optional |
 | + | Config File System | 30-44 | ✅ Works | High |
-| + | AUTOTUNE Optimization | 310-311 | ✅ Works | High |
+| + | Explicit CPU limits | 310-311 | ✅ Works | High |
 
 ---
 

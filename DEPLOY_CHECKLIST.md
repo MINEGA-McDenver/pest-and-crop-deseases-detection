@@ -81,13 +81,11 @@ python -u calibrate_thresholds.py
 - [ ] Supported-crop recall ≥ 0.90 (or your product target)
 - [ ] Other-leaf false-positive rate is acceptably low for your field conditions
 
-Update `classifier_service.dart` with the recommended values printed at the end:
-```
-static const double cropTotalThreshold     = <value from script>;
-static const double otherLeafAbsoluteFloor = <value from script>;
-```
+Update `mobile_app/assets/config/thresholds.json` with the recommended values
+printed at the end of the calibration run. If you intentionally change fallback
+defaults, update `classifier_service.dart` as well.
 
-- [x] `classifier_service.dart` defaults and runtime config updated to calibrated values
+- [x] `mobile_app/assets/config/thresholds.json` updated to calibrated values
 
 Current calibration result (2026-04-07):
 

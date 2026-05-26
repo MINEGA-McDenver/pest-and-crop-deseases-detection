@@ -1,10 +1,10 @@
 {
   "temperatureScaling": 0.8,
   "recommendedThresholds": {
-    "confidenceThreshold": 0.55,
+    "confidenceThreshold": 0.6,
     "marginThreshold": 0.2,
     "maxEntropyThreshold": 1.5,
-    "cropTotalThreshold": 0.9
+    "cropTotalThreshold": 0.7
   },
   "notes": [
     "Update mobile_app runtime config to use this temperatureScaling.",

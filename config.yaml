@@ -119,6 +119,5 @@ performance:
   intra_op_threads: 4
 
 explainability:
-  gradcam_enabled: true
-  gradcam_script: "scripts/explain_predictions_gradcam.py"
+  gradcam_enabled: false
   samples_per_class: 1

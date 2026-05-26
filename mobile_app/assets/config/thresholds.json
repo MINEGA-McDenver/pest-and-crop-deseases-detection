@@ -1,28 +1,27 @@
 {
-    "version":  1,
-    "model_date":  "2026-04-12",
-    "threshold_source":  "balanced_mode_runtime",
-    "threshold_source_note":  "Balanced mode: reduce false unsupported/uncertain on beans and potato while preserving safety gates for true unsupported crops.",
+    "version":  2,
+    "model_date":  "2026-05-15",
+    "threshold_source":  "uniform_crop_mode",
+    "threshold_source_note":  "All 4 supported crops (banana, beans, maize, potato) get identical threshold treatment. Previous beans/potato bias removed.",
     "thresholds":  {
-                       "cropTotalThreshold":  0.9,
+                       "cropTotalThreshold":  0.78,
                        "otherLeafAbsoluteFloor":  0.14,
                        "otherLeafVsCropRatioThreshold":  0.65,
-                       "beansPotatoCropTotalRelaxation":  0.19,
-                       "beansPotatoOtherLeafFloorBoost":  0.25,
-                       "beansPotatoUncertainGapThreshold":  0.04,
-                       "beansPotatoSecondCropThreshold":  0.75,
-                       "beansPotatoClassRatioThreshold":  0.4,
-                       "beansPotatoClassConfidenceThreshold":  0.6,
-                       "beansPotatoRescueMinCropTotal":  0.06,
-                       "beansPotatoRescueMaxGapFromBest":  0.95,
-                       "beansPotatoRescueMaxOtherLeaf":  0.95
+                       "beansPotatoCropTotalRelaxation":  0.08,
+                       "beansPotatoOtherLeafFloorBoost":  0.08,
+                       "beansPotatoUncertainGapThreshold":  0.12,
+                       "beansPotatoSecondCropThreshold":  0.30,
+                       "beansPotatoClassRatioThreshold":  0.45,
+                       "beansPotatoClassConfidenceThreshold":  0.50,
+                       "nonFocusClassRatioThreshold":  0.45,
+                       "beansPotatoRescueMinCropTotal":  0.15,
+                       "beansPotatoRescueMaxGapFromBest":  0.30,
+                       "beansPotatoRescueMaxOtherLeaf":  0.45
                    },
     "acceptance_targets":  {
-                               "min_supported_confident_rate_beans":  0.75,
-                               "min_supported_confident_rate_potato":  0.75,
-                               "max_unsupported_rate_beans":  0.2,
-                               "max_unsupported_rate_potato":  0.2,
-                               "parity_gap_max_vs_banana_maize":  0.12
+                               "min_supported_confident_rate_all_crops":  0.80,
+                               "max_unsupported_false_accept_rate":  0.05,
+                               "parity_gap_max_across_crops":  0.10
                            },
     "release_controls":  {
                              "decision_logging_required":  true,
